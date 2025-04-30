@@ -31,6 +31,8 @@ const String PREFS_CLIENT_ID = "PREFS_CLIENT_ID";
 const String REDIRECT_URI = "REDIRECT_URI";
 const String DISPLAY_USER_NAME = "DISPLAY_USER_NAME";
 const String IS_LOGIN_WITH_AZURE = "IS_LOGIN_WITH_AZURE";
+const String MOBILE_VERSION = "MOBILE_VERSION";
+
 class SharedPrefs {
   late final SharedPreferences _sharedPrefs;
 
@@ -209,5 +211,11 @@ class SharedPrefs {
 
   set isLoginazureAd(bool value) {
     _sharedPrefs.setBool(IS_LOGIN_WITH_AZURE, value);
+  }
+
+  String get mobileVersion => _sharedPrefs.getString(MOBILE_VERSION) ?? "";
+
+  set mobileVersion(String value) {
+    _sharedPrefs.setString(MOBILE_VERSION, value);
   }
 }

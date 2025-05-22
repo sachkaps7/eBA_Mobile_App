@@ -196,7 +196,7 @@ class DecimalTextInputFormatter extends TextInputFormatter {
       if (value != null) {
         if (value >= minValue && value <= maxValue) {
           return newValue;
-        } else if (newValue.text != '0.0' && value <= maxValue) {
+        } else if (newValue.text != '0.00' && value <= maxValue) {
           return newValue; // Allow intermediate inputs like "0" or "0."
         } else {
           return oldValue;

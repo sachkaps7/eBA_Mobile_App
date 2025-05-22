@@ -13,6 +13,7 @@ import 'package:eyvo_inventory/core/resources/routes_manager.dart';
 import 'package:eyvo_inventory/core/resources/strings_manager.dart';
 import 'package:eyvo_inventory/core/resources/styles_manager.dart';
 import 'package:eyvo_inventory/core/utils.dart';
+import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
 import 'package:eyvo_inventory/core/widgets/custom_field.dart';
 import 'package:eyvo_inventory/core/widgets/custom_list_tile.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
@@ -169,162 +170,150 @@ class _ItemListViewState extends State<ItemListView> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
-    final double sidePadding = isListViewSelected ? 18 : 18;
+    const double sidePadding = 18;
+
     return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-      },
+      onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         backgroundColor: ColorManager.primary,
-        appBar: AppBar(
-          backgroundColor: ColorManager.darkBlue,
-          title: Text(AppStrings.itemListing,
-              style: getBoldStyle(
-                  color: ColorManager.white, fontSize: FontSize.s27)),
-          leading: IconButton(
-            icon: Image.asset(ImageAssets.backButton),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
+        appBar: buildCommonAppBar(
+          context: context,
+          title: AppStrings.itemListing,
         ),
-        body: isLoading && !isSearching
-            ? const Center(child: CustomProgressIndicator())
-            : Column(
-                children: [
-                  SizedBox(
-                    width: displayWidth(context),
-                    child: Padding(
-                      padding: const EdgeInsets.all(18.0),
+        body: SafeArea(
+          child: isLoading && !isSearching
+              ? const Center(child: CustomProgressIndicator())
+              : Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           Expanded(
                             child: CustomSearchField(
-                                controller: _searchController,
-                                placeholderText: AppStrings.searchItems,
-                                inputType: TextInputType.text),
+                              controller: _searchController,
+                              placeholderText: AppStrings.searchItems,
+                              inputType: TextInputType.text,
+                            ),
                           ),
                           const SizedBox(width: 10),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      isListViewSelected = true;
-                                    });
-                                  },
-                                  icon: Image.asset(isListViewSelected
+                                icon: SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: Image.asset(isListViewSelected
                                       ? ImageAssets.boxSelectedIcon
-                                      : ImageAssets.boxIcon)),
+                                      : ImageAssets.boxIcon),
+                                ),
+                                onPressed: () {
+                                  setState(() => isListViewSelected = true);
+                                },
+                              ),
                               const SizedBox(width: 5),
                               Container(
                                 color: ColorManager.lightBlue2,
-                                height: 45,
+                                height: 35,
                                 width: 2,
                               ),
                               const SizedBox(width: 5),
                               IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      isListViewSelected = false;
-                                    });
-                                  },
-                                  icon: Image.asset(isListViewSelected
+                                icon: SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: Image.asset(isListViewSelected
                                       ? ImageAssets.gridIcon
-                                      : ImageAssets.gridSelectedIcon)),
+                                      : ImageAssets.gridSelectedIcon),
+                                ),
+                                onPressed: () {
+                                  setState(() => isListViewSelected = false);
+                                },
+                              ),
                             ],
-                          ),
+                          )
                         ],
                       ),
                     ),
-                  ),
-                  isError
-                      ? Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(18.0),
-                            child: Container(
-                              height: displayHeight(context) * 0.65,
-                              width: displayWidth(context),
-                              decoration: BoxDecoration(
+                    isError
+                        ? Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(18.0),
+                              child: Container(
+                                decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(8),
-                                  color: ColorManager.white),
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    const Spacer(),
-                                    Image.asset(
+                                  color: ColorManager.white,
+                                ),
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Image.asset(
+                                        ImageAssets.noRecordFoundIcon,
                                         width: displayWidth(context) * 0.5,
-                                        ImageAssets.noRecordFoundIcon),
-                                    Text(errorText,
+                                      ),
+                                      Text(
+                                        errorText,
                                         style: getRegularStyle(
-                                            color: ColorManager.lightGrey,
-                                            fontSize: FontSize.s17)),
-                                    const Spacer()
-                                  ],
+                                          color: ColorManager.lightGrey,
+                                          fontSize: FontSize.s17,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        )
-                      : Expanded(
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                                top: 0,
-                                bottom: 8,
-                                left: sidePadding,
-                                right: sidePadding),
-                            child: listItems.isEmpty &&
-                                    !isLoading &&
-                                    !isLoadMore
-                                ? Center(
-                                    child: Text(
-                                      errorText,
-                                      style: getRegularStyle(
+                          )
+                        : Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: sidePadding, vertical: 8),
+                              child: listItems.isEmpty &&
+                                      !isLoading &&
+                                      !isLoadMore
+                                  ? Center(
+                                      child: Text(
+                                        errorText,
+                                        style: getRegularStyle(
                                           color: ColorManager.black,
-                                          fontSize: FontSize.s27),
-                                    ),
-                                  )
-                                : NotificationListener<ScrollNotification>(
-                                    onNotification:
-                                        (ScrollNotification notification) {
-                                      if (notification
-                                          is ScrollStartNotification) {
-                                        FocusScope.of(context).unfocus();
-                                      }
-                                      return false;
-                                    },
-                                    child: isListViewSelected
-                                        ? ListView.builder(
-                                            controller: _scrollController,
-                                            itemCount: listItems.length +
-                                                (isLoading ||
-                                                        listItems.length >=
-                                                            totalRecords
-                                                    ? 0
-                                                    : 1),
-                                            itemBuilder: (context, index) {
-                                              if (index == listItems.length) {
-                                                if (listItems.length >=
-                                                    totalRecords) {
-                                                  return const SizedBox();
+                                          fontSize: FontSize.s27,
+                                        ),
+                                      ),
+                                    )
+                                  : NotificationListener<ScrollNotification>(
+                                      onNotification:
+                                          (ScrollNotification notification) {
+                                        if (notification
+                                            is ScrollStartNotification) {
+                                          FocusScope.of(context).unfocus();
+                                        }
+                                        return false;
+                                      },
+                                      child: isListViewSelected
+                                          ? ListView.builder(
+                                              controller: _scrollController,
+                                              itemCount: listItems.length +
+                                                  (isLoading ||
+                                                          listItems.length >=
+                                                              totalRecords
+                                                      ? 0
+                                                      : 1),
+                                              itemBuilder: (context, index) {
+                                                if (index == listItems.length) {
+                                                  return const Center(
+                                                      child:
+                                                          CustomProgressIndicator());
                                                 }
-                                                return const Center(
-                                                    child:
-                                                        CustomProgressIndicator());
-                                              }
-                                              return Padding(
-                                                padding: const EdgeInsets.only(
-                                                    bottom: 10),
-                                                child: GestureDetector(
-                                                  onTap: () {
-                                                    navigateToItemDetails(
-                                                        listItems[index]);
-                                                  },
-                                                  child: ItemListTile(
+                                                return Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(vertical: 6.0),
+                                                  child: GestureDetector(
+                                                    onTap: () {
+                                                      navigateToItemDetails(
+                                                          listItems[index]);
+                                                    },
+                                                    child: ItemListTile(
                                                       title: listItems[index]
                                                           .outline,
                                                       subtitle1:
@@ -334,75 +323,76 @@ class _ItemListViewState extends State<ItemListView> with RouteAware {
                                                           listItems[index]
                                                               .categoryCode,
                                                       subtitle3:
-                                                          getFormattedString(
+                                                          getFormattedPriceString(
                                                               listItems[index]
                                                                   .stockCount),
                                                       imageString:
                                                           listItems[index]
-                                                              .itemImage),
-                                                ),
-                                              );
-                                            },
-                                          )
-                                        : GridView.builder(
-                                            controller: _scrollController,
-                                            itemCount: listItems.length +
-                                                (isLoading ||
-                                                        listItems.length >=
-                                                            totalRecords
-                                                    ? 0
-                                                    : 1),
-                                            gridDelegate:
-                                                const SliverGridDelegateWithFixedCrossAxisCount(
-                                              crossAxisCount: 2,
-                                              crossAxisSpacing: 10.0,
-                                              mainAxisSpacing: 10.0,
-                                              childAspectRatio: 0.65,
-                                            ),
-                                            padding: const EdgeInsets.all(10.0),
-                                            itemBuilder: (context, index) {
-                                              if (index == listItems.length) {
-                                                if (listItems.length >=
-                                                    totalRecords) {
-                                                  return const SizedBox();
+                                                              .itemImage,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            )
+                                          : GridView.builder(
+                                              controller: _scrollController,
+                                              itemCount: listItems.length +
+                                                  (isLoading ||
+                                                          listItems.length >=
+                                                              totalRecords
+                                                      ? 0
+                                                      : 1),
+                                              gridDelegate:
+                                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                                crossAxisCount: 2,
+                                                crossAxisSpacing: 8.0,
+                                                mainAxisSpacing: 8.0,
+                                                childAspectRatio: 0.9,
+                                              ),
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              itemBuilder: (context, index) {
+                                                if (index == listItems.length) {
+                                                  return const SizedBox(
+                                                    height:
+                                                        100, // or match the height of a grid item
+                                                    width: double.infinity,
+                                                    child: Center(
+                                                      child:
+                                                          CustomProgressIndicator(),
+                                                    ),
+                                                  );
                                                 }
-                                                return const Center(
-                                                    child:
-                                                        CustomProgressIndicator());
-                                              }
-                                              return Padding(
-                                                padding: const EdgeInsets.only(
-                                                    bottom: 10),
-                                                child: GestureDetector(
+
+                                                return GestureDetector(
                                                   onTap: () {
                                                     navigateToItemDetails(
                                                         listItems[index]);
                                                   },
                                                   child: ItemGridTile(
-                                                      title: listItems[index]
-                                                          .outline,
-                                                      subtitle1:
-                                                          listItems[index]
-                                                              .itemCode,
-                                                      subtitle2:
-                                                          listItems[index]
-                                                              .categoryCode,
-                                                      subtitle3:
-                                                          getFormattedString(
-                                                              listItems[index]
-                                                                  .stockCount),
-                                                      imageString:
-                                                          listItems[index]
-                                                              .itemImage),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                  ),
+                                                    title: listItems[index]
+                                                        .outline,
+                                                    subtitle1: listItems[index]
+                                                        .itemCode,
+                                                    subtitle2: listItems[index]
+                                                        .categoryCode,
+                                                    subtitle3:
+                                                        getFormattedPriceString(
+                                                            listItems[index]
+                                                                .stockCount),
+                                                    imageString:
+                                                        listItems[index]
+                                                            .itemImage,
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                    ),
+                            ),
                           ),
-                        ),
-                ],
-              ),
+                  ],
+                ),
+        ),
       ),
     );
   }

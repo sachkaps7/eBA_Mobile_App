@@ -20,7 +20,8 @@ class TitleHeader extends StatelessWidget {
       children: [
         Text(titleText,
             style: getBoldStyle(
-                color: ColorManager.darkBlue, fontSize: FontSize.s31_5)),
+                color: ColorManager.darkBlue, fontSize: FontSize.s21)),
+        const SizedBox(height: 20),
         Text(detailText,
             style: getRegularStyle(
                 color: ColorManager.lightGrey, fontSize: FontSize.s17)),
@@ -49,13 +50,13 @@ class CenterTitleHeader extends StatelessWidget {
               ? Text(titleText,
                   textAlign: TextAlign.center,
                   style: getBoldStyle(
-                      color: ColorManager.darkBlue, fontSize: FontSize.s31_5))
+                      color: ColorManager.darkBlue, fontSize: FontSize.s20))
               : const SizedBox(),
           detailText.isNotEmpty
               ? Text(detailText,
                   textAlign: TextAlign.center,
                   style: getRegularStyle(
-                      color: ColorManager.lightGrey, fontSize: FontSize.s17))
+                      color: ColorManager.lightGrey, fontSize: FontSize.s16))
               : const SizedBox(),
         ],
       ),

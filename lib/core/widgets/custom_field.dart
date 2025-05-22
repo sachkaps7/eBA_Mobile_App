@@ -13,6 +13,7 @@ class CustomSearchField extends StatefulWidget {
   final TextEditingController controller;
   final String placeholderText;
   final TextInputType inputType;
+
   const CustomSearchField({
     super.key,
     required this.controller,
@@ -28,15 +29,16 @@ class _CustomSearchFieldState extends State<CustomSearchField> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 75,
+      height: 48,
       child: TextField(
         maxLines: 1,
         style: TextStyle(
-            overflow: TextOverflow.ellipsis,
-            fontSize: 15,
-            fontFamily: FontConstants.fontFamily,
-            fontWeight: FontWeightManager.regular,
-            color: ColorManager.black),
+          overflow: TextOverflow.ellipsis,
+          fontSize: 13,
+          fontFamily: FontConstants.fontFamily,
+          fontWeight: FontWeightManager.regular,
+          color: ColorManager.black,
+        ),
         controller: widget.controller,
         textInputAction: TextInputAction.search,
         keyboardType: widget.inputType,
@@ -44,42 +46,41 @@ class _CustomSearchFieldState extends State<CustomSearchField> {
           LengthLimitingTextInputFormatter(AppConstants.maxCharacters),
         ],
         decoration: InputDecoration(
-          // hint style
+          hintText: widget.placeholderText,
           hintStyle: getRegularStyle(
-              color: ColorManager.lightGrey3,
-              fontSize: widget.placeholderText.length >= 12
-                  ? FontSize.s18
-                  : FontSize.s23_25),
-
-          // label style
-          labelStyle: getRegularStyle(
-              color: ColorManager.lightGrey3,
-              fontSize: widget.placeholderText.length >= 12
-                  ? FontSize.s18
-                  : FontSize.s23_25),
+            color: ColorManager.lightGrey3,
+            fontSize: 14,
+          ),
           fillColor: ColorManager.white,
           filled: true,
-          floatingLabelBehavior: FloatingLabelBehavior.never,
-          labelText: widget.placeholderText,
           border: OutlineInputBorder(
-              borderSide:
-                  BorderSide(color: ColorManager.light2, width: AppSize.s1)),
-          // enabled border
+            borderSide:
+                BorderSide(color: ColorManager.light2, width: AppSize.s1),
+          ),
           enabledBorder: OutlineInputBorder(
             borderSide:
                 BorderSide(color: ColorManager.light2, width: AppSize.s1),
             borderRadius: const BorderRadius.all(Radius.circular(AppSize.s8)),
           ),
-
-          // focused border
           focusedBorder: OutlineInputBorder(
             borderSide:
                 BorderSide(color: ColorManager.light2, width: AppSize.s1),
             borderRadius: const BorderRadius.all(Radius.circular(AppSize.s8)),
           ),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
           suffixIcon: Padding(
-            padding: const EdgeInsets.only(right: 25),
-            child: Image.asset(ImageAssets.searchIcon, width: 30, height: 30),
+            padding: const EdgeInsets.only(right: 8),
+            child: Image.asset(
+              ImageAssets.searchIcon,
+              width: 22,
+              height: 22,
+              fit: BoxFit.contain,
+            ),
+          ),
+          suffixIconConstraints: const BoxConstraints(
+            maxHeight: 80,
+            maxWidth: 80,
           ),
         ),
       ),
@@ -108,7 +109,7 @@ class CustomTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 100,
+      height: 70,
       child: TextField(
         controller: controller,
         obscureText: isObscureText,
@@ -120,13 +121,16 @@ class CustomTextField extends StatelessWidget {
         ],
         spellCheckConfiguration: const SpellCheckConfiguration.disabled(),
         textCapitalization: TextCapitalization.none,
-        style: getRegularStyle(
-            color: ColorManager.grey1, fontSize: FontSize.s22_5),
+        style:
+            getRegularStyle(color: ColorManager.grey1, fontSize: FontSize.s20),
         decoration: InputDecoration(
           prefixIcon: Padding(
-              padding: const EdgeInsets.only(left: 15, right: 5),
-              child: CustomIconButton(imageString: iconString)),
+            padding: const EdgeInsets.only(left: 12, right: 5),
+            child: CustomIconButton(imageString: iconString),
+          ),
           labelText: hintText,
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
           border: OutlineInputBorder(
             borderSide: BorderSide(
               color: isValid ? ColorManager.grey2 : ColorManager.darkRed,
@@ -141,18 +145,14 @@ class CustomTextField extends StatelessWidget {
             ),
             borderRadius: BorderRadius.circular(AppSize.s15),
           ),
-          floatingLabelAlignment: FloatingLabelAlignment.start,
           floatingLabelBehavior: FloatingLabelBehavior.auto,
-          // floating label style
+          floatingLabelAlignment: FloatingLabelAlignment.start,
           floatingLabelStyle: getRegularStyle(
               color: ColorManager.light1, fontSize: FontSize.s18),
-          // hint style
           hintStyle: getRegularStyle(
-              color: ColorManager.grey1, fontSize: FontSize.s18),
-          // label style
+              color: ColorManager.grey1, fontSize: FontSize.s16),
           labelStyle: getRegularStyle(
               color: ColorManager.light1, fontSize: FontSize.s14),
-          // error style
           errorStyle: const TextStyle(height: 0, color: Colors.transparent),
         ),
         onChanged: (text) => onTextChanged,

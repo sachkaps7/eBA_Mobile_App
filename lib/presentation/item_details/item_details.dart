@@ -12,6 +12,7 @@ import 'package:eyvo_inventory/core/resources/strings_manager.dart';
 import 'package:eyvo_inventory/core/resources/styles_manager.dart';
 import 'package:eyvo_inventory/core/utils.dart';
 import 'package:eyvo_inventory/core/widgets/button.dart';
+import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -293,17 +294,9 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
       },
       child: Scaffold(
         backgroundColor: ColorManager.primary,
-        appBar: AppBar(
-          backgroundColor: ColorManager.darkBlue,
-          title: Text(AppStrings.itemDetails,
-              style: getBoldStyle(
-                  color: ColorManager.white, fontSize: FontSize.s27)),
-          leading: IconButton(
-            icon: Image.asset(ImageAssets.backButton),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
+        appBar: buildCommonAppBar(
+          context: context,
+          title: AppStrings.itemDetails,
         ),
         body: isLoading
             ? const Center(child: CustomProgressIndicator())
@@ -352,195 +345,315 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                                     color: ColorManager.grey4, width: 1.0),
                                 borderRadius: BorderRadius.circular(8)),
                             width: screenWidth,
-                            child: Padding(
-                              padding: const EdgeInsets.all(0.0),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: 10),
-                                  Row(
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(0.0),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      const Spacer(),
-                                      Column(
+                                      const SizedBox(height: 10),
+                                      Row(
                                         children: [
-                                          ConstrainedBox(
-                                            constraints: const BoxConstraints(
-                                                minWidth: 60,
-                                                maxWidth: 300,
-                                                minHeight: 30),
-                                            child: IntrinsicWidth(
-                                              child: Container(
-                                                color: ColorManager.lightBlue3,
-                                                child: Center(
-                                                  child: Text(
-                                                    getFormattedString(
-                                                        items[0].stockCount),
-                                                    style: getBoldStyle(
+                                          const Spacer(),
+                                          Column(
+                                            children: [
+                                              ConstrainedBox(
+                                                constraints:
+                                                    const BoxConstraints(
+                                                        minWidth: 60,
+                                                        maxWidth: 300,
+                                                        minHeight: 30),
+                                                child: IntrinsicWidth(
+                                                  child: Center(
+                                                    child: Text(
+                                                      getFormattedPriceString(
+                                                          items[0]
+                                                              .stockCount), // includes commas
+                                                      style: getBoldStyle(
                                                         color: ColorManager
                                                             .darkBlue,
-                                                        fontSize: FontSize.s18),
+                                                        fontSize: FontSize.s18,
+                                                      ),
+                                                    ),
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            width: 50,
-                                            height: 20,
-                                            child: Center(
-                                              child: Text(
-                                                AppStrings.stock,
-                                                style: getBoldStyle(
-                                                    color:
-                                                        ColorManager.lightGrey2,
-                                                    fontSize: FontSize.s12),
+                                              SizedBox(
+                                                width: 50,
+                                                height: 20,
+                                                child: Center(
+                                                  child: Text(
+                                                    AppStrings.stock,
+                                                    style: getBoldStyle(
+                                                        color: ColorManager
+                                                            .lightGrey2,
+                                                        fontSize: FontSize.s12),
+                                                  ),
+                                                ),
                                               ),
-                                            ),
+                                            ],
                                           ),
+                                          const SizedBox(width: 20),
                                         ],
                                       ),
-                                      const SizedBox(width: 20),
-                                    ],
-                                  ),
-                                  Center(
-                                      child: Image.network(items[0].itemImage)),
-                                  Padding(
-                                    padding: const EdgeInsets.all(18.0),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(items[0].outline,
-                                            style: getBoldStyle(
-                                                color: ColorManager.darkBlue,
-                                                fontSize: FontSize.s22_5)),
-                                        const SizedBox(height: 5),
-                                        RichText(
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
-                                          text: TextSpan(
-                                            text: AppStrings.itemCodeDetails,
-                                            style: getSemiBoldStyle(
-                                                color: ColorManager.black,
-                                                fontSize: FontSize.s14),
-                                            children: [
-                                              TextSpan(
-                                                  text: items[0].itemCode,
-                                                  style: getRegularStyle(
-                                                      color: ColorManager.black,
-                                                      fontSize: FontSize.s14))
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(height: 5),
-                                        RichText(
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
-                                          text: TextSpan(
-                                            text:
-                                                AppStrings.categoryCodeDetails,
-                                            style: getSemiBoldStyle(
-                                                color: ColorManager.black,
-                                                fontSize: FontSize.s14),
-                                            children: [
-                                              TextSpan(
-                                                text: items[0].categoryCode,
-                                                style: getRegularStyle(
+                                      Center(
+                                          child: SizedBox(
+                                              height: 160,
+                                              width: 160,
+                                              child: Image.network(
+                                                  items[0].itemImage))),
+                                      Padding(
+                                        padding: const EdgeInsets.all(18.0),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(items[0].outline,
+                                                style: getBoldStyle(
+                                                    color:
+                                                        ColorManager.darkBlue,
+                                                    fontSize: FontSize.s22_5)),
+                                            const SizedBox(height: 5),
+                                            RichText(
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                              text: TextSpan(
+                                                text:
+                                                    AppStrings.itemCodeDetails,
+                                                style: getSemiBoldStyle(
                                                     color: ColorManager.black,
                                                     fontSize: FontSize.s14),
+                                                children: [
+                                                  TextSpan(
+                                                      text: items[0].itemCode,
+                                                      style: getRegularStyle(
+                                                          color: ColorManager
+                                                              .black,
+                                                          fontSize:
+                                                              FontSize.s14))
+                                                ],
                                               ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(height: 5),
-                                        Text(items[0].description,
-                                            style: getRegularStyle(
-                                                color: ColorManager.black,
-                                                fontSize: FontSize.s14)),
-                                        const SizedBox(height: 20),
-                                        Row(
-                                          children: [
-                                            const Spacer(),
+                                            ),
+                                            const SizedBox(height: 5),
+                                            RichText(
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                              text: TextSpan(
+                                                text: AppStrings
+                                                    .categoryCodeDetails,
+                                                style: getSemiBoldStyle(
+                                                    color: ColorManager.black,
+                                                    fontSize: FontSize.s14),
+                                                children: [
+                                                  TextSpan(
+                                                    text: items[0].categoryCode,
+                                                    style: getRegularStyle(
+                                                        color:
+                                                            ColorManager.black,
+                                                        fontSize: FontSize.s14),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Text(items[0].description,
+                                                style: getRegularStyle(
+                                                    color: ColorManager.black,
+                                                    fontSize: FontSize.s14)),
+                                            const SizedBox(height: 22),
+                                            Row(
+                                              children: [
+                                                const Spacer(),
+                                                SizedBox(
+                                                  width:
+                                                      (screenWidth * 0.4) - 45,
+                                                  height: 50,
+                                                  child: TextField(
+                                                    controller:
+                                                        _quantityController,
+                                                    focusNode:
+                                                        quantityFocusNode,
+                                                    style: getSemiBoldStyle(
+                                                      color: ColorManager.black,
+                                                      fontSize: FontSize.s17,
+                                                    ),
+                                                    readOnly: !isItemEditable,
+                                                    keyboardType:
+                                                        const TextInputType
+                                                            .numberWithOptions(
+                                                            decimal: true),
+                                                    inputFormatters: [
+                                                      LengthLimitingTextInputFormatter(
+                                                        AppConstants
+                                                            .maxCharactersForQuantity,
+                                                      ),
+                                                    ],
+                                                    enableInteractiveSelection:
+                                                        false,
+                                                    maxLines: 1,
+                                                    textAlignVertical:
+                                                        TextAlignVertical
+                                                            .center,
+                                                    decoration: InputDecoration(
+                                                      isDense: true,
+                                                      contentPadding:
+                                                          const EdgeInsets
+                                                              .symmetric(
+                                                              horizontal: 12,
+                                                              vertical: 10),
+                                                      labelText:
+                                                          AppStrings.quantity,
+                                                      floatingLabelBehavior:
+                                                          FloatingLabelBehavior
+                                                              .always,
+                                                      floatingLabelStyle:
+                                                          getSemiBoldStyle(
+                                                        color: ColorManager
+                                                            .lightGrey1,
+                                                        fontSize: FontSize.s17,
+                                                      ),
+                                                      border:
+                                                          const OutlineInputBorder(),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 10),
+                                                SizedBox(
+                                                  width:
+                                                      (screenWidth * 0.6) - 45,
+                                                  height: 50,
+                                                  child: TextField(
+                                                    controller: _dateController,
+                                                    style: getSemiBoldStyle(
+                                                      color: ColorManager.black,
+                                                      fontSize: FontSize
+                                                          .s17, // Matched font size
+                                                    ),
+                                                    readOnly: true,
+                                                    decoration: InputDecoration(
+                                                      isDense: true,
+                                                      contentPadding:
+                                                          const EdgeInsets
+                                                              .symmetric(
+                                                              horizontal: 12,
+                                                              vertical:
+                                                                  10), // Matched padding
+                                                      suffixIcon: isItemEditable
+                                                          ? IconButton(
+                                                              onPressed: () =>
+                                                                  _selectDate(
+                                                                      context),
+                                                              icon: SizedBox(
+                                                                width: 25,
+                                                                height: 25,
+                                                                child:
+                                                                    Image.asset(
+                                                                  ImageAssets
+                                                                      .calendarIcon,
+                                                                  fit: BoxFit
+                                                                      .contain,
+                                                                ),
+                                                              ),
+                                                            )
+                                                          : null,
+                                                      labelText:
+                                                          AppStrings.date,
+                                                      floatingLabelBehavior:
+                                                          FloatingLabelBehavior
+                                                              .always,
+                                                      floatingLabelStyle:
+                                                          getSemiBoldStyle(
+                                                        color: ColorManager
+                                                            .lightGrey1,
+                                                        fontSize: FontSize
+                                                            .s17, // Matched font size
+                                                      ),
+                                                      border:
+                                                          const OutlineInputBorder(),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const Spacer(),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 20),
+                                            items[0].basePrice <= 0
+                                                ? SizedBox(
+                                                    width: (screenWidth) - 45,
+                                                    height: 50,
+                                                    child: TextField(
+                                                      focusNode: priceFocusNode,
+                                                      controller:
+                                                          _priceController,
+                                                      style: getSemiBoldStyle(
+                                                          color: ColorManager
+                                                              .black,
+                                                          fontSize:
+                                                              FontSize.s16),
+                                                      readOnly: isItemEditable
+                                                          ? false
+                                                          : true,
+                                                      keyboardType:
+                                                          const TextInputType
+                                                              .numberWithOptions(
+                                                              decimal: true),
+                                                      inputFormatters: [
+                                                        LengthLimitingTextInputFormatter(
+                                                            AppConstants
+                                                                .maxCharactersForPrice),
+                                                      ],
+                                                      decoration: InputDecoration(
+                                                          contentPadding:
+                                                              const EdgeInsets
+                                                                  .all(20),
+                                                          labelText:
+                                                              AppStrings.price,
+                                                          floatingLabelBehavior:
+                                                              FloatingLabelBehavior
+                                                                  .always,
+                                                          floatingLabelStyle:
+                                                              getSemiBoldStyle(
+                                                                  color: ColorManager
+                                                                      .lightGrey1,
+                                                                  fontSize:
+                                                                      FontSize
+                                                                          .s16)),
+                                                    ),
+                                                  )
+                                                : const SizedBox(),
+                                            items[0].basePrice <= 0
+                                                ? const SizedBox(height: 20)
+                                                : const SizedBox(height: 10),
                                             SizedBox(
-                                              width: (screenWidth * 0.4) - 45,
-                                              height: 60,
+                                              width: (screenWidth) - 45,
+                                              height: 80,
                                               child: TextField(
-                                                focusNode: quantityFocusNode,
-                                                controller: _quantityController,
+                                                controller:
+                                                    _commmentsController,
                                                 style: getSemiBoldStyle(
                                                     color: ColorManager.black,
                                                     fontSize: FontSize.s16),
                                                 readOnly: isItemEditable
                                                     ? false
                                                     : true,
-                                                textInputAction:
-                                                    TextInputAction.done,
-                                                keyboardType:
-                                                    const TextInputType
-                                                        .numberWithOptions(
-                                                        decimal: true),
+                                                maxLines: null,
+                                                expands: true,
                                                 inputFormatters: [
                                                   LengthLimitingTextInputFormatter(
                                                       AppConstants
-                                                          .maxCharactersForQuantity),
+                                                          .maxCharactersForComment),
                                                 ],
                                                 decoration: InputDecoration(
                                                     contentPadding:
                                                         const EdgeInsets.all(
                                                             20),
                                                     labelText:
-                                                        AppStrings.quantity,
-                                                    floatingLabelBehavior:
-                                                        FloatingLabelBehavior
-                                                            .always,
-                                                    floatingLabelStyle:
-                                                        getSemiBoldStyle(
-                                                            color: ColorManager
-                                                                .lightGrey1,
-                                                            fontSize:
-                                                                FontSize.s17)),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 10),
-                                            SizedBox(
-                                              width: (screenWidth * 0.6) - 45,
-                                              height: 60,
-                                              child: TextField(
-                                                controller: _dateController,
-                                                style: getSemiBoldStyle(
-                                                    color: ColorManager.black,
-                                                    fontSize: FontSize.s16),
-                                                readOnly: true,
-                                                decoration: InputDecoration(
-                                                    contentPadding:
-                                                        const EdgeInsets.all(
-                                                            18),
-                                                    suffixIcon: IconButton(
-                                                        onPressed:
-                                                            isItemEditable
-                                                                ? () {
-                                                                    _selectDate(
-                                                                        context);
-                                                                  }
-                                                                : () {},
-                                                        icon: Image.asset(
-                                                            ImageAssets
-                                                                .calendarIcon,
-                                                            width: 25,
-                                                            height: 25)),
-                                                    labelText: AppStrings.date,
-                                                    labelStyle:
-                                                        getSemiBoldStyle(
-                                                            color: ColorManager
-                                                                .lightGrey1,
-                                                            fontSize: 8),
-                                                    hintStyle: getSemiBoldStyle(
-                                                        color: ColorManager
-                                                            .lightGrey1,
-                                                        fontSize: FontSize.s12),
+                                                        AppStrings.comments,
                                                     floatingLabelBehavior:
                                                         FloatingLabelBehavior
                                                             .always,
@@ -552,156 +665,144 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                                                                 FontSize.s16)),
                                               ),
                                             ),
-                                            const Spacer(),
+                                            const SizedBox(height: 20),
+                                            items[0].note.isNotEmpty
+                                                ? Text(items[0].note,
+                                                    style: getRegularStyle(
+                                                        color: ColorManager
+                                                            .lightGrey2,
+                                                        fontSize: FontSize.s12))
+                                                : const SizedBox(),
                                           ],
                                         ),
-                                        const SizedBox(height: 20),
-                                        items[0].basePrice <= 0
-                                            ? SizedBox(
-                                                width: (screenWidth) - 45,
-                                                height: 60,
-                                                child: TextField(
-                                                  focusNode: priceFocusNode,
-                                                  controller: _priceController,
-                                                  style: getSemiBoldStyle(
-                                                      color: ColorManager.black,
-                                                      fontSize: FontSize.s16),
-                                                  readOnly: isItemEditable
-                                                      ? false
-                                                      : true,
-                                                  keyboardType:
-                                                      const TextInputType
-                                                          .numberWithOptions(
-                                                          decimal: true),
-                                                  inputFormatters: [
-                                                    LengthLimitingTextInputFormatter(
-                                                        AppConstants
-                                                            .maxCharactersForPrice),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                // const SizedBox(height: 40),
+                                isItemEditable
+                                    ? Padding(
+                                        padding: const EdgeInsets.all(0.0),
+                                        child: Container(
+                                          color: ColorManager.white,
+                                          width: screenWidth,
+                                          //  height: 100,
+                                          child: Padding(
+                                            padding: const EdgeInsets.fromLTRB(
+                                                0, 20, 0, 20),
+                                            child: Column(
+                                              children: [
+                                                const SizedBox(height: 2),
+                                                Row(
+                                                  children: [
+                                                    const Spacer(),
+                                                    CustomTextActionButton(
+                                                        buttonText:
+                                                            AppStrings.itemsIn,
+                                                        backgroundColor:
+                                                            ColorManager.green,
+                                                        borderColor:
+                                                            Colors.transparent,
+                                                        fontColor:
+                                                            ColorManager.white,
+                                                        buttonWidth:
+                                                            (screenWidth *
+                                                                    0.5) -
+                                                                35,
+                                                        buttonHeight: 50,
+                                                        isBoldFont: true,
+                                                        fontSize: FontSize.s20,
+                                                        onTap: () {
+                                                          validateItemsIN();
+                                                        }),
+                                                    const SizedBox(width: 10),
+                                                    CustomTextActionButton(
+                                                        buttonText:
+                                                            AppStrings.itemsOut,
+                                                        backgroundColor:
+                                                            ColorManager.red,
+                                                        borderColor:
+                                                            Colors.transparent,
+                                                        fontColor:
+                                                            ColorManager.white,
+                                                        buttonWidth:
+                                                            (screenWidth *
+                                                                    0.5) -
+                                                                35,
+                                                        buttonHeight: 50,
+                                                        isBoldFont: true,
+                                                        fontSize: FontSize.s20,
+                                                        onTap: () {
+                                                          validateItemsOUT();
+                                                        }),
+                                                    const Spacer(),
                                                   ],
-                                                  decoration: InputDecoration(
-                                                      contentPadding:
-                                                          const EdgeInsets.all(
-                                                              20),
-                                                      labelText:
-                                                          AppStrings.price,
-                                                      floatingLabelBehavior:
-                                                          FloatingLabelBehavior
-                                                              .always,
-                                                      floatingLabelStyle:
-                                                          getSemiBoldStyle(
-                                                              color: ColorManager
-                                                                  .lightGrey1,
-                                                              fontSize: FontSize
-                                                                  .s16)),
                                                 ),
-                                              )
-                                            : const SizedBox(),
-                                        items[0].basePrice <= 0
-                                            ? const SizedBox(height: 20)
-                                            : const SizedBox(height: 10),
-                                        SizedBox(
-                                          width: (screenWidth) - 45,
-                                          height: 80,
-                                          child: TextField(
-                                            controller: _commmentsController,
-                                            style: getSemiBoldStyle(
-                                                color: ColorManager.black,
-                                                fontSize: FontSize.s16),
-                                            readOnly:
-                                                isItemEditable ? false : true,
-                                            maxLines: null,
-                                            expands: true,
-                                            inputFormatters: [
-                                              LengthLimitingTextInputFormatter(
-                                                  AppConstants
-                                                      .maxCharactersForComment),
-                                            ],
-                                            decoration: InputDecoration(
-                                                contentPadding:
-                                                    const EdgeInsets.all(20),
-                                                labelText: AppStrings.comments,
-                                                floatingLabelBehavior:
-                                                    FloatingLabelBehavior
-                                                        .always,
-                                                floatingLabelStyle:
-                                                    getSemiBoldStyle(
-                                                        color: ColorManager
-                                                            .lightGrey1,
-                                                        fontSize:
-                                                            FontSize.s16)),
+                                                const SizedBox(height: 5),
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                        const SizedBox(height: 20),
-                                        items[0].note.isNotEmpty
-                                            ? Text(items[0].note,
-                                                style: getRegularStyle(
-                                                    color:
-                                                        ColorManager.lightGrey2,
-                                                    fontSize: FontSize.s12))
-                                            : const SizedBox(),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                      )
+                                    : const SizedBox(height: 10),
+                              ],
                             ),
                           ),
                         ),
                         // const SizedBox(height: 5),
-                        isItemEditable
-                            ? Padding(
-                                padding: const EdgeInsets.all(0.0),
-                                child: Container(
-                                  color: ColorManager.white,
-                                  width: screenWidth,
-                                  height: 120,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(18.0),
-                                    child: Column(
-                                      children: [
-                                        const SizedBox(height: 5),
-                                        Row(
-                                          children: [
-                                            const Spacer(),
-                                            CustomTextActionButton(
-                                                buttonText: AppStrings.itemsIn,
-                                                backgroundColor:
-                                                    ColorManager.green,
-                                                borderColor: Colors.transparent,
-                                                fontColor: ColorManager.white,
-                                                buttonWidth:
-                                                    (screenWidth * 0.5) - 23,
-                                                buttonHeight: 70,
-                                                isBoldFont: true,
-                                                fontSize: FontSize.s20,
-                                                onTap: () {
-                                                  validateItemsIN();
-                                                }),
-                                            const SizedBox(width: 10),
-                                            CustomTextActionButton(
-                                                buttonText: AppStrings.itemsOut,
-                                                backgroundColor:
-                                                    ColorManager.red,
-                                                borderColor: Colors.transparent,
-                                                fontColor: ColorManager.white,
-                                                buttonWidth:
-                                                    (screenWidth * 0.5) - 23,
-                                                buttonHeight: 70,
-                                                isBoldFont: true,
-                                                fontSize: FontSize.s20,
-                                                onTap: () {
-                                                  validateItemsOUT();
-                                                }),
-                                            const Spacer(),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 5),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              )
-                            : const SizedBox(height: 10),
+                        // isItemEditable
+                        //     ?
+                        //     // Padding(
+                        //     //     padding: const EdgeInsets.all(0.0),
+                        //     //     child: Container(
+                        //     //       color: ColorManager.white,
+                        //     //       width: screenWidth,
+                        //     //       height: 100,
+                        //     //       child: Padding(
+                        //     //         padding: const EdgeInsets.all(18.0),
+                        //     //         child:
+                        //     Column(
+                        //         children: [
+                        //           const SizedBox(height: 2),
+                        //           Row(
+                        //             children: [
+                        //               const Spacer(),
+                        //               CustomTextActionButton(
+                        //                   buttonText: AppStrings.itemsIn,
+                        //                   backgroundColor: ColorManager.green,
+                        //                   borderColor: Colors.transparent,
+                        //                   fontColor: ColorManager.white,
+                        //                   buttonWidth: (screenWidth * 0.5) - 25,
+                        //                   buttonHeight: 40,
+                        //                   isBoldFont: true,
+                        //                   fontSize: FontSize.s20,
+                        //                   onTap: () {
+                        //                     validateItemsIN();
+                        //                   }),
+                        //               const SizedBox(width: 10),
+                        //               CustomTextActionButton(
+                        //                   buttonText: AppStrings.itemsOut,
+                        //                   backgroundColor: ColorManager.red,
+                        //                   borderColor: Colors.transparent,
+                        //                   fontColor: ColorManager.white,
+                        //                   buttonWidth: (screenWidth * 0.5) - 25,
+                        //                   buttonHeight: 40,
+                        //                   isBoldFont: true,
+                        //                   fontSize: FontSize.s20,
+                        //                   onTap: () {
+                        //                     validateItemsOUT();
+                        //                   }),
+                        //               const Spacer(),
+                        //             ],
+                        //           ),
+                        //           const SizedBox(height: 5),
+                        //         ],
+                        //         // ),
+                        //         // ),
+                        //         // ),
+                        //       )
+                        //     : const SizedBox(height: 10),
                         const SizedBox(height: 20)
                       ],
                     ),

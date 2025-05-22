@@ -421,6 +421,39 @@ class _LoginViewPageState extends State<LoginViewPage> {
     });
   }
 
+  Widget buildCompanyCodeRow(BuildContext context) {
+    return SizedBox(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            AppStrings.companyCodeDetail,
+            style: getRegularStyle(
+              color: ColorManager.black,
+              fontSize: FontSize.s22_5,
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              showClearCompanyCodeDialog(context);
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: DashedLineText(
+                titleString: SharedPrefs().companyCode,
+                titleStyle: getDottedUnderlineSemiBoldStyle(
+                  color: ColorManager.orange,
+                  lineColor: ColorManager.lightGrey1,
+                  fontSize: FontSize.s22_5,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!isLoginOptionsLoaded) {
@@ -443,6 +476,7 @@ class _LoginViewPageState extends State<LoginViewPage> {
                 bottom: MediaQuery.of(context).viewInsets.bottom),
             child: Column(
               children: [
+                //const SizedBox(height: 10),
                 const HeaderLogo(),
                 Padding(
                   padding: const EdgeInsets.only(left: 30, right: 30),
@@ -450,45 +484,20 @@ class _LoginViewPageState extends State<LoginViewPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 60),
-                        SizedBox(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                AppStrings.companyCodeDetail,
-                                style: getRegularStyle(
-                                    color: ColorManager.black,
-                                    fontSize: FontSize.s25_5),
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  showClearCompanyCodeDialog(context);
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: DashedLineText(
-                                    titleString: SharedPrefs().companyCode,
-                                    titleStyle: getDottedUnderlineSemiBoldStyle(
-                                        color: ColorManager.orange,
-                                        lineColor: ColorManager.lightGrey1),
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 80),
-
+                        const SizedBox(height: 40),
                         // Logic to conditionally show/hide the login form based on isLoginazureAd and tap count
                         (isLoginazureAd && tapCount < 5)
                             ? Column(
                                 children: [
-                                  const SizedBox(height: 20),
+                                  const SizedBox(height: 140),
+                                  buildCompanyCodeRow(context),
+                                  const SizedBox(height: 40),
                                   CustomButton(
                                     buttonText: "Login with URBN SSO",
-                                    leading: Image.asset(
-                                      ImageAssets.ssoIcon,
+                                    leading: SizedBox(
+                                      width: 30,
+                                      height: 30,
+                                      child: Image.asset(ImageAssets.ssoIcon),
                                     ),
                                     onTap: loginWithAzureAD,
                                     isDefault: true,
@@ -497,6 +506,8 @@ class _LoginViewPageState extends State<LoginViewPage> {
                               )
                             : Column(
                                 children: [
+                                  buildCompanyCodeRow(context),
+                                  const SizedBox(height: 20),
                                   SizedBox(
                                     width: displayWidth(context),
                                     child: Row(
@@ -563,7 +574,7 @@ class _LoginViewPageState extends State<LoginViewPage> {
                                       AppStrings.rememberMe,
                                       style: getRegularStyle(
                                           color: ColorManager.lightGrey1,
-                                          fontSize: FontSize.s22_5),
+                                          fontSize: FontSize.s18),
                                     ),
                                     value: checkedValue,
                                     onChanged: (value) {

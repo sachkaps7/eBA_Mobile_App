@@ -23,7 +23,7 @@ class CustomButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 90,
+      height: 60,
       decoration: BoxDecoration(
         color: isDefault
             ? ColorManager.white
@@ -65,7 +65,7 @@ class CustomButton extends StatelessWidget {
                       : isEnabled
                           ? ColorManager.white
                           : ColorManager.darkGrey2,
-                  fontSize: FontSize.s27,
+                  fontSize: FontSize.s18,
                 ),
               ),
             ),
@@ -100,7 +100,7 @@ class CustomTextButton extends StatelessWidget {
               textAlign: TextAlign.right,
               buttonText,
               style: getRegularStyle(
-                  color: ColorManager.lightBlue, fontSize: FontSize.s18),
+                  color: ColorManager.lightBlue, fontSize: FontSize.s16),
             ),
           ),
         ],
@@ -139,7 +139,7 @@ class CustomIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
         child: IconButton(
-            icon: Image(image: AssetImage(imageString), width: 48, height: 48),
+            icon: Image(image: AssetImage(imageString), width: 30, height: 30),
             onPressed: () {}));
   }
 }
@@ -163,7 +163,7 @@ class CustomTextActionButton extends StatelessWidget {
       this.buttonWidth = 120,
       this.buttonHeight = 50,
       this.isBoldFont = false,
-      this.fontSize = FontSize.s22_5,
+      this.fontSize = FontSize.s14,
       required this.onTap});
 
   @override
@@ -174,16 +174,19 @@ class CustomTextActionButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
             shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(10))),
             backgroundColor: backgroundColor,
             shadowColor: Colors.transparent,
             side: BorderSide(color: borderColor)),
-        child: Text(
-          buttonText,
-          style: isBoldFont
-              ? getBoldStyle(color: fontColor, fontSize: fontSize)
-              : getSemiBoldStyle(color: fontColor, fontSize: fontSize),
+        child: Center(
+          child: Text(
+            buttonText,
+            style: isBoldFont
+                ? getBoldStyle(color: fontColor, fontSize: fontSize)
+                : getSemiBoldStyle(color: fontColor, fontSize: fontSize),
+          ),
         ),
       ),
     );

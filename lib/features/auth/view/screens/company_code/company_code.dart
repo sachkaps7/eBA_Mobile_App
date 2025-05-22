@@ -133,7 +133,7 @@ class _CompanyCodeViewState extends State<CompanyCodeView> {
                             child: Text(AppStrings.companyCodeTitle,
                                 style: getRegularStyle(
                                     color: ColorManager.black,
-                                    fontSize: FontSize.s25_5)),
+                                    fontSize: FontSize.s22_5)),
                           ),
                           const SizedBox(height: 50),
                           SizedBox(

@@ -9,6 +9,7 @@ import 'package:eyvo_inventory/core/resources/strings_manager.dart';
 import 'package:eyvo_inventory/core/resources/styles_manager.dart';
 import 'package:eyvo_inventory/core/utils.dart';
 import 'package:eyvo_inventory/core/widgets/button.dart';
+import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:flutter/material.dart';
 
@@ -69,38 +70,48 @@ class _LocationListViewState extends State<LocationListView> {
 
   @override
   Widget build(BuildContext context) {
-    double topPadding = MediaQuery.of(context).padding.top;
+    //   double topPadding = MediaQuery.of(context).padding.top;
     return Scaffold(
+      appBar: buildCommonAppBar(
+        context: context,
+        title: AppStrings.selectLocation,
+      ),
       body: isLoading
           ? const Center(child: CustomProgressIndicator())
           : isError
               ? Column(
                   children: [
-                    const SizedBox(height: 60),
+                    const SizedBox(height: 40),
                     Padding(
-                      padding: const EdgeInsets.all(18.0),
+                      padding: const EdgeInsets.all(12.0),
                       child: Container(
                         height: displayHeight(context) * 0.65,
                         width: displayWidth(context),
                         decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: ColorManager.white),
+                          borderRadius: BorderRadius.circular(16),
+                          color: ColorManager.white,
+                        ),
                         child: Center(
-                            child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Spacer(),
-                            Image.asset(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Spacer(),
+                              Image.asset(
+                                ImageAssets.noRecordFoundIcon,
                                 width: displayWidth(context) * 0.5,
-                                ImageAssets.noRecordFoundIcon),
-                            Text(errorText,
+                              ),
+                              Text(
+                                errorText,
                                 style: getRegularStyle(
-                                    color: ColorManager.lightGrey,
-                                    fontSize: FontSize.s17)),
-                            const Spacer()
-                          ],
-                        )),
+                                  color: ColorManager.lightGrey,
+                                  fontSize: FontSize.s17,
+                                ),
+                              ),
+                              const Spacer(),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -110,85 +121,94 @@ class _LocationListViewState extends State<LocationListView> {
                     height: displayHeight(context),
                     child: Column(
                       children: [
-                        SizedBox(height: topPadding),
-                        SizedBox(
-                          width: displayWidth(context),
-                          child: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(left: 18),
-                                child: Text(
-                                  widget.selectedTitle,
-                                  style: getBoldStyle(
-                                      color: ColorManager.darkBlue,
-                                      fontSize: FontSize.s31_5),
-                                ),
+                        // SizedBox(height: topPadding),
+                        // Padding(
+                        //   padding: const EdgeInsets.symmetric(horizontal: 12),
+                        //   child: Row(
+                        //     children: [
+                        //       Text(
+                        //         widget.selectedTitle,
+                        //         style: getBoldStyle(
+                        //           color: ColorManager.darkBlue,
+                        //           fontSize: FontSize.s20,
+                        //         ),
+                        //       ),
+                        //       const Spacer(),
+                        //       SizedBox(
+                        //         height: 20,
+                        //         child: CustomImageButton(
+                        //           imageString: ImageAssets.closeIcon,
+                        //           onTap: () {
+                        //             Navigator.pop(context);
+                        //           },
+                        //         ),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
+                        const SizedBox(height: 10),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              left: 12, right: 12, bottom: 12),
+                          child: ListView.separated(
+                            padding: EdgeInsets.zero,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: locationItems.length,
+                            separatorBuilder: (context, index) => Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12.0),
+                              child: Divider(
+                                color: ColorManager.primary,
+                                height: 0.1,
+                                thickness: 0.1,
                               ),
-                              const Spacer(),
-                              SizedBox(
-                                height: 30,
-                                child: CustomImageButton(
-                                    imageString: ImageAssets.closeIcon,
+                            ),
+                            itemBuilder: (context, index) {
+                              final item = locationItems[index];
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 2.0, horizontal: 4.0),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: ColorManager.white,
+                                    borderRadius: BorderRadius.circular(
+                                        6), // Match radius
+                                  ),
+                                  child: ListTile(
+                                    dense: true,
+                                    visualDensity:
+                                        const VisualDensity(vertical: -2),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 4),
+                                    title: Text(
+                                      item.locationCode!,
+                                      style: item.locationCode ==
+                                              widget.selectedItem
+                                          ? getMediumStyle(
+                                              color: ColorManager.orange2,
+                                              fontSize: FontSize.s17,
+                                            )
+                                          : getRegularStyle(
+                                              color: ColorManager.lightGrey2,
+                                              fontSize: FontSize.s17,
+                                            ),
+                                    ),
                                     onTap: () {
-                                      Navigator.pop(context);
-                                    }),
-                              )
-                            ],
+                                      SharedPrefs().selectedLocation =
+                                          item.locationCode!;
+                                      SharedPrefs().selectedLocationID =
+                                          item.locationId!;
+                                      showSnackBar(context,
+                                          '${AppStrings.locationSelectedMessage}${item.locationCode}');
+                                      Navigator.pop(context, item.locationCode);
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
-                        const SizedBox(height: 30),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                                left: 18, right: 18, bottom: 18),
-                            child: Container(
-                                decoration: BoxDecoration(
-                                    color: ColorManager.white,
-                                    borderRadius: BorderRadius.circular(10)),
-                                child: ListView.separated(
-                                  itemCount: locationItems.length,
-                                  separatorBuilder: (context, index) => Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 0.0),
-                                    child: Container(
-                                      height: 1.5,
-                                      decoration: BoxDecoration(
-                                        color: ColorManager.primary,
-                                      ),
-                                    ),
-                                  ),
-                                  itemBuilder: (context, index) {
-                                    final item = locationItems[index];
-                                    return Padding(
-                                      padding: const EdgeInsets.all(0.0),
-                                      child: ListTile(
-                                        title: Text(item.locationCode!,
-                                            style: item.locationCode ==
-                                                    widget.selectedItem
-                                                ? getMediumStyle(
-                                                    color: ColorManager.orange2,
-                                                    fontSize: FontSize.s23_25)
-                                                : getRegularStyle(
-                                                    color:
-                                                        ColorManager.lightGrey2,
-                                                    fontSize: FontSize.s23_25)),
-                                        onTap: () {
-                                          SharedPrefs().selectedLocation =
-                                              item.locationCode!;
-                                          SharedPrefs().selectedLocationID =
-                                              item.locationId!;
-
-                                          showSnackBar(context,
-                                              '${AppStrings.locationSelectedMessage}${item.locationCode}');
-                                          Navigator.pop(
-                                              context, item.locationCode);
-                                        },
-                                      ),
-                                    );
-                                  },
-                                )),
-                          ),
-                        )
                       ],
                     ),
                   ),

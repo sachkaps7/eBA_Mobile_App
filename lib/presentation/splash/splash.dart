@@ -59,8 +59,12 @@ class _SplashViewState extends State<SplashView> {
           children: [
             const SizedBox(), // Just to balance layout
             const Center(
-              child: Image(
-                image: AssetImage(ImageAssets.splashIcon),
+              child: SizedBox(
+                height: 140,
+                width: 140,
+                child: Image(
+                  image: AssetImage(ImageAssets.splashIcon),
+                ),
               ),
             ),
             Padding(

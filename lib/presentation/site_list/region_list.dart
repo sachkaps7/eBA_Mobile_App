@@ -11,6 +11,7 @@ import 'package:eyvo_inventory/core/resources/strings_manager.dart';
 import 'package:eyvo_inventory/core/resources/styles_manager.dart';
 import 'package:eyvo_inventory/core/utils.dart';
 import 'package:eyvo_inventory/core/widgets/button.dart';
+import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:flutter/material.dart';
 
@@ -66,38 +67,49 @@ class _RegionListViewState extends State<RegionListView> {
 
   @override
   Widget build(BuildContext context) {
-    double topPadding = MediaQuery.of(context).padding.top;
+    //double topPadding = MediaQuery.of(context).padding.top;
     return Scaffold(
+      appBar: buildCommonAppBar(
+        context: context,
+        title: AppStrings.selectSite,
+      ),
       body: isLoading
           ? const Center(child: CustomProgressIndicator())
           : isError
               ? Column(
                   children: [
-                    const SizedBox(height: 60),
+                    const SizedBox(height: 40),
                     Padding(
-                      padding: const EdgeInsets.all(18.0),
+                      padding: const EdgeInsets.all(12.0),
                       child: Container(
                         height: displayHeight(context) * 0.65,
                         width: displayWidth(context),
                         decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: ColorManager.white),
+                          borderRadius:
+                              BorderRadius.circular(16), // More circular
+                          color: ColorManager.white,
+                        ),
                         child: Center(
-                            child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Spacer(),
-                            Image.asset(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Spacer(),
+                              Image.asset(
+                                ImageAssets.noRecordFoundIcon,
                                 width: displayWidth(context) * 0.5,
-                                ImageAssets.noRecordFoundIcon),
-                            Text(errorText,
+                              ),
+                              Text(
+                                errorText,
                                 style: getRegularStyle(
-                                    color: ColorManager.lightGrey,
-                                    fontSize: FontSize.s17)),
-                            const Spacer()
-                          ],
-                        )),
+                                  color: ColorManager.lightGrey,
+                                  fontSize: FontSize.s17,
+                                ),
+                              ),
+                              const Spacer(),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -107,84 +119,94 @@ class _RegionListViewState extends State<RegionListView> {
                     height: displayHeight(context),
                     child: Column(
                       children: [
-                        SizedBox(height: topPadding),
-                        SizedBox(
-                          width: displayWidth(context),
-                          child: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(left: 18),
-                                child: Text(
-                                  widget.selectedTitle,
-                                  style: getBoldStyle(
-                                      color: ColorManager.darkBlue,
-                                      fontSize: FontSize.s31_5),
-                                ),
+                        // SizedBox(height: topPadding),
+                        // Padding(
+                        //   padding: const EdgeInsets.symmetric(horizontal: 12),
+                        //   child: Row(
+                        //     children: [
+                        //       Text(
+                        //         widget.selectedTitle,
+                        //         style: getBoldStyle(
+                        //           color: ColorManager.darkBlue,
+                        //           fontSize: FontSize.s20,
+                        //         ),
+                        //       ),
+                        //       const Spacer(),
+                        //       SizedBox(
+                        //         height: 20,
+                        //         child: CustomImageButton(
+                        //           imageString: ImageAssets.closeIcon,
+                        //           onTap: () {
+                        //             Navigator.pop(context);
+                        //           },
+                        //         ),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
+                        const SizedBox(height: 10),
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            padding: EdgeInsets.zero,
+                            itemCount: regionItems.length,
+                            separatorBuilder: (context, index) => Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12.0),
+                              child: Divider(
+                                height: 0.1,
+                                thickness: 0.1,
+                                color: ColorManager.primary,
                               ),
-                              const Spacer(),
-                              SizedBox(
-                                height: 30,
-                                child: CustomImageButton(
-                                    imageString: ImageAssets.closeIcon,
+                            ),
+                            itemBuilder: (context, index) {
+                              final item = regionItems[index];
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 2.0, horizontal: 4.0),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: ColorManager.white,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: ListTile(
+                                    dense: true,
+                                    visualDensity:
+                                        const VisualDensity(vertical: -2),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 4),
+                                    title: Text(
+                                      item.regionCode,
+                                      style: item.regionCode ==
+                                              widget.selectedItem
+                                          ? getMediumStyle(
+                                              color: ColorManager.orange2,
+                                              fontSize: FontSize.s17,
+                                            )
+                                          : getRegularStyle(
+                                              color: ColorManager.lightGrey2,
+                                              fontSize: FontSize.s17,
+                                            ),
+                                    ),
                                     onTap: () {
-                                      Navigator.pop(context);
-                                    }),
-                              )
-                            ],
+                                      SharedPrefs().selectedRegion =
+                                          item.regionCode;
+                                      SharedPrefs().selectedRegionID =
+                                          item.regionId;
+                                      showSnackBar(
+                                        context,
+                                        '${AppStrings.siteSelectedMessage}${item.regionCode}',
+                                      );
+                                      Navigator.pop(context, item.regionCode);
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
-                        const SizedBox(height: 30),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                                left: 18, right: 18, bottom: 18),
-                            child: Container(
-                                decoration: BoxDecoration(
-                                    color: ColorManager.white,
-                                    borderRadius: BorderRadius.circular(10)),
-                                child: ListView.separated(
-                                  itemCount: regionItems.length,
-                                  separatorBuilder: (context, index) => Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 0.0),
-                                    child: Container(
-                                      height: 1.5,
-                                      decoration: BoxDecoration(
-                                        color: ColorManager.primary,
-                                      ),
-                                    ),
-                                  ),
-                                  itemBuilder: (context, index) {
-                                    final item = regionItems[index];
-                                    return Padding(
-                                      padding: const EdgeInsets.all(0.0),
-                                      child: ListTile(
-                                        title: Text(item.regionCode,
-                                            style: item.regionCode ==
-                                                    widget.selectedItem
-                                                ? getMediumStyle(
-                                                    color: ColorManager.orange2,
-                                                    fontSize: FontSize.s23_25)
-                                                : getRegularStyle(
-                                                    color:
-                                                        ColorManager.lightGrey2,
-                                                    fontSize: FontSize.s23_25)),
-                                        onTap: () {
-                                          SharedPrefs().selectedRegion =
-                                              item.regionCode;
-                                          SharedPrefs().selectedRegionID =
-                                              item.regionId;
-                                          showSnackBar(context,
-                                              '${AppStrings.siteSelectedMessage}${item.regionCode}');
-                                          Navigator.pop(
-                                              context, item.regionCode);
-                                        },
-                                      ),
-                                    );
-                                  },
-                                )),
-                          ),
-                        )
                       ],
                     ),
                   ),

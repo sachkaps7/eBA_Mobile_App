@@ -9,12 +9,12 @@ class AppStrings {
   static const String password = "Password";
   static const String signIn = "Sign In";
   static const String forgotUserID = "Forgot User ID?";
-  static const String forgotUserIDTitle = "Forgot \nUser ID";
+  static const String forgotUserIDTitle = "Forgot User ID";
   static const String forgotUserIDSubTitle =
       "Enter your email, and we'll send your user ID to your email address.";
   static const String forgotPassword = "Forgot Password?";
   static const String rememberMe = "Remember me";
-  static const String forgotPasswordTitle = "Forgot \nPassword";
+  static const String forgotPasswordTitle = "Forgot Password";
   static const String forgotPasswordSubTitle =
       "Enter your email, and we'll send you an OTP to your email address.";
   static const String enterUserIDTitle = "Enter \nUser ID";

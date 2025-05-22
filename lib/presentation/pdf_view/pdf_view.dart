@@ -12,6 +12,7 @@ import 'package:eyvo_inventory/core/resources/font_manager.dart';
 import 'package:eyvo_inventory/core/resources/strings_manager.dart';
 import 'package:eyvo_inventory/core/resources/styles_manager.dart';
 import 'package:eyvo_inventory/core/widgets/button.dart';
+import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:path_provider/path_provider.dart';
@@ -108,17 +109,9 @@ class _PDFViewScreenState extends State<PDFViewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: ColorManager.darkBlue,
-        title: Text(AppStrings.orderNumberDetail + widget.orderNumber,
-            style: getBoldStyle(
-                color: ColorManager.white, fontSize: FontSize.s27)),
-        leading: IconButton(
-          icon: Image.asset(ImageAssets.backButton),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+      appBar: buildCommonAppBar(
+        context: context,
+        title: AppStrings.orderNumberDetail + widget.orderNumber,
       ),
       body: isLoading && filePath == null
           ? const Center(child: CircularProgressIndicator())
@@ -161,10 +154,10 @@ class _PDFViewScreenState extends State<PDFViewScreen> {
                   right: 0,
                   child: Container(
                     width: displayWidth(context),
-                    height: 120,
+                    height: 95,
                     color: ColorManager.white,
                     child: Padding(
-                      padding: const EdgeInsets.all(18.0),
+                      padding: const EdgeInsets.all(20.0),
                       child: CustomButton(
                           buttonText: AppStrings.print,
                           onTap: () {

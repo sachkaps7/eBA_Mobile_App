@@ -26,11 +26,14 @@ class _CustomCheckBoxState extends State<CustomCheckBox> {
         child: Row(
       children: [
         IconButton(
-            icon: Image(image: AssetImage(widget.imageString)),
+            icon: SizedBox(
+                height: 20,
+                width: 20,
+                child: Image(image: AssetImage(widget.imageString))),
             onPressed: widget.onTap),
         Text(widget.titleString,
             style: getSemiBoldStyle(
-                color: ColorManager.black, fontSize: FontSize.s21))
+                color: ColorManager.black, fontSize: FontSize.s18))
       ],
     ));
   }

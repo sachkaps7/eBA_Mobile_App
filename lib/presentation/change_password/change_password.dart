@@ -13,6 +13,7 @@ import 'package:eyvo_inventory/core/resources/strings_manager.dart';
 import 'package:eyvo_inventory/core/resources/styles_manager.dart';
 import 'package:eyvo_inventory/core/utils.dart';
 import 'package:eyvo_inventory/core/widgets/button.dart';
+import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
 import 'package:eyvo_inventory/core/widgets/custom_field.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:eyvo_inventory/core/widgets/text_error.dart';
@@ -205,17 +206,9 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
 
     return Scaffold(
       backgroundColor: ColorManager.primary,
-      appBar: AppBar(
-        backgroundColor: ColorManager.darkBlue,
-        title: Text(AppStrings.changePassword,
-            style: getBoldStyle(
-                color: ColorManager.white, fontSize: FontSize.s27)),
-        leading: IconButton(
-          icon: Image.asset(ImageAssets.backButton),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+      appBar: buildCommonAppBar(
+        context: context,
+        title: AppStrings.changePassword,
       ),
       body: SingleChildScrollView(
         padding:

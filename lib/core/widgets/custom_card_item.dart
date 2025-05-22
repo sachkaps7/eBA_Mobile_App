@@ -11,38 +11,48 @@ class CustomItemCard extends StatelessWidget {
   final Color backgroundColor;
   final double cornerRadius;
   final VoidCallback onTap;
-  const CustomItemCard(
-      {super.key,
-      required this.imageString,
-      required this.title,
-      required this.backgroundColor,
-      required this.cornerRadius,
-      required this.onTap});
+
+  const CustomItemCard({
+    super.key,
+    required this.imageString,
+    required this.title,
+    required this.backgroundColor,
+    required this.cornerRadius,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: (displayWidth(context) * 0.5) - 30,
+        width: (displayWidth(context) * 0.45), // reduced width
+        height: 100,
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(cornerRadius),
         ),
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset(
-              imageString,
-            ),
-            const SizedBox(height: 8.0),
-            Text(
-              title,
-              style: getSemiBoldStyle(
-                  color: ColorManager.lightGrey1, fontSize: FontSize.s18),
-            ),
-          ],
+        padding: const EdgeInsets.all(10.0), // reduced padding
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                imageString,
+                height: 40, // reduced image size
+                width: 40,
+              ),
+              const SizedBox(height: 6.0), // reduced spacing
+              Text(
+                title,
+                style: getSemiBoldStyle(
+                  color: ColorManager.lightGrey1,
+                  fontSize: FontSize.s14, // reduced font size
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -57,15 +67,17 @@ class CustomItemCardWithEdit extends StatelessWidget {
   final Color backgroundColor;
   final double cornerRadius;
   final bool isEditable;
-  const CustomItemCardWithEdit(
-      {super.key,
-      required this.imageString,
-      required this.title,
-      required this.subtitle,
-      required this.onEdit,
-      required this.backgroundColor,
-      required this.cornerRadius,
-      this.isEditable = true});
+
+  const CustomItemCardWithEdit({
+    super.key,
+    required this.imageString,
+    required this.title,
+    required this.subtitle,
+    required this.onEdit,
+    required this.backgroundColor,
+    required this.cornerRadius,
+    this.isEditable = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -74,55 +86,62 @@ class CustomItemCardWithEdit extends StatelessWidget {
       child: Stack(
         children: [
           Container(
-            height: 106,
+            height: 80,
             decoration: BoxDecoration(
               color: backgroundColor,
               borderRadius: BorderRadius.circular(cornerRadius),
             ),
-            padding: const EdgeInsets.all(18.0),
+            padding: const EdgeInsets.all(12.0),
             child: Row(
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(cornerRadius),
                   child: Image.asset(
                     imageString,
-                    width: 50,
-                    height: 50,
+                    width: 40,
+                    height: 40,
                     fit: BoxFit.cover,
                   ),
                 ),
-                const SizedBox(width: 16.0),
+                const SizedBox(width: 12.0),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         title,
                         style: getSemiBoldStyle(
-                            color: ColorManager.lightGrey1,
-                            fontSize: FontSize.s23_25),
+                          color: ColorManager.lightGrey1,
+                          fontSize: FontSize.s16,
+                        ),
                       ),
-                      Text(subtitle,
-                          style: getRegularStyle(
-                              color: ColorManager.lightGrey2,
-                              fontSize: FontSize.s22_5)),
+                      Text(
+                        subtitle,
+                        style: getRegularStyle(
+                          color: ColorManager.lightGrey2,
+                          fontSize: FontSize.s14,
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ],
             ),
           ),
-          isEditable
-              ? Positioned(
-                  top: 0.0,
-                  right: 3.0,
-                  child: IconButton(
-                    icon: Image.asset(ImageAssets.editIcon,
-                        width: 30, height: 30),
-                    onPressed: onEdit,
-                  ),
-                )
-              : const SizedBox(),
+          if (isEditable)
+            Positioned(
+              top: 4.0,
+              right: 4.0,
+              child: IconButton(
+                icon: Image.asset(
+                  ImageAssets.editIcon,
+                  width: 20,
+                  height: 20,
+                ),
+                onPressed: onEdit,
+              ),
+            ),
         ],
       ),
     );

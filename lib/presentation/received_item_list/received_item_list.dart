@@ -16,6 +16,7 @@ import 'package:eyvo_inventory/core/resources/styles_manager.dart';
 import 'package:eyvo_inventory/core/utils.dart';
 import 'package:eyvo_inventory/core/widgets/alert.dart';
 import 'package:eyvo_inventory/core/widgets/button.dart';
+import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
 import 'package:eyvo_inventory/core/widgets/custom_checkbox.dart';
 import 'package:eyvo_inventory/core/widgets/custom_list_tile.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
@@ -317,17 +318,9 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
       },
       child: Scaffold(
         backgroundColor: ColorManager.primary,
-        appBar: AppBar(
-          backgroundColor: ColorManager.darkBlue,
-          title: Text(AppStrings.grItemListing,
-              style: getBoldStyle(
-                  color: ColorManager.white, fontSize: FontSize.s27)),
-          leading: IconButton(
-            icon: Image.asset(ImageAssets.backButton),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
+        appBar: buildCommonAppBar(
+          context: context,
+          title: AppStrings.itemDetails,
         ),
         body: isLoading
             ? const Center(child: CustomProgressIndicator())
@@ -510,10 +503,11 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
                               AppStrings.orderNumberDetail + widget.orderNumber,
                               style: getBoldStyle(
                                   color: ColorManager.darkBlue,
-                                  fontSize: FontSize.s27),
+                                  fontSize: FontSize.s20),
                             ),
                           ),
-                          const Spacer(),
+                          // const Spacer(),
+                          const SizedBox(height: 5),
                           isGoodsReceived
                               ? const SizedBox()
                               : isPrintEnabled
@@ -538,7 +532,7 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
                     right: 0,
                     child: Container(
                       width: displayWidth(context),
-                      height: 120,
+                      height: 90,
                       color: isGoodsReceived
                           ? isGenerateLabelEnabled
                               ? ColorManager.white
@@ -589,114 +583,110 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
                                 children: [
                                   const Spacer(),
                                   Container(
-                                      padding: const EdgeInsets.all(20.0),
-                                      height: editBoxHeight,
-                                      width: displayWidth(context),
-                                      decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(15)),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          const SizedBox(height: 20),
-                                          SizedBox(
-                                            width: displayWidth(context),
-                                            child: Text(
-                                                AppStrings.editReceiveQuantity,
-                                                style: getBoldStyle(
-                                                    color:
-                                                        ColorManager.lightGrey2,
-                                                    fontSize: FontSize.s25_5)),
-                                          ),
-                                          const SizedBox(height: 20),
-                                          Row(
-                                            children: [
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                    color:
-                                                        ColorManager.darkBlue,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            4)),
-                                                width: 70,
-                                                height: 50,
-                                                child: IconButton(
-                                                    // iconSize: 40,
-                                                    onPressed: () {
-                                                      decreaseReceivedQuantity();
-                                                    },
-                                                    icon: Image.asset(
-                                                        width: 30,
-                                                        height: 30,
-                                                        ImageAssets.minusIcon)),
-                                              ),
-                                              const Spacer(),
-                                              Container(
-                                                  alignment: Alignment.center,
-                                                  width: 150,
-                                                  height: 60,
-                                                  child: TextField(
-                                                    controller:
-                                                        editQuantityController,
-                                                    style: getBoldStyle(
-                                                        color: ColorManager
-                                                            .lightGrey2,
-                                                        fontSize:
-                                                            FontSize.s23_25),
-                                                    textInputAction:
-                                                        TextInputAction.done,
-                                                    keyboardType:
-                                                        const TextInputType
-                                                            .numberWithOptions(
-                                                            decimal: true),
-                                                    inputFormatters: [
-                                                      DecimalTextInputFormatter(
-                                                          decimalPlaces:
-                                                              SharedPrefs()
-                                                                  .decimalPlaces,
-                                                          minValue: 0.1,
-                                                          maxValue: orderItems[
-                                                                  selectedIndex]
-                                                              .bookInQuantity),
-                                                      LengthLimitingTextInputFormatter(
-                                                          AppConstants
-                                                              .maxCharactersForQuantity),
-                                                    ],
-                                                    decoration:
-                                                        const InputDecoration(
-                                                            // isDense: true,
-                                                            contentPadding:
-                                                                EdgeInsets.all(
-                                                                    0)),
-                                                    textAlign: TextAlign.center,
-                                                  )),
-                                              const Spacer(),
-                                              Container(
-                                                width: 70,
-                                                height: 50,
-                                                decoration: BoxDecoration(
-                                                    color:
-                                                        ColorManager.darkBlue,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            4)),
-                                                child: IconButton(
-                                                    // iconSize: 40,
-                                                    onPressed: () {
-                                                      increaseReceivedQuantity();
-                                                    },
-                                                    icon: Image.asset(
-                                                        width: 30,
-                                                        height: 30,
-                                                        ImageAssets.plusIcon)),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 18),
-                                        ],
-                                      )),
+                                    padding: const EdgeInsets.all(20.0),
+                                    height: editBoxHeight - 20,
+                                    width: displayWidth(context),
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius:
+                                            BorderRadius.circular(15)),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        const SizedBox(height: 10),
+                                        SizedBox(
+                                          width: displayWidth(context),
+                                          child: Text(
+                                              AppStrings.editReceiveQuantity,
+                                              style: getBoldStyle(
+                                                  color:
+                                                      ColorManager.lightGrey2,
+                                                  fontSize: FontSize.s20)),
+                                        ),
+                                        const SizedBox(height: 30),
+                                        Row(
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                  color: ColorManager.darkBlue,
+                                                  borderRadius:
+                                                      BorderRadius.circular(4)),
+                                              width: 50,
+                                              height: 30,
+                                              child: IconButton(
+                                                  // iconSize: 40,
+                                                  onPressed: () {
+                                                    decreaseReceivedQuantity();
+                                                  },
+                                                  icon: Image.asset(
+                                                      width: 15,
+                                                      height: 15,
+                                                      ImageAssets.minusIcon)),
+                                            ),
+                                            const Spacer(),
+                                            Container(
+                                                alignment: Alignment.center,
+                                                width: 150,
+                                                height: 30,
+                                                child: TextField(
+                                                  controller:
+                                                      editQuantityController,
+                                                  style: getBoldStyle(
+                                                      color: ColorManager
+                                                          .lightGrey2,
+                                                      fontSize: FontSize.s21),
+                                                  textInputAction:
+                                                      TextInputAction.done,
+                                                  keyboardType:
+                                                      const TextInputType
+                                                          .numberWithOptions(
+                                                          decimal: true),
+                                                  inputFormatters: [
+                                                    DecimalTextInputFormatter(
+                                                        decimalPlaces:
+                                                            SharedPrefs()
+                                                                .decimalPlaces,
+                                                        minValue: 0.1,
+                                                        maxValue: orderItems[
+                                                                selectedIndex]
+                                                            .bookInQuantity),
+                                                    LengthLimitingTextInputFormatter(
+                                                        AppConstants
+                                                            .maxCharactersForQuantity),
+                                                  ],
+                                                  decoration:
+                                                      const InputDecoration(
+                                                          // isDense: true,
+                                                          contentPadding:
+                                                              EdgeInsets.all(
+                                                                  0)),
+                                                  textAlign: TextAlign.center,
+                                                )),
+                                            const Spacer(),
+                                            Container(
+                                              width: 50,
+                                              height: 30,
+                                              decoration: BoxDecoration(
+                                                  color: ColorManager.darkBlue,
+                                                  borderRadius:
+                                                      BorderRadius.circular(4)),
+                                              child: IconButton(
+                                                  // iconSize: 40,
+                                                  onPressed: () {
+                                                    increaseReceivedQuantity();
+                                                  },
+                                                  icon: Image.asset(
+                                                      width: 15,
+                                                      height: 15,
+                                                      ImageAssets.plusIcon)),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 18),
+                                      ],
+                                    ),
+                          ),
                                 ],
                               ),
                             ),
@@ -708,23 +698,23 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
                           bottom: editBoxHeight - 60,
                           child: Container(
                             width: displayWidth(context),
-                            height: 90,
+                            height: 80,
                             alignment: Alignment.topRight,
                             child: Padding(
                               padding: const EdgeInsets.only(right: 10),
                               child: IconButton(
-                                  onPressed: () {
-                                    if (editQuantityController
-                                        .text.isNotEmpty) {
-                                      updateReceivedQuantity();
-                                    } else {
-                                      showErrorDialog(
-                                          context,
-                                          AppStrings.quantityCannotBeBlank,
-                                          false);
-                                    }
-                                  },
-                                  icon: Image.asset(ImageAssets.tickIcon)),
+                                onPressed: () {
+                                  if (editQuantityController.text.isNotEmpty) {
+                                    updateReceivedQuantity();
+                                  } else {
+                                    showErrorDialog(
+                                        context,
+                                        AppStrings.quantityCannotBeBlank,
+                                        false);
+                                  }
+                                },
+                                icon: Image.asset(ImageAssets.tickIcon),
+                              ),
                             ),
                           ),
                         )

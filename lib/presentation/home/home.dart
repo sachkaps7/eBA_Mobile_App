@@ -225,7 +225,7 @@ class _HomeViewState extends State<HomeView> {
     }
 
     setState(() {
-      isFetchingLocation = false; // Set fetching location to false
+      isFetchingLocation = false;
     });
   }
 
@@ -237,11 +237,20 @@ class _HomeViewState extends State<HomeView> {
       backgroundColor: ColorManager.primary,
       appBar: AppBar(
         backgroundColor: ColorManager.darkBlue,
-        title: Text(AppStrings.dashboard,
-            style: getBoldStyle(
-                color: ColorManager.white, fontSize: FontSize.s27)),
+        toolbarHeight: 56,
+        title: Text(
+          AppStrings.dashboard,
+          style: getBoldStyle(
+            color: ColorManager.white,
+            fontSize: FontSize.s20,
+          ),
+        ),
         leading: IconButton(
-          icon: Image.asset(ImageAssets.menu),
+          icon: Image.asset(
+            ImageAssets.menu,
+            width: 20,
+            height: 20,
+          ),
           onPressed: () {
             _scaffoldKey.currentState?.openDrawer();
           },
@@ -251,20 +260,20 @@ class _HomeViewState extends State<HomeView> {
         backgroundColor: ColorManager.light3,
         child: Column(
           children: <Widget>[
-            SizedBox(height: topPadding + 20),
-            Image.asset(ImageAssets.splashLogo, width: 120, height: 97),
-            const SizedBox(height: 40),
+            SizedBox(height: topPadding + 10),
+            Image.asset(ImageAssets.splashLogo, width: 90, height: 72),
+            const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.all(2),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.person, color: ColorManager.blue),
-                  const SizedBox(width: 8),
+                  Icon(Icons.person, color: ColorManager.blue, size: 20),
+                  const SizedBox(width: 6),
                   Flexible(
                     child: Text(
                       displayUserName,
-                      style: TextStyle(fontSize: 24, color: ColorManager.blue),
+                      style: TextStyle(fontSize: 18, color: ColorManager.blue),
                       maxLines: 2,
                       overflow: TextOverflow.visible,
                     ),
@@ -273,83 +282,87 @@ class _HomeViewState extends State<HomeView> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(25.0),
+              padding: const EdgeInsets.all(16.0),
               child: Container(
-                height: 370,
+                height: 300, // Reduced from 320 if you want a tighter fit
                 decoration: BoxDecoration(
-                    color: ColorManager.white,
-                    border: Border.all(color: ColorManager.grey4, width: 1.0),
-                    borderRadius: BorderRadius.circular(8)),
+                  color: ColorManager.white,
+                  border: Border.all(color: ColorManager.grey4, width: 1.0),
+                  borderRadius: BorderRadius.circular(6),
+                ),
                 child: Column(
                   children: [
                     Expanded(
                       child: ListView.separated(
-                          padding: EdgeInsets.zero,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: menuItems.length,
-                          separatorBuilder: (context, index) => Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 0.0),
-                                child: Container(
-                                  height: 1.5,
-                                  decoration: BoxDecoration(
-                                    color: ColorManager.primary,
-                                  ),
-                                ),
-                              ),
-                          itemBuilder: (context, index) {
-                            return MenuItemListTile(
+                        padding: EdgeInsets.zero,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: menuItems.length,
+                        separatorBuilder: (context, index) => Divider(
+                          height: 0.5,
+                          thickness: 0.5,
+                          color: ColorManager.primary,
+                        ),
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 0.5), // Reduced padding
+                            child: MenuItemListTile(
                               title: menuItems[index],
                               imageString: ImageAssets.leftArrowIcon,
                               onTap: () {
                                 navigateFromSideMenuAsPerSelectedTitle(
                                     menuItems[index]);
                               },
-                            );
-                          }),
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                    const Spacer(),
+                    const SizedBox(height: 6), // Slightly reduced
                     GestureDetector(
-                      onTap: () {
-                        logoutUser();
-                      },
+                      onTap: logoutUser,
                       child: SizedBox(
-                        height: 80,
+                        height: 60,
                         width: displayWidth(context),
                         child: Column(
                           children: [
                             Container(height: 1, color: ColorManager.grey6),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 10),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Image.asset(ImageAssets.logoutIcon),
-                                const SizedBox(width: 10),
-                                Text(AppStrings.logout,
-                                    style: getSemiBoldStyle(
-                                        color: ColorManager.orange,
-                                        fontSize: FontSize.s22_5))
+                                Image.asset(ImageAssets.logoutIcon,
+                                    width: 20, height: 20),
+                                const SizedBox(width: 6),
+                                Text(
+                                  AppStrings.logout,
+                                  style: getSemiBoldStyle(
+                                    color: ColorManager.orange,
+                                    fontSize: FontSize.s18,
+                                  ),
+                                ),
                               ],
-                            )
+                            ),
                           ],
                         ),
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
             ),
             const Spacer(),
             Padding(
-                padding: const EdgeInsets.all(20),
-                child: Text(
-                  SharedPrefs().mobileVersion,
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: ColorManager.blue,
-                    fontWeight: FontWeight.bold,
-                  ),
-                )),
+              padding: const EdgeInsets.all(10.0),
+              child: Text(
+                SharedPrefs().mobileVersion,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: ColorManager.blue,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -390,7 +403,7 @@ class _HomeViewState extends State<HomeView> {
               : SingleChildScrollView(
                   child: Padding(
                     padding: const EdgeInsets.only(
-                        top: 30, left: 20, right: 20, bottom: 30),
+                        top: 15, left: 10, right: 10, bottom: 15),
                     child: Column(
                       children: [
                         isRegionEnabled
@@ -429,7 +442,7 @@ class _HomeViewState extends State<HomeView> {
                                 isEditable: isRegionEditable)
                             : const SizedBox(),
                         isRegionEnabled
-                            ? const SizedBox(height: 25)
+                            ? const SizedBox(height: 8)
                             : const SizedBox(),
                         isLocationEnabled
                             ? Visibility(
@@ -470,7 +483,7 @@ class _HomeViewState extends State<HomeView> {
                               )
                             : const SizedBox(),
                         isLocationEnabled
-                            ? const SizedBox(height: 25)
+                            ? const SizedBox(height: 1)
                             : const SizedBox(),
                         items.length > 1
                             ? SizedBox(
@@ -479,77 +492,109 @@ class _HomeViewState extends State<HomeView> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceEvenly,
                                     children: [
-                                      CustomItemCard(
-                                          imageString: items[0] ==
-                                                  AppStrings.apiKeyScanItems
-                                              ? ImageAssets.scanYourItems
-                                              : items[0] ==
-                                                      AppStrings.apiKeyListItems
-                                                  ? ImageAssets.listAllItems
-                                                  : ImageAssets.receiveGoods,
-                                          title: items[0] ==
-                                                  AppStrings.apiKeyScanItems
-                                              ? AppStrings.scanYourItem
-                                              : items[0] ==
-                                                      AppStrings.apiKeyListItems
-                                                  ? AppStrings.listAllItems
-                                                  : AppStrings.receiveGoods,
-                                          backgroundColor: ColorManager.white,
-                                          cornerRadius: 10,
-                                          onTap: isLocationNull
-                                              ? () {
-                                                  globalUtils.showNegativeSnackBar(
+                                      // First card with fixed width
+                                      SizedBox(
+                                        width:
+                                            (MediaQuery.of(context).size.width -
+                                                    30) /
+                                                2,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 8),
+                                          child: CustomItemCard(
+                                            imageString: items[0] ==
+                                                    AppStrings.apiKeyScanItems
+                                                ? ImageAssets.scanYourItems
+                                                : items[0] ==
+                                                        AppStrings
+                                                            .apiKeyListItems
+                                                    ? ImageAssets.listAllItems
+                                                    : ImageAssets.receiveGoods,
+                                            title: items[0] ==
+                                                    AppStrings.apiKeyScanItems
+                                                ? AppStrings.scanYourItem
+                                                : items[0] ==
+                                                        AppStrings
+                                                            .apiKeyListItems
+                                                    ? AppStrings.listAllItems
+                                                    : AppStrings.receiveGoods,
+                                            backgroundColor: ColorManager.white,
+                                            cornerRadius: 10,
+                                            onTap: isLocationNull
+                                                ? () {
+                                                    globalUtils
+                                                        .showNegativeSnackBar(
                                                       context: context,
                                                       message:
-                                                          "Location Required");
-                                                }
-                                              : () {
-                                                  items[0] ==
-                                                          AppStrings
-                                                              .apiKeyScanItems
-                                                      ? navigateToScanItems()
-                                                      : items[0] ==
-                                                              AppStrings
-                                                                  .apiKeyListItems
-                                                          ? navigateToListItems()
-                                                          : navigateToReceiveGoods();
-                                                }),
-                                      const Spacer(),
-                                      CustomItemCard(
-                                          imageString: items[1] ==
-                                                  AppStrings.apiKeyScanItems
-                                              ? ImageAssets.scanYourItems
-                                              : items[1] ==
-                                                      AppStrings.apiKeyListItems
-                                                  ? ImageAssets.listAllItems
-                                                  : ImageAssets.receiveGoods,
-                                          title: items[1] ==
-                                                  AppStrings.apiKeyScanItems
-                                              ? AppStrings.scanYourItem
-                                              : items[1] ==
-                                                      AppStrings.apiKeyListItems
-                                                  ? AppStrings.listAllItems
-                                                  : AppStrings.receiveGoods,
-                                          backgroundColor: ColorManager.white,
-                                          cornerRadius: 10,
-                                          onTap: isLocationNull
-                                              ? () {
-                                                  globalUtils.showNegativeSnackBar(
+                                                          "Location Required",
+                                                    );
+                                                  }
+                                                : () {
+                                                    items[0] ==
+                                                            AppStrings
+                                                                .apiKeyScanItems
+                                                        ? navigateToScanItems()
+                                                        : items[0] ==
+                                                                AppStrings
+                                                                    .apiKeyListItems
+                                                            ? navigateToListItems()
+                                                            : navigateToReceiveGoods();
+                                                  },
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      // Second card with same fixed width
+                                      SizedBox(
+                                        width:
+                                            (MediaQuery.of(context).size.width -
+                                                    30) /
+                                                2,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 8),
+                                          child: CustomItemCard(
+                                            imageString: items[1] ==
+                                                    AppStrings.apiKeyScanItems
+                                                ? ImageAssets.scanYourItems
+                                                : items[1] ==
+                                                        AppStrings
+                                                            .apiKeyListItems
+                                                    ? ImageAssets.listAllItems
+                                                    : ImageAssets.receiveGoods,
+                                            title: items[1] ==
+                                                    AppStrings.apiKeyScanItems
+                                                ? AppStrings.scanYourItem
+                                                : items[1] ==
+                                                        AppStrings
+                                                            .apiKeyListItems
+                                                    ? AppStrings.listAllItems
+                                                    : AppStrings.receiveGoods,
+                                            backgroundColor: ColorManager.white,
+                                            cornerRadius: 10,
+                                            onTap: isLocationNull
+                                                ? () {
+                                                    globalUtils
+                                                        .showNegativeSnackBar(
                                                       context: context,
                                                       message:
-                                                          "Location Required");
-                                                }
-                                              : () {
-                                                  items[1] ==
-                                                          AppStrings
-                                                              .apiKeyScanItems
-                                                      ? navigateToScanItems()
-                                                      : items[1] ==
-                                                              AppStrings
-                                                                  .apiKeyListItems
-                                                          ? navigateToListItems()
-                                                          : navigateToReceiveGoods();
-                                                }),
+                                                          "Location Required",
+                                                    );
+                                                  }
+                                                : () {
+                                                    items[1] ==
+                                                            AppStrings
+                                                                .apiKeyScanItems
+                                                        ? navigateToScanItems()
+                                                        : items[1] ==
+                                                                AppStrings
+                                                                    .apiKeyListItems
+                                                            ? navigateToListItems()
+                                                            : navigateToReceiveGoods();
+                                                  },
+                                          ),
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -607,7 +652,7 @@ class _HomeViewState extends State<HomeView> {
                                     ),
                                   )
                                 : const SizedBox(),
-                        const SizedBox(height: 25),
+                        const SizedBox(height: 10),
                         items.length > 2
                             ? SizedBox(
                                 child: Center(

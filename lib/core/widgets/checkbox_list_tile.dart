@@ -17,7 +17,7 @@ class CustomCheckboxListTile extends StatelessWidget {
       child: Row(
         children: [
           Transform.scale(
-            scale: 1.5,
+            scale: 1.2,
             child: Checkbox(
               value: value,
               onChanged: onChanged,

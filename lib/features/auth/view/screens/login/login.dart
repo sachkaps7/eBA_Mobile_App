@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'package:aad_oauth/aad_oauth.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
+import 'package:eyvo_inventory/CommonCode/global_utils.dart';
 import 'package:eyvo_inventory/api/api_service/api_service.dart';
 import 'package:eyvo_inventory/api/api_service/bloc.dart';
 import 'package:eyvo_inventory/api/response_models/load_login_response.dart';
@@ -30,6 +31,7 @@ import 'package:eyvo_inventory/presentation/forgot_password/forgot_password.dart
 import 'package:eyvo_inventory/presentation/forgot_user_id/forgot_user_id.dart';
 import 'package:eyvo_inventory/presentation/home/home.dart';
 import 'package:eyvo_inventory/services/azure_auth_service.dart';
+import 'package:eyvo_inventory/services/biometric_auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
@@ -62,10 +64,26 @@ class _LoginViewPageState extends State<LoginViewPage> {
   final ApiService apiService = ApiService();
   int tapCount = 0;
   bool isLoginOptionsLoaded = false;
+  bool isBiometricPopupVisible = false;
+  bool showFullLoginForm = false;
+  final hasSeenPrompt = SharedPrefs().hasSeenBiometricPrompt;
+  bool _hasBiometricTriggered = false;
 
   @override
   void initState() {
     super.initState();
+
+    // WidgetsBinding.instance.addPostFrameCallback((_) async {
+    //   await Future.delayed(const Duration(milliseconds: 1500));
+
+    //   if (BiometricAuth().isBiometricEnabled()) {
+    //     showBiometricBottomSheet();
+    //   } else {
+    //     setState(() {
+    //       showFullLoginForm = true;
+    //     });
+    //   }
+    // });
     fetchLoginDetails();
 
     usernameController.addListener(_onUserNameTextChange);
@@ -87,6 +105,124 @@ class _LoginViewPageState extends State<LoginViewPage> {
     passwordController.dispose();
     super.dispose();
     formKey.currentState?.validate();
+  }
+
+  void showBiometricBottomSheet() {
+    setState(() {
+      isBiometricPopupVisible = true;
+      showFullLoginForm = true;
+    });
+    showModalBottomSheet<bool>(
+      context: context,
+      isDismissible: false,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        bool authFailed = false;
+        bool isAuthenticating = false;
+
+        return StatefulBuilder(builder: (context, setState) {
+          return FractionallySizedBox(
+            heightFactor: 0.4,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min, // important
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 8),
+                    const Center(
+                      child: Text(
+                        "Login With Biometric",
+                        style: TextStyle(
+                            fontSize: 22, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Center(
+                      child: Container(
+                        width: 72,
+                        height: 72,
+                        decoration: BoxDecoration(
+                          color: ColorManager.darkBlue,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.fingerprint,
+                            size: 40, color: Colors.white),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Center(
+                      child: Text(
+                        "Tap Continue to use your fingerprint",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+                    if (authFailed) ...[
+                      const SizedBox(height: 8),
+                      const Center(
+                        child: Text(
+                          "Authentication failed. Please try again.",
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                    isAuthenticating
+                        ? const Center(child: CircularProgressIndicator())
+                        : ElevatedButton(
+                            onPressed: () async {
+                              setState(() {
+                                isAuthenticating = true;
+                                authFailed = false;
+                              });
+
+                              try {
+                                final success =
+                                    await BiometricAuth().authenticate();
+                                if (context.mounted) {
+                                  Navigator.of(ctx).pop(success);
+                                }
+                              } catch (e) {
+                                setState(() {
+                                  authFailed = true;
+                                  isAuthenticating = false;
+                                });
+                              }
+                            },
+                            child: const Text("Continue"),
+                          ),
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.bottomLeft,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop(false);
+                        },
+                        child: const Text("Use User Id and Password"),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
+      },
+    ).then((authResult) {
+      setState(() {
+        isBiometricPopupVisible = false;
+        showFullLoginForm = authResult == false;
+      });
+
+      if (authResult == true) {
+        navigateToScreen(context, const HomeView());
+      }
+    });
   }
 
   void fetchLoginDetails() async {
@@ -120,49 +256,6 @@ class _LoginViewPageState extends State<LoginViewPage> {
       });
     }
   }
-
-  // void fetchLoginDetails() async {
-  //   Map<String, dynamic> data = {
-  //     'uid': SharedPrefs().uID,
-  //   };
-  //   final jsonResponse =
-  //       await apiService.postRequest(context, ApiService.loadLogin, data);
-  //   if (jsonResponse != null) {
-  //     final response = LoadLoginResponse.fromJson(jsonResponse);
-  //     //Print the whole response object
-  //     // debugPrint("=====================================");
-  //     // debugPrint("Full response: $response");
-
-  //     // debugPrint("=====================================");
-
-  //     if (response.code == '200') {
-  //       setState(() {
-  //         SharedPrefs().tanentId = response.data.tenantId;
-  //         SharedPrefs().clientId = response.data.clientId;
-  //         SharedPrefs().redirectURI = response.data.redirectUri;
-  //         isLoginWithScan = response.data.isLoginWithScan;
-  //         isLoginazureAd = response.data.isLoginazureAd;
-  //         SharedPrefs().isLoginazureAd = response.data.isLoginazureAd;
-  //       });
-  //     } else {
-  //       isLoginWithScan = false;
-  //       isLoginazureAd = false;
-  //     }
-  //     //debugPrint(isLoginazureAd);
-  //     // debugPrint("##########################################");
-  //     // debugPrint(SharedPrefs().tanentId);
-  //   }
-
-  //   // var res = await globalBloc.doFetchLoginUserData(context, SharedPrefs().uID);
-
-  //   // if (res.code == '200') {
-  //   //   setState(() {
-  //   //     isLoginWithScan = res.data.isLoginWithScan;
-  //   //   });
-  //   // } else {
-  //   //   isLoginWithScan = false;
-  //   // }
-  // }
 
   void validateFields() {
     if (isFormValidated) {
@@ -200,15 +293,109 @@ class _LoginViewPageState extends State<LoginViewPage> {
     if (jsonResponse != null) {
       final response = LoginResponse.fromJson(jsonResponse);
       if (response.code == '200') {
+        // Save user data
+        SharedPrefs().displayUserName = response.data.username;
+        SharedPrefs().uID = response.data.uid;
+        SharedPrefs().jwtToken = response.data.jwttoken;
+        SharedPrefs().refreshToken = response.data.jwtrefreshtoken;
+        SharedPrefs().userSession = response.data.userSession;
+
+        // Save credentials for biometric login
+        SharedPrefs().username = username;
+        SharedPrefs().password = password;
+
+        await BiometricAuth().setBiometricAuthId(response.data.username);
+
+        // Check if biometrics are available but not enabled
+        final biometricAvailable = await BiometricAuth().checkBiometrics();
+        final biometricEnabled = await BiometricAuth().isBiometricEnabled();
+        if (biometricAvailable && !biometricEnabled && !hasSeenPrompt) {
+          SharedPrefs().hasSeenBiometricPrompt = true;
+
+          showBiometricEnableDialog(context);
+        } else {
+          navigateToScreen(context, const HomeView());
+        }
+      } else {
+        isPasswordError = true;
+        errorText = response.message.join(', ');
+      }
+    }
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  Future attemptBiometricLogin() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final biometricAuth = BiometricAuth();
+
+    // Check if biometrics are enabled (user opted-in before)
+    if (!await biometricAuth.checkBiometrics()) {
+      setState(() {
+        isLoading = false;
+      });
+      globalUtils.showNegativeSnackBar(
+          context: context, message: "Biometric authentication not set up.");
+      return;
+    }
+
+    // Attempt authentication with either Fingerprint or Face ID
+    bool isAuthenticated = await biometricAuth.authenticate();
+
+    if (isAuthenticated) {
+      final username = SharedPrefs().username;
+      final password = SharedPrefs().password;
+
+      if (username.isNotEmpty && password.isNotEmpty) {
+        loginWithStoredCredentials(username, password);
+      } else {
+        globalUtils.showNegativeSnackBar(
+            context: context, message: "Stored credentials not found.");
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } else {
+      globalUtils.showNegativeSnackBar(
+          context: context, message: "Biometric authentication failed.");
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  void loginWithStoredCredentials(String username, String password) async {
+    setState(() {
+      isLoading = true;
+    });
+
+    Map<String, dynamic> data = {
+      'userid': username,
+      'password': password,
+    };
+
+    final jsonResponse =
+        await apiService.postRequest(context, ApiService.login, data);
+
+    if (jsonResponse != null) {
+      final response = LoginResponse.fromJson(jsonResponse);
+      if (response.code == '200') {
         SharedPrefs().displayUserName = response.data.username;
         SharedPrefs().uID = response.data.uid;
         SharedPrefs().jwtToken = response.data.jwttoken;
         SharedPrefs().refreshToken = response.data.jwtrefreshtoken;
         SharedPrefs().userSession = response.data.userSession;
         navigateToScreen(context, const HomeView());
+        // Slight delay to allow loader to show (optional)
+        await Future.delayed(const Duration(milliseconds: 200));
       } else {
-        isPasswordError = true;
-        errorText = response.message.join(', ');
+        globalUtils.showNegativeSnackBar(
+            context: context, message: response.message.join(', '));
       }
     }
 
@@ -242,6 +429,32 @@ class _LoginViewPageState extends State<LoginViewPage> {
             onNormalActionTap: () {
               Navigator.pop(context);
             });
+      },
+    );
+  }
+
+  void showBiometricEnableDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return CustomImageActionAlert(
+          iconString: '',
+          imageString: ImageAssets.biometricEnableDialogImage,
+          titleString: 'Enable Biometric Login',
+          subTitleString:
+              'Would you like to enable biometric authentication for easier future logins?',
+          destructiveActionString: 'Yes',
+          normalActionString: 'No',
+          onDestructiveActionTap: () async {
+            Navigator.pop(dialogContext);
+            await BiometricAuth().enableBiometric();
+            navigateToScreen(context, const HomeView());
+          },
+          onNormalActionTap: () {
+            Navigator.pop(dialogContext);
+            navigateToScreen(context, const HomeView());
+          },
+        );
       },
     );
   }
@@ -330,9 +543,8 @@ class _LoginViewPageState extends State<LoginViewPage> {
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Azure login failed")),
-        );
+        globalUtils.showNegativeSnackBar(
+            context: context, message: "Azure login failed");
       }
     }
 
@@ -355,9 +567,8 @@ class _LoginViewPageState extends State<LoginViewPage> {
     } else {
       debugPrint("No email found in token.");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("No email found in Azure token")),
-        );
+        globalUtils.showNegativeSnackBar(
+            context: context, message: "No email found in Azure token");
       }
     }
   }
@@ -390,8 +601,8 @@ class _LoginViewPageState extends State<LoginViewPage> {
         SharedPrefs().jwtToken = response.data.jwttoken;
         SharedPrefs().refreshToken = response.data.jwtrefreshtoken;
         SharedPrefs().userSession = response.data.userSession;
-        debugPrint(
-            " ###############################: ${response.data.username}");
+        // debugPrint(
+        //     " ###############################: ${response.data.username}");
         navigateToScreen(context, const HomeView());
       } else {
         //Show proper message from backend
@@ -402,17 +613,15 @@ class _LoginViewPageState extends State<LoginViewPage> {
         debugPrint(" Login failed: $errorText");
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("SSO Login failed: $errorText")),
-          );
+          globalUtils.showNegativeSnackBar(
+              context: context, message: "SSO Login failed: $errorText");
         }
       }
     } else {
       debugPrint(" No response from server.");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("No response from login server")),
-        );
+        globalUtils.showNegativeSnackBar(
+            context: context, message: "No response from login server");
       }
     }
 
@@ -455,15 +664,30 @@ class _LoginViewPageState extends State<LoginViewPage> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
+    // Trigger biometric only once after login options are loaded
+    if (isLoginOptionsLoaded && !_hasBiometricTriggered) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _hasBiometricTriggered = true;
+        if (BiometricAuth().isBiometricEnabled()) {
+          showBiometricBottomSheet();
+        } else {
+          setState(() {
+            showFullLoginForm = true;
+          });
+        }
+      });
+    }
+
+    // Still show a loader if login options aren't ready
     if (!isLoginOptionsLoaded) {
       return Scaffold(
         backgroundColor: ColorManager.white,
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
+
     return Scaffold(
       backgroundColor: ColorManager.white,
       body: PopScope(
@@ -476,164 +700,9 @@ class _LoginViewPageState extends State<LoginViewPage> {
                 bottom: MediaQuery.of(context).viewInsets.bottom),
             child: Column(
               children: [
-                //const SizedBox(height: 10),
                 const HeaderLogo(),
-                Padding(
-                  padding: const EdgeInsets.only(left: 30, right: 30),
-                  child: SizedBox(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 40),
-                        // Logic to conditionally show/hide the login form based on isLoginazureAd and tap count
-                        (isLoginazureAd && tapCount < 5)
-                            ? Column(
-                                children: [
-                                  const SizedBox(height: 140),
-                                  buildCompanyCodeRow(context),
-                                  const SizedBox(height: 40),
-                                  CustomButton(
-                                    buttonText: "Login with URBN SSO",
-                                    leading: SizedBox(
-                                      width: 30,
-                                      height: 30,
-                                      child: Image.asset(ImageAssets.ssoIcon),
-                                    ),
-                                    onTap: loginWithAzureAD,
-                                    isDefault: true,
-                                  ),
-                                ],
-                              )
-                            : Column(
-                                children: [
-                                  buildCompanyCodeRow(context),
-                                  const SizedBox(height: 20),
-                                  SizedBox(
-                                    width: displayWidth(context),
-                                    child: Row(
-                                      children: [
-                                        const Spacer(),
-                                        CustomTextButton(
-                                          buttonText: AppStrings.forgotUserID,
-                                          onTap: () {
-                                            navigateToScreen(context,
-                                                const ForgotUserIDView());
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  CustomTextField(
-                                    iconString: ImageAssets.userIdIcon,
-                                    hintText: AppStrings.userID,
-                                    controller: usernameController,
-                                    isValid: !isUserNameError,
-                                    onTextChanged: validateFields,
-                                  ),
-                                  isUserNameError
-                                      ? const ErrorTextViewBox()
-                                      : const SizedBox(),
-                                  isUserNameError
-                                      ? const SizedBox(height: 20)
-                                      : const SizedBox(),
-
-                                  // Forgot Password button and Password field
-                                  SizedBox(
-                                    width: displayWidth(context),
-                                    child: Row(
-                                      children: [
-                                        const Spacer(),
-                                        CustomTextButton(
-                                          buttonText: AppStrings.forgotPassword,
-                                          onTap: () {
-                                            navigateToScreen(context,
-                                                const ForgotPasswordView());
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  CustomTextField(
-                                    iconString: ImageAssets.passwordIcon,
-                                    hintText: AppStrings.password,
-                                    controller: passwordController,
-                                    isObscureText: true,
-                                    isValid: !isPasswordError,
-                                    onTextChanged: validateFields,
-                                  ),
-                                  isPasswordError
-                                      ? ErrorTextViewBox(titleString: errorText)
-                                      : const SizedBox(),
-                                  isPasswordError
-                                      ? const SizedBox(height: 20)
-                                      : const SizedBox(),
-
-                                  // Remember me checkbox
-                                  CustomCheckboxListTile(
-                                    title: Text(
-                                      AppStrings.rememberMe,
-                                      style: getRegularStyle(
-                                          color: ColorManager.lightGrey1,
-                                          fontSize: FontSize.s18),
-                                    ),
-                                    value: checkedValue,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        checkedValue = value!;
-                                        SharedPrefs().isRememberMeSelected =
-                                            checkedValue;
-                                      });
-                                    },
-                                  ),
-                                  const SizedBox(height: 50),
-
-                                  // Sign In Button
-                                  isLoading
-                                      ? const CustomProgressIndicator()
-                                      : CustomButton(
-                                          buttonText: AppStrings.signIn,
-                                          onTap: () {
-                                            isFormValidated = true;
-                                            validateFields();
-                                            if (!isUserNameError &&
-                                                !isPasswordError) {
-                                              loginUser();
-                                            }
-                                          },
-                                        ),
-                                  const SizedBox(height: 30),
-
-                                  // Logic to check if loginWithScan is true
-                                  isLoginWithScan
-                                      ? const SizedBox(height: 10)
-                                      : const SizedBox(),
-                                  //const OrDivider(),
-                                  isLoginWithScan
-                                      ? Column(
-                                          children: [
-                                            const OrDivider(),
-                                            const SizedBox(height: 20),
-                                            isLoadingForScan
-                                                ? const CustomProgressIndicator()
-                                                : CustomButton(
-                                                    buttonText: AppStrings
-                                                        .loginWithBarcode,
-                                                    onTap: () {
-                                                      scanBarcode();
-                                                    },
-                                                    isDefault: true),
-                                            const SizedBox(height: 30),
-                                          ],
-                                        )
-                                      : const SizedBox(),
-                                ],
-                              ),
-
-                        const SizedBox(height: 20),
-                      ],
-                    ),
-                  ),
-                ),
+                const SizedBox(height: 20),
+                _buildLoginForm(),
               ],
             ),
           ),
@@ -650,5 +719,160 @@ class _LoginViewPageState extends State<LoginViewPage> {
         isLoginazureAd = false;
       }
     });
+  }
+
+  Widget _buildLoginForm() {
+    return Padding(
+      padding: const EdgeInsets.only(left: 30, right: 30),
+      child: SizedBox(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            const SizedBox(height: 40),
+            // Logic to conditionally show/hide the login form based on isLoginazureAd and tap count
+            (isLoginazureAd && tapCount < 5)
+                ? Column(
+                    children: [
+                      const SizedBox(height: 140),
+                      buildCompanyCodeRow(context),
+                      const SizedBox(height: 40),
+                      CustomButton(
+                        buttonText: "Login with URBN SSO",
+                        leading: SizedBox(
+                          width: 30,
+                          height: 30,
+                          child: Image.asset(ImageAssets.ssoIcon),
+                        ),
+                        onTap: loginWithAzureAD,
+                        isDefault: true,
+                      ),
+                    ],
+                  )
+                : Column(
+                    children: [
+                      buildCompanyCodeRow(context),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: displayWidth(context),
+                        child: Row(
+                          children: [
+                            const Spacer(),
+                            CustomTextButton(
+                              buttonText: AppStrings.forgotUserID,
+                              onTap: () {
+                                navigateToScreen(
+                                    context, const ForgotUserIDView());
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      CustomTextField(
+                        iconString: ImageAssets.userIdIcon,
+                        hintText: AppStrings.userID,
+                        controller: usernameController,
+                        isValid: !isUserNameError,
+                        onTextChanged: validateFields,
+                      ),
+                      isUserNameError
+                          ? const ErrorTextViewBox()
+                          : const SizedBox(),
+                      isUserNameError
+                          ? const SizedBox(height: 20)
+                          : const SizedBox(),
+
+                      // Forgot Password button and Password field
+                      SizedBox(
+                        width: displayWidth(context),
+                        child: Row(
+                          children: [
+                            const Spacer(),
+                            CustomTextButton(
+                              buttonText: AppStrings.forgotPassword,
+                              onTap: () {
+                                navigateToScreen(
+                                    context, const ForgotPasswordView());
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      CustomTextField(
+                        iconString: ImageAssets.passwordIcon,
+                        hintText: AppStrings.password,
+                        controller: passwordController,
+                        isObscureText: true,
+                        isValid: !isPasswordError,
+                        onTextChanged: validateFields,
+                      ),
+                      isPasswordError
+                          ? ErrorTextViewBox(titleString: errorText)
+                          : const SizedBox(),
+                      isPasswordError
+                          ? const SizedBox(height: 20)
+                          : const SizedBox(),
+
+                      // Remember me checkbox
+                      CustomCheckboxListTile(
+                        title: Text(
+                          AppStrings.rememberMe,
+                          style: getRegularStyle(
+                              color: ColorManager.lightGrey1,
+                              fontSize: FontSize.s18),
+                        ),
+                        value: checkedValue,
+                        onChanged: (value) {
+                          setState(() {
+                            checkedValue = value!;
+                            SharedPrefs().isRememberMeSelected = checkedValue;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 50),
+
+                      // Sign In Button
+                      isLoading
+                          ? const CustomProgressIndicator()
+                          : CustomButton(
+                              buttonText: AppStrings.signIn,
+                              onTap: () {
+                                isFormValidated = true;
+                                validateFields();
+                                if (!isUserNameError && !isPasswordError) {
+                                  loginUser();
+                                }
+                              },
+                            ),
+                      const SizedBox(height: 30),
+                      // Logic to check if loginWithScan is true
+                      isLoginWithScan
+                          ? const SizedBox(height: 10)
+                          : const SizedBox(),
+                      //const OrDivider(),
+                      isLoginWithScan
+                          ? Column(
+                              children: [
+                                const OrDivider(),
+                                const SizedBox(height: 20),
+                                isLoadingForScan
+                                    ? const CustomProgressIndicator()
+                                    : CustomButton(
+                                        buttonText: AppStrings.loginWithBarcode,
+                                        onTap: () {
+                                          scanBarcode();
+                                        },
+                                        isDefault: true),
+                                const SizedBox(height: 30),
+                              ],
+                            )
+                          : const SizedBox(),
+                    ],
+                  ),
+
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
   }
 }

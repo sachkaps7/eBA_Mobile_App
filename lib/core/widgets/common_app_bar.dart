@@ -13,6 +13,7 @@ PreferredSizeWidget buildCommonAppBar({
 }) {
   return AppBar(
     backgroundColor: backgroundColor ?? ColorManager.darkBlue,
+    titleSpacing: -10,
     title: Text(
       title,
       style: getBoldStyle(

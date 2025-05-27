@@ -13,6 +13,8 @@ class ImageAssets {
   static const String resetPasswordImage = "$imagePath/Reset-Password-img.jpg";
   static const String clearCompanyCodeImage =
       "$imagePath/Clear-Company-Code-img.jpg";
+  static const String biometricEnableDialogImage =
+      "$imagePath/biometric-enable-dialog-image.png";
   static const String closePopupImage = "$imagePath/close-popup-button.png";
   static const String passwordChangedImage =
       "$imagePath/Password-changed-successfully--img.jpg";

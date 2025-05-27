@@ -191,13 +191,13 @@ class _OrderItemListTileState extends State<OrderItemListTile> {
 
 class MenuItemListTile extends StatelessWidget {
   final String title;
-  final String imageString;
+  final IconData iconData;
   final VoidCallback onTap;
 
   const MenuItemListTile({
     super.key,
     required this.title,
-    required this.imageString,
+    required this.iconData,
     required this.onTap,
   });
 
@@ -214,11 +214,7 @@ class MenuItemListTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            SizedBox(
-              height: 12,
-              width: 16,
-              child: Image.asset(imageString),
-            ),
+            Icon(iconData, color: ColorManager.lightGrey1, size: 20),
             const SizedBox(width: 12),
             Text(
               title,
@@ -233,6 +229,51 @@ class MenuItemListTile extends StatelessWidget {
     );
   }
 }
+
+// class MenuItemListTile extends StatelessWidget {
+//   final String title;
+//   final String imageString;
+//   final VoidCallback onTap;
+
+//   const MenuItemListTile({
+//     super.key,
+//     required this.title,
+//     required this.imageString,
+//     required this.onTap, required IconData iconData,
+//   });
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return GestureDetector(
+//       onTap: onTap,
+//       child: Container(
+//         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 8),
+//         width: displayWidth(context),
+//         decoration: BoxDecoration(
+//           color: ColorManager.white,
+//           borderRadius: BorderRadius.circular(8),
+//         ),
+//         child: Row(
+//           children: [
+//             SizedBox(
+//               height: 12,
+//               width: 16,
+//               child: Image.asset(imageString),
+//             ),
+//             const SizedBox(width: 12),
+//             Text(
+//               title,
+//               style: getRegularStyle(
+//                 color: ColorManager.lightGrey1,
+//                 fontSize: FontSize.s16,
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
 
 class ItemListTile extends StatelessWidget {
   final String title;

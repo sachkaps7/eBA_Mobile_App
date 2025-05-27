@@ -156,6 +156,7 @@ class AppStrings {
   static const String apiKeyEditRegion = 'regionedit';
   static const String apiKeyLocation = 'location';
   static const String apiKeyEditLocation = 'locationedit';
+  static const String settings = "Settings";
 
   static const String itemTitle = 'Sony WH-1000XM4 Industry Leading';
   static const String itemSubTitle =

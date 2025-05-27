@@ -17,6 +17,7 @@ import 'package:eyvo_inventory/core/resources/styles_manager.dart';
 import 'package:eyvo_inventory/core/utils.dart';
 import 'package:eyvo_inventory/core/widgets/custom_card_item.dart';
 import 'package:eyvo_inventory/core/widgets/custom_list_tile.dart';
+import 'package:eyvo_inventory/core/widgets/setting_page.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:eyvo_inventory/core/widgets/title_header.dart';
 import 'package:eyvo_inventory/presentation/change_password/change_password.dart';
@@ -64,10 +65,16 @@ class _HomeViewState extends State<HomeView> {
   bool isLocationNull = false;
   String displayUserName = SharedPrefs().displayUserName;
   int totalRecords = 0;
+  final Map<String, IconData> menuIcons = {
+    AppStrings.home: Icons.home_outlined,
+    AppStrings.settings: Icons.settings_outlined,
+    AppStrings.changePassword: Icons.lock_outlined,
+  };
+
   @override
   void initState() {
     super.initState();
-    menuItems = [AppStrings.home];
+    menuItems = [AppStrings.home, AppStrings.settings];
     if (!isLoginazureAd) {
       menuItems.add(AppStrings.changePassword);
     }
@@ -180,6 +187,9 @@ class _HomeViewState extends State<HomeView> {
     }
     if (title == AppStrings.changePassword) {
       navigateToScreen(context, const ChangePasswordView());
+    }
+    if (title == AppStrings.settings) {
+      navigateToScreen(context, const SettingPage());
     }
   }
 
@@ -303,15 +313,17 @@ class _HomeViewState extends State<HomeView> {
                           color: ColorManager.primary,
                         ),
                         itemBuilder: (context, index) {
+                          final title = menuItems[index];
+                          final icon =
+                              menuIcons[title] ?? Icons.arrow_forward_ios;
+
                           return Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 0.5), // Reduced padding
+                            padding: const EdgeInsets.symmetric(vertical: 0.5),
                             child: MenuItemListTile(
-                              title: menuItems[index],
-                              imageString: ImageAssets.leftArrowIcon,
+                              title: title,
+                              iconData: icon,
                               onTap: () {
-                                navigateFromSideMenuAsPerSelectedTitle(
-                                    menuItems[index]);
+                                navigateFromSideMenuAsPerSelectedTitle(title);
                               },
                             ),
                           );

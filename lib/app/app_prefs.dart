@@ -32,12 +32,16 @@ const String REDIRECT_URI = "REDIRECT_URI";
 const String DISPLAY_USER_NAME = "DISPLAY_USER_NAME";
 const String IS_LOGIN_WITH_AZURE = "IS_LOGIN_WITH_AZURE";
 const String MOBILE_VERSION = "MOBILE_VERSION";
+const String BIOMETRIC_AUTH_ID = "BIOMETRIC_AUTH_ID";
+const String IS_BIOMATRIC_ENABLED = "IS_BIOMATRIC_ENABLED";
+const String BIOMETRIC_PROMPT_SHOWKEY = "BIOMETRIC_PROMPT_SHOWKEY";
 
 class SharedPrefs {
   late final SharedPreferences _sharedPrefs;
 
   static final SharedPrefs _instance = SharedPrefs._internal();
   factory SharedPrefs() => _instance;
+  static SharedPrefs get instance => _instance;
   SharedPrefs._internal();
   Future<void> init() async {
     _sharedPrefs = await SharedPreferences.getInstance();
@@ -201,13 +205,14 @@ class SharedPrefs {
   set redirectURI(String value) {
     _sharedPrefs.setString(REDIRECT_URI, value);
   }
+
   String get displayUserName => _sharedPrefs.getString(DISPLAY_USER_NAME) ?? "";
 
   set displayUserName(String value) {
     _sharedPrefs.setString(DISPLAY_USER_NAME, value);
   }
- bool get isLoginazureAd =>
-      _sharedPrefs.getBool(IS_LOGIN_WITH_AZURE) ?? false;
+
+  bool get isLoginazureAd => _sharedPrefs.getBool(IS_LOGIN_WITH_AZURE) ?? false;
 
   set isLoginazureAd(bool value) {
     _sharedPrefs.setBool(IS_LOGIN_WITH_AZURE, value);
@@ -218,4 +223,23 @@ class SharedPrefs {
   set mobileVersion(String value) {
     _sharedPrefs.setString(MOBILE_VERSION, value);
   }
+
+  String get biometricAuthId => _sharedPrefs.getString(BIOMETRIC_AUTH_ID) ?? "";
+
+  set biometricAuthId(String value) {
+    _sharedPrefs.setString(BIOMETRIC_AUTH_ID, value);
+  }
+
+  bool get isBiometricEnabled =>
+      _sharedPrefs.getBool(IS_BIOMATRIC_ENABLED) ?? false;
+
+  set isBiometricEnabled(bool value) {
+    _sharedPrefs.setBool(IS_BIOMATRIC_ENABLED, value);
+  }
+
+  bool get hasSeenBiometricPrompt =>
+      _sharedPrefs.getBool(BIOMETRIC_PROMPT_SHOWKEY) ?? false;
+
+  set hasSeenBiometricPrompt(bool value) =>
+      _sharedPrefs.setBool(BIOMETRIC_PROMPT_SHOWKEY, value);
 }

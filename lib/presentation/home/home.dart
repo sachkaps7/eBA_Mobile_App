@@ -1,9 +1,5 @@
-import 'dart:developer';
-import 'dart:ffi';
-
 import 'package:eyvo_inventory/CommonCode/global_utils.dart';
 import 'package:eyvo_inventory/api/api_service/api_service.dart';
-import 'package:eyvo_inventory/api/api_service/bloc.dart';
 import 'package:eyvo_inventory/api/response_models/dashboard_response.dart';
 import 'package:eyvo_inventory/api/response_models/location_response.dart';
 import 'package:eyvo_inventory/app/app_prefs.dart';
@@ -460,7 +456,7 @@ class _HomeViewState extends State<HomeView> {
                             ? Visibility(
                                 visible: !isFetchingLocation,
                                 replacement: const Center(
-                                    child: CircularProgressIndicator()),
+                                    child: CustomProgressIndicator()),
                                 child: CustomItemCardWithEdit(
                                     imageString: ImageAssets.selectLocation,
                                     title: selectLocationTitle,

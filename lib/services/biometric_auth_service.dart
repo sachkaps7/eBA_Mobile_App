@@ -53,8 +53,7 @@ class BiometricAuth {
 
     try {
       final didAuthenticate = await _localAuth.authenticate(
-        localizedReason:
-            'Authenticate to access your $clientName account securely',
+        localizedReason: 'Log in using your biometric credential',
         options: const AuthenticationOptions(
           biometricOnly: true,
           useErrorDialogs: true,

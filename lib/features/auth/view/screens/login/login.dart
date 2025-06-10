@@ -1,11 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
-import 'package:aad_oauth/aad_oauth.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:eyvo_inventory/CommonCode/global_utils.dart';
 import 'package:eyvo_inventory/api/api_service/api_service.dart';
-import 'package:eyvo_inventory/api/api_service/bloc.dart';
 import 'package:eyvo_inventory/api/response_models/load_login_response.dart';
 import 'package:eyvo_inventory/api/response_models/login_response.dart';
 import 'package:eyvo_inventory/app/app_prefs.dart';
@@ -26,7 +24,6 @@ import 'package:eyvo_inventory/core/widgets/header_logo.dart';
 import 'package:eyvo_inventory/core/widgets/or_divider.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:eyvo_inventory/core/widgets/text_error.dart';
-import 'package:eyvo_inventory/log_data.dart/logger_data.dart';
 import 'package:eyvo_inventory/presentation/forgot_password/forgot_password.dart';
 import 'package:eyvo_inventory/presentation/forgot_user_id/forgot_user_id.dart';
 import 'package:eyvo_inventory/presentation/home/home.dart';
@@ -34,8 +31,6 @@ import 'package:eyvo_inventory/services/azure_auth_service.dart';
 import 'package:eyvo_inventory/services/biometric_auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 class LoginViewPage extends StatefulWidget {
@@ -68,24 +63,15 @@ class _LoginViewPageState extends State<LoginViewPage> {
   bool showFullLoginForm = false;
   final hasSeenPrompt = SharedPrefs().hasSeenBiometricPrompt;
   bool _hasBiometricTriggered = false;
-
+  bool biometricAvailable = false;
+  bool biometricEnabled = false;
+  bool authFailed = false;
+  bool isAuthenticating = false;
   @override
   void initState() {
     super.initState();
-
-    // WidgetsBinding.instance.addPostFrameCallback((_) async {
-    //   await Future.delayed(const Duration(milliseconds: 1500));
-
-    //   if (BiometricAuth().isBiometricEnabled()) {
-    //     showBiometricBottomSheet();
-    //   } else {
-    //     setState(() {
-    //       showFullLoginForm = true;
-    //     });
-    //   }
-    // });
     fetchLoginDetails();
-
+    _initBiometric();
     usernameController.addListener(_onUserNameTextChange);
     passwordController.addListener(_onPasswordTextChange);
 
@@ -107,122 +93,10 @@ class _LoginViewPageState extends State<LoginViewPage> {
     formKey.currentState?.validate();
   }
 
-  void showBiometricBottomSheet() {
-    setState(() {
-      isBiometricPopupVisible = true;
-      showFullLoginForm = true;
-    });
-    showModalBottomSheet<bool>(
-      context: context,
-      isDismissible: false,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) {
-        bool authFailed = false;
-        bool isAuthenticating = false;
-
-        return StatefulBuilder(builder: (context, setState) {
-          return FractionallySizedBox(
-            heightFactor: 0.4,
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min, // important
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 8),
-                    const Center(
-                      child: Text(
-                        "Login With Biometric",
-                        style: TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Center(
-                      child: Container(
-                        width: 72,
-                        height: 72,
-                        decoration: BoxDecoration(
-                          color: ColorManager.darkBlue,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.fingerprint,
-                            size: 40, color: Colors.white),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Center(
-                      child: Text(
-                        "Tap Continue to use your fingerprint",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
-                    if (authFailed) ...[
-                      const SizedBox(height: 8),
-                      const Center(
-                        child: Text(
-                          "Authentication failed. Please try again.",
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 12),
-                    isAuthenticating
-                        ? const Center(child: CircularProgressIndicator())
-                        : ElevatedButton(
-                            onPressed: () async {
-                              setState(() {
-                                isAuthenticating = true;
-                                authFailed = false;
-                              });
-
-                              try {
-                                final success =
-                                    await BiometricAuth().authenticate();
-                                if (context.mounted) {
-                                  Navigator.of(ctx).pop(success);
-                                }
-                              } catch (e) {
-                                setState(() {
-                                  authFailed = true;
-                                  isAuthenticating = false;
-                                });
-                              }
-                            },
-                            child: const Text("Continue"),
-                          ),
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.bottomLeft,
-                      child: TextButton(
-                        onPressed: () {
-                          Navigator.of(ctx).pop(false);
-                        },
-                        child: const Text("Use User Id and Password"),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        });
-      },
-    ).then((authResult) {
-      setState(() {
-        isBiometricPopupVisible = false;
-        showFullLoginForm = authResult == false;
-      });
-
-      if (authResult == true) {
-        navigateToScreen(context, const HomeView());
-      }
-    });
+  Future<void> _initBiometric() async {
+    biometricAvailable = await BiometricAuth().checkBiometrics();
+    biometricEnabled = BiometricAuth().isBiometricEnabled();
+    // setState(() {});
   }
 
   void fetchLoginDetails() async {
@@ -307,8 +181,6 @@ class _LoginViewPageState extends State<LoginViewPage> {
         await BiometricAuth().setBiometricAuthId(response.data.username);
 
         // Check if biometrics are available but not enabled
-        final biometricAvailable = await BiometricAuth().checkBiometrics();
-        final biometricEnabled = await BiometricAuth().isBiometricEnabled();
         if (biometricAvailable && !biometricEnabled && !hasSeenPrompt) {
           SharedPrefs().hasSeenBiometricPrompt = true;
 
@@ -440,11 +312,11 @@ class _LoginViewPageState extends State<LoginViewPage> {
         return CustomImageActionAlert(
           iconString: '',
           imageString: ImageAssets.biometricEnableDialogImage,
-          titleString: 'Enable Biometric Login',
+          titleString: 'Quick Login with Biometrics',
           subTitleString:
-              'Would you like to enable biometric authentication for easier future logins?',
-          destructiveActionString: 'Yes',
-          normalActionString: 'No',
+              'Do you want to enable biometric authentication for quicker logins in the future?',
+          destructiveActionString: AppStrings.yes,
+          normalActionString: AppStrings.no,
           onDestructiveActionTap: () async {
             Navigator.pop(dialogContext);
             await BiometricAuth().enableBiometric();
@@ -664,14 +536,12 @@ class _LoginViewPageState extends State<LoginViewPage> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
-    // Trigger biometric only once after login options are loaded
     if (isLoginOptionsLoaded && !_hasBiometricTriggered) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _hasBiometricTriggered = true;
         if (BiometricAuth().isBiometricEnabled()) {
-          showBiometricBottomSheet();
+          attemptBiometricLogin();
         } else {
           setState(() {
             showFullLoginForm = true;
@@ -684,7 +554,7 @@ class _LoginViewPageState extends State<LoginViewPage> {
     if (!isLoginOptionsLoaded) {
       return Scaffold(
         backgroundColor: ColorManager.white,
-        body: const Center(child: CircularProgressIndicator()),
+        body: const Center(child: CustomProgressIndicator()),
       );
     }
 
@@ -703,6 +573,52 @@ class _LoginViewPageState extends State<LoginViewPage> {
                 const HeaderLogo(),
                 const SizedBox(height: 20),
                 _buildLoginForm(),
+                if (biometricAvailable && biometricEnabled)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 30, right: 30),
+                    child: isAuthenticating
+                        ? const Center(child: CircularProgressIndicator())
+                        : Center(
+                            child: GestureDetector(
+                              onTap: () async {
+                                setState(() {
+                                  isAuthenticating = true;
+                                  authFailed = false;
+                                });
+
+                                try {
+                                  final success =
+                                      await BiometricAuth().authenticate();
+                                  if (context.mounted && success == true) {
+                                    navigateToScreen(context, const HomeView());
+                                  } else {
+                                    setState(() {
+                                      isAuthenticating = false;
+                                      authFailed = true;
+                                    });
+                                  }
+                                } catch (e) {
+                                  setState(() {
+                                    authFailed = true;
+                                    isAuthenticating = false;
+                                  });
+                                }
+                              },
+                              child: Container(
+                                width: 55,
+                                height: 55,
+                                decoration: BoxDecoration(
+                                  color: ColorManager.white,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                      color: ColorManager.darkBlue, width: 1),
+                                ),
+                                child: Icon(Icons.fingerprint,
+                                    size: 40, color: ColorManager.darkBlue),
+                              ),
+                            ),
+                          ),
+                  ),
               ],
             ),
           ),

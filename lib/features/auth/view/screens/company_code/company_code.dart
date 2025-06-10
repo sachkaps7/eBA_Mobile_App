@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:developer';
+
 import 'package:eyvo_inventory/api/api_service/api_service.dart';
 import 'package:eyvo_inventory/api/api_service/bloc.dart';
 import 'package:eyvo_inventory/api/response_models/company_code_response.dart';
@@ -65,39 +67,72 @@ class _CompanyCodeViewState extends State<CompanyCodeView> {
     }
   }
 
+  // void validateCompanyCode() async {
+  //   setState(() {
+  //     isLoading = true;
+  //   });
+
+  //   final clientCode = codeController.text.trim();
+  //   Map<String, dynamic> data = {'clientcode': clientCode};
+  //   final jsonResponse =
+  //       await apiService.postRequest(context, ApiService.clientCode, data);
+  //   if (jsonResponse != null) {
+  //     final response = CompanyCodeResponse.fromJson(jsonResponse);
+
+  //     if (response.code == '200') {
+  //       SharedPrefs().companyCode = response.data.clientCode;
+  //       SharedPrefs().accessKey = response.data.accessKey;
+  //       codeController.text = '';
+  //       Navigator.pushNamed(context, Routes.loginRoute);
+  //     } else {
+  //       isError = true;
+  //       errorText = response.message.join(', ');
+  //     }
+  //   }
+
+  //   // var res = await globalBloc.afterFillCompanyCodeApi(context, clientCode);
+  //   // if (res.code == '200') {
+  //   //   SharedPrefs().companyCode = res.data.clientCode;
+  //   //   SharedPrefs().accessKey = res.data.accessKey;
+  //   //   codeController.text = '';
+  //   //   Navigator.pushNamed(context, Routes.loginRoute);
+  //   // } else {
+  //   //   isError = true;
+  //   //   errorText = res.message.join(', ');
+  //   // }
+
+  //   setState(() {
+  //     isLoading = false;
+  //   });
+  // }
   void validateCompanyCode() async {
     setState(() {
       isLoading = true;
+      isError = false; // Reset error state before validation
     });
 
     final clientCode = codeController.text.trim();
     Map<String, dynamic> data = {'clientcode': clientCode};
     final jsonResponse =
         await apiService.postRequest(context, ApiService.clientCode, data);
+
     if (jsonResponse != null) {
       final response = CompanyCodeResponse.fromJson(jsonResponse);
 
       if (response.code == '200') {
         SharedPrefs().companyCode = response.data.clientCode;
         SharedPrefs().accessKey = response.data.accessKey;
-        codeController.text = '';
-        Navigator.pushNamed(context, Routes.loginRoute);
+        // Navigate without rebuilding the widget to avoid showing error
+        Navigator.pushNamed(context, Routes.loginRoute).then((_) {
+          codeController.clear();
+        });
       } else {
-        isError = true;
-        errorText = response.message.join(', ');
+        setState(() {
+          isError = true;
+          errorText = response.message.join(', ');
+        });
       }
     }
-
-    // var res = await globalBloc.afterFillCompanyCodeApi(context, clientCode);
-    // if (res.code == '200') {
-    //   SharedPrefs().companyCode = res.data.clientCode;
-    //   SharedPrefs().accessKey = res.data.accessKey;
-    //   codeController.text = '';
-    //   Navigator.pushNamed(context, Routes.loginRoute);
-    // } else {
-    //   isError = true;
-    //   errorText = res.message.join(', ');
-    // }
 
     setState(() {
       isLoading = false;
@@ -155,14 +190,29 @@ class _CompanyCodeViewState extends State<CompanyCodeView> {
                               ? const CustomProgressIndicator()
                               : CustomButton(
                                   buttonText: AppStrings.submit,
+                                  // onTap: () {
+                                  //   isFormValidated = true;
+                                  //   validateFields();
+                                  //   if (!isError) {
+                                  //     validateCompanyCode();
+                                  //   } else {
+                                  //     setState(() {
+                                  //       isError = true;
+                                  //     });
+                                  //   }
+                                  // },
                                   onTap: () {
                                     isFormValidated = true;
                                     validateFields();
-                                    if (!isError) {
+                                    if (!isError &&
+                                        codeController.text.trim().isNotEmpty) {
                                       validateCompanyCode();
                                     } else {
                                       setState(() {
-                                        isError = true;
+                                        isError =
+                                            codeController.text.trim().isEmpty;
+                                        errorText =
+                                            AppStrings.companyCodeCannotBeBlank;
                                       });
                                     }
                                   },

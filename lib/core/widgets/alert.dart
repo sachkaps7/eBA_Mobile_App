@@ -61,50 +61,54 @@ class _CustomImageActionAlertState extends State<CustomImageActionAlert> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      widget.normalActionString.isNotEmpty
-                          ? CustomTextActionButton(
-                              backgroundColor: widget.isNormalAlert
-                                  ? widget.isConfirmationAlert
-                                      ? ColorManager.white
-                                      : ColorManager.green
-                                  : Colors.transparent,
-                              fontColor: widget.isNormalAlert
-                                  ? widget.isConfirmationAlert
-                                      ? ColorManager.darkRed
-                                      : ColorManager.white
-                                  : ColorManager.lightGrey1,
-                              borderColor: widget.isConfirmationAlert
-                                  ? ColorManager.darkRed
-                                  : ColorManager.lightGrey1,
-                              buttonText: widget.normalActionString,
-                              onTap: widget.onNormalActionTap)
-                          : const SizedBox(),
-                      widget.normalActionString.isNotEmpty
-                          ? const SizedBox(width: 10)
-                          : const SizedBox(),
-                      widget.destructiveActionString.isNotEmpty
-                          ? CustomTextActionButton(
-                              buttonText: widget.destructiveActionString,
-                              backgroundColor: widget.isNormalAlert
-                                  ? widget.isConfirmationAlert
-                                      ? ColorManager.green
-                                      : ColorManager.white
-                                  : ColorManager.darkRed,
-                              fontColor: widget.isNormalAlert
-                                  ? widget.isConfirmationAlert
-                                      ? ColorManager.white
-                                      : ColorManager.darkRed
-                                  : ColorManager.white,
-                              borderColor: widget.isNormalAlert
-                                  ? widget.isConfirmationAlert
-                                      ? ColorManager.lightGrey1
-                                      : ColorManager.darkRed
-                                  : ColorManager.lightGrey1,
-                              onTap: widget.onDestructiveActionTap)
-                          : const SizedBox(),
+                      if (widget.normalActionString.isNotEmpty)
+                        Expanded(
+                          child: CustomTextActionButton(
+                            backgroundColor: widget.isNormalAlert
+                                ? widget.isConfirmationAlert
+                                    ? ColorManager.white
+                                    : ColorManager.green
+                                : Colors.transparent,
+                            fontColor: widget.isNormalAlert
+                                ? widget.isConfirmationAlert
+                                    ? ColorManager.darkRed
+                                    : ColorManager.white
+                                : ColorManager.lightGrey1,
+                            borderColor: widget.isConfirmationAlert
+                                ? ColorManager.darkRed
+                                : ColorManager.lightGrey1,
+                            buttonText: widget.normalActionString,
+                            onTap: widget.onNormalActionTap,
+                          ),
+                        ),
+                      if (widget.normalActionString.isNotEmpty &&
+                          widget.destructiveActionString.isNotEmpty)
+                        const SizedBox(width: 10),
+                      if (widget.destructiveActionString.isNotEmpty)
+                        Expanded(
+                          child: CustomTextActionButton(
+                            buttonText: widget.destructiveActionString,
+                            backgroundColor: widget.isNormalAlert
+                                ? widget.isConfirmationAlert
+                                    ? ColorManager.green
+                                    : ColorManager.white
+                                : ColorManager.green,
+                            fontColor: widget.isNormalAlert
+                                ? widget.isConfirmationAlert
+                                    ? ColorManager.white
+                                    : ColorManager.green
+                                : ColorManager.white,
+                            borderColor: widget.isNormalAlert
+                                ? widget.isConfirmationAlert
+                                    ? ColorManager.lightGrey1
+                                    : ColorManager.green
+                                : ColorManager.green,
+                            onTap: widget.onDestructiveActionTap,
+                          ),
+                        ),
                     ],
                   ),
-                )
+                ),
               ],
             ),
           ),

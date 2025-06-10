@@ -1,9 +1,9 @@
 import 'package:eyvo_inventory/app/app_prefs.dart';
+import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:eyvo_inventory/main.dart';
 import 'package:flutter/material.dart';
 import 'package:aad_oauth/aad_oauth.dart';
 import 'package:aad_oauth/model/config.dart';
-
 
 final tenantId = SharedPrefs().tanentId;
 final clientId = SharedPrefs().clientId;
@@ -17,7 +17,7 @@ class AzureAuthService {
     redirectUri: redirectURI,
     navigatorKey: navigatorKey,
     tokenIdentifier: "eyvo_inventory_auth_token",
-    loader: const Center(child: CircularProgressIndicator()),
+    loader: const Center(child: CustomProgressIndicator()),
   );
 
   static final AadOAuth oauth = AadOAuth(config);

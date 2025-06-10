@@ -55,4 +55,5 @@ class ImageAssets {
   static const String successfulIcon = "$imagePath/Successfully-icon.jpg";
   static const String splashIcon = "$imagePath/eyvo-eProcurement-logo.png";
   static const String ssoIcon = "$imagePath/sys-azure.jpg";
+  static const String progressIndicator = "$imagePath/progress_indicator.gif";
 }

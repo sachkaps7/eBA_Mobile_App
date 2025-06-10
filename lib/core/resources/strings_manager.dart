@@ -157,7 +157,7 @@ class AppStrings {
   static const String apiKeyLocation = 'location';
   static const String apiKeyEditLocation = 'locationedit';
   static const String settings = "Settings";
-
+  static const String notifications = "Notifications";
   static const String itemTitle = 'Sony WH-1000XM4 Industry Leading';
   static const String itemSubTitle =
       'Digital noise cancelling: Industry leading Active Noise canellation (ANC) lends a personalized, virtual';

@@ -11,6 +11,7 @@ import 'package:eyvo_inventory/core/resources/routes_manager.dart';
 import 'package:eyvo_inventory/core/resources/strings_manager.dart';
 import 'package:eyvo_inventory/core/resources/styles_manager.dart';
 import 'package:eyvo_inventory/core/utils.dart';
+import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
 import 'package:eyvo_inventory/core/widgets/custom_card_item.dart';
 import 'package:eyvo_inventory/core/widgets/custom_list_tile.dart';
 import 'package:eyvo_inventory/core/widgets/setting_page.dart';
@@ -27,14 +28,14 @@ import 'dart:convert';
 
 import 'package:barcode_scan2/barcode_scan2.dart';
 
-class HomeView extends StatefulWidget {
-  const HomeView({super.key});
+class InverntoryView extends StatefulWidget {
+  const InverntoryView({super.key});
 
   @override
-  State<HomeView> createState() => _HomeViewState();
+  State<InverntoryView> createState() => _InverntoryViewState();
 }
 
-class _HomeViewState extends State<HomeView> {
+class _InverntoryViewState extends State<InverntoryView> {
   bool isPermissionDenied = false;
   bool isLoading = false;
   bool isRegionEnabled = false;
@@ -108,7 +109,7 @@ class _HomeViewState extends State<HomeView> {
           if (response.data.isNotEmpty) {
             SharedPrefs().selectedRegionID = response.data[0].regionId;
             SharedPrefs().selectedLocationID = response.data[0].locationId;
-            selectRegionTitle = response.data[0].regionLabelName;
+            SharedPrefs().selectRegionTitle = response.data[0].regionLabelName;
             selectedRegion = response.data[0].regionName;
             selectLocationTitle = response.data[0].locationLabelName;
             selectedLocation = response.data[0].locationName;
@@ -239,140 +240,10 @@ class _HomeViewState extends State<HomeView> {
   Widget build(BuildContext context) {
     double topPadding = MediaQuery.of(context).padding.top;
     return Scaffold(
-      key: _scaffoldKey,
       backgroundColor: ColorManager.primary,
-      appBar: AppBar(
-        backgroundColor: ColorManager.darkBlue,
-        toolbarHeight: 56,
-        title: Text(
-          AppStrings.dashboard,
-          style: getBoldStyle(
-            color: ColorManager.white,
-            fontSize: FontSize.s20,
-          ),
-        ),
-        leading: IconButton(
-          icon: Image.asset(
-            ImageAssets.menu,
-            width: 20,
-            height: 20,
-          ),
-          onPressed: () {
-            _scaffoldKey.currentState?.openDrawer();
-          },
-        ),
-      ),
-      drawer: Drawer(
-        backgroundColor: ColorManager.light3,
-        child: Column(
-          children: <Widget>[
-            SizedBox(height: topPadding + 10),
-            Image.asset(ImageAssets.splashLogo, width: 90, height: 72),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.all(2),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.person, color: ColorManager.blue, size: 20),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      displayUserName,
-                      style: TextStyle(fontSize: 18, color: ColorManager.blue),
-                      maxLines: 2,
-                      overflow: TextOverflow.visible,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Container(
-                height: 300, // Reduced from 320 if you want a tighter fit
-                decoration: BoxDecoration(
-                  color: ColorManager.white,
-                  border: Border.all(color: ColorManager.grey4, width: 1.0),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: ListView.separated(
-                        padding: EdgeInsets.zero,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: menuItems.length,
-                        separatorBuilder: (context, index) => Divider(
-                          height: 0.5,
-                          thickness: 0.5,
-                          color: ColorManager.primary,
-                        ),
-                        itemBuilder: (context, index) {
-                          final title = menuItems[index];
-                          final icon =
-                              menuIcons[title] ?? Icons.arrow_forward_ios;
-
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 0.5),
-                            child: MenuItemListTile(
-                              title: title,
-                              iconData: icon,
-                              onTap: () {
-                                navigateFromSideMenuAsPerSelectedTitle(title);
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 6), // Slightly reduced
-                    GestureDetector(
-                      onTap: logoutUser,
-                      child: SizedBox(
-                        height: 60,
-                        width: displayWidth(context),
-                        child: Column(
-                          children: [
-                            Container(height: 1, color: ColorManager.grey6),
-                            const SizedBox(height: 10),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset(ImageAssets.logoutIcon,
-                                    width: 20, height: 20),
-                                const SizedBox(width: 6),
-                                Text(
-                                  AppStrings.logout,
-                                  style: getSemiBoldStyle(
-                                    color: ColorManager.orange,
-                                    fontSize: FontSize.s18,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const Spacer(),
-            Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Text(
-                SharedPrefs().mobileVersion,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: ColorManager.blue,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
+      appBar: buildCommonAppBar(
+        context: context,
+        title: AppStrings.inventory,
       ),
       body: isLoading
           ? const Center(child: CustomProgressIndicator())
@@ -399,9 +270,9 @@ class _HomeViewState extends State<HomeView> {
                           ),
                           SizedBox(
                             child: CenterTitleHeader(
-                                titleText: AppStrings.permissionDeniedTitle,
-                                detailText:
-                                    AppStrings.permissionDeniedSubTitle),
+                              titleText: AppStrings.permissionDeniedTitle,
+                              detailText: AppStrings.permissionDeniedSubTitle,
+                            ),
                           ),
                         ],
                       ),

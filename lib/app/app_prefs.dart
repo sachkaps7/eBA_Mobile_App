@@ -35,6 +35,13 @@ const String MOBILE_VERSION = "MOBILE_VERSION";
 const String BIOMETRIC_AUTH_ID = "BIOMETRIC_AUTH_ID";
 const String IS_BIOMATRIC_ENABLED = "IS_BIOMATRIC_ENABLED";
 const String BIOMETRIC_PROMPT_SHOWKEY = "BIOMETRIC_PROMPT_SHOWKEY";
+const String REQUEST_FLAG = "REQUEST_FLAG";
+const String ORDER_FLAG = "ORDER_FLAG";
+const String INVENTORY_FLAG = "INVENTORY_FLAG";
+const String INVOICE_FLAG = "INVOICE_FLAG";
+const String EXPENSE_FLAG = "EXPENSE_FLAG ";
+const String REGION = "REGION ";
+const String SELECT_REGIN_TITLE = "SELECT_REGIN_TITLE ";
 
 class SharedPrefs {
   late final SharedPreferences _sharedPrefs;
@@ -242,4 +249,34 @@ class SharedPrefs {
 
   set hasSeenBiometricPrompt(bool value) =>
       _sharedPrefs.setBool(BIOMETRIC_PROMPT_SHOWKEY, value);
+
+  bool get requestFlag => _sharedPrefs.getBool(REQUEST_FLAG) ?? false;
+
+  set requestFlag(bool value) => _sharedPrefs.setBool(REQUEST_FLAG, value);
+
+  bool get orderFlag => _sharedPrefs.getBool(ORDER_FLAG) ?? false;
+
+  set orderFlag(bool value) => _sharedPrefs.setBool(ORDER_FLAG, value);
+
+  bool get expenseFlag => _sharedPrefs.getBool(EXPENSE_FLAG) ?? false;
+
+  set expenseFlag(bool value) => _sharedPrefs.setBool(EXPENSE_FLAG, value);
+
+  bool get invoiceFlag => _sharedPrefs.getBool(INVOICE_FLAG) ?? false;
+
+  set invoiceFlag(bool value) => _sharedPrefs.setBool(INVOICE_FLAG, value);
+
+  bool get inventoryFlag => _sharedPrefs.getBool(INVENTORY_FLAG) ?? false;
+
+  set inventoryFlag(bool value) => _sharedPrefs.setBool(INVENTORY_FLAG, value);
+
+  bool get region => _sharedPrefs.getBool(REGION) ?? false;
+
+  set region(bool value) => _sharedPrefs.setBool(REGION, value);
+
+  String get selectRegionTitle =>
+      _sharedPrefs.getString(SELECT_REGIN_TITLE) ?? "";
+
+  set selectRegionTitle(String value) =>
+      _sharedPrefs.setString(SELECT_REGIN_TITLE, value);
 }

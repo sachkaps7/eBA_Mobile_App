@@ -59,6 +59,60 @@ class CustomItemCard extends StatelessWidget {
   }
 }
 
+class CustomItemCardDashboard extends StatelessWidget {
+  final String imageString;
+  final String title;
+  final Color backgroundColor;
+  final double cornerRadius;
+  final VoidCallback onTap;
+
+  const CustomItemCardDashboard({
+    super.key,
+    required this.imageString,
+    required this.title,
+    required this.backgroundColor,
+    required this.cornerRadius,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: displayWidth(context) * 0.5,
+        height: 160, // keep this fixed height
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(cornerRadius),
+        ),
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center, // center everything
+          children: [
+            Image.asset(
+              imageString,
+              height: 60,
+              width: 60,
+            ),
+            const SizedBox(height: 10.0),
+            Text(
+              title,
+              style: getSemiBoldStyle(
+                color: ColorManager.lightGrey1,
+                fontSize: FontSize.s18,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis, // handle long text gracefully
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class CustomItemCardWithEdit extends StatelessWidget {
   final String imageString;
   final String title;
@@ -143,6 +197,92 @@ class CustomItemCardWithEdit extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class CommonCardWidget extends StatelessWidget {
+  final List<Map<String, String>> subtitles;
+  final VoidCallback? onTap;
+
+  const CommonCardWidget({
+    super.key,
+    required this.subtitles,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: ColorManager.white,
+      elevation: 2,
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(4),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Table(
+            columnWidths: const {
+              0: IntrinsicColumnWidth(),
+              1: FixedColumnWidth(24),
+              2: FlexColumnWidth(),
+            },
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+            children: List.generate(subtitles.length, (index) {
+              final item = subtitles[index];
+              final label = item.keys.first;
+              final value = item.values.first;
+
+              final isOrderNo = label == 'Order No';
+
+              return TableRow(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10.0, bottom: 4),
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: FontSize.s16,
+                        color: ColorManager.darkGrey,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text(
+                      ':',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: FontSize.s16,
+                        color: ColorManager.darkGrey,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text(
+                      value,
+                      style: TextStyle(
+                        fontWeight: FontWeight.normal,
+                        fontSize: FontSize.s16,
+                        color: isOrderNo
+                            ? ColorManager.blue
+                            : ColorManager.darkGrey,
+                        decoration: isOrderNo ? TextDecoration.underline : null,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }),
+          ),
+        ),
       ),
     );
   }

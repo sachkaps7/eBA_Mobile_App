@@ -154,17 +154,21 @@ class CustomTextActionButton extends StatelessWidget {
   final bool isBoldFont;
   final double fontSize;
   final VoidCallback onTap;
-  const CustomTextActionButton(
-      {super.key,
-      required this.buttonText,
-      required this.backgroundColor,
-      required this.borderColor,
-      required this.fontColor,
-      this.buttonWidth = 120,
-      this.buttonHeight = 50,
-      this.isBoldFont = false,
-      this.fontSize = FontSize.s14,
-      required this.onTap});
+  final IconData? icon; // <-- Optional icon
+
+  const CustomTextActionButton({
+    super.key,
+    required this.buttonText,
+    required this.backgroundColor,
+    required this.borderColor,
+    required this.fontColor,
+    this.buttonWidth = 120,
+    this.buttonHeight = 50,
+    this.isBoldFont = false,
+    this.fontSize = FontSize.s16,
+    this.icon, // <-- Added
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -174,19 +178,29 @@ class CustomTextActionButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-            shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(10))),
-            backgroundColor: backgroundColor,
-            shadowColor: Colors.transparent,
-            side: BorderSide(color: borderColor)),
-        child: Center(
-          child: Text(
-            buttonText,
-            style: isBoldFont
-                ? getBoldStyle(color: fontColor, fontSize: fontSize)
-                : getSemiBoldStyle(color: fontColor, fontSize: fontSize),
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
           ),
+          backgroundColor: backgroundColor,
+          shadowColor: Colors.transparent,
+          side: BorderSide(color: borderColor),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, color: fontColor, size: fontSize),
+              const SizedBox(width: 6),
+            ],
+            Text(
+              buttonText,
+              style: isBoldFont
+                  ? getBoldStyle(color: fontColor, fontSize: fontSize)
+                  : getSemiBoldStyle(color: fontColor, fontSize: fontSize),
+            ),
+          ],
         ),
       ),
     );

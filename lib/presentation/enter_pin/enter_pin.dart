@@ -43,7 +43,7 @@ class _EnterPINViewState extends State<EnterPINView> {
     if (!isValid) {
       attemptsRemaining -= 1;
     } else {
-      navigateToScreen(context, const HomeView());
+      navigateToScreen(context, const InverntoryView());
     }
     if (attemptsRemaining <= 0) {
       setState(() {

@@ -1,3 +1,11 @@
+import 'package:eyvo_inventory/core/widgets/approver_detailed_page.dart';
+import 'package:eyvo_inventory/core/widgets/thankYouPage.dart';
+import 'package:eyvo_inventory/features/auth/view/screens/approval/approval_view.dart';
+import 'package:eyvo_inventory/features/auth/view/screens/approval/order_approval_view.dart';
+import 'package:eyvo_inventory/features/auth/view/screens/approval/order_details_view.dart';
+import 'package:eyvo_inventory/features/auth/view/screens/approval/request_approver_view.dart';
+import 'package:eyvo_inventory/features/auth/view/screens/approval/show_group_approver_list.dart';
+import 'package:eyvo_inventory/features/auth/view/screens/dashboard/dashbord.dart';
 import 'package:eyvo_inventory/features/auth/view/screens/company_code/company_code.dart';
 import 'package:eyvo_inventory/log_data.dart/logger_data.dart';
 import 'package:eyvo_inventory/presentation/change_password/change_password.dart';
@@ -43,6 +51,7 @@ class Routes {
   static const String enterPINRoute = "/enterPIN";
   static const String setPINRoute = "/setPIN";
   static const String homeRoute = "/home";
+  static const String inventoryRoute = "/inventory";
   static const String changePasswordRoute = "/changePassword";
   static const String regionListRoute = "/regionList";
   static const String locationListRoute = "/locationList";
@@ -53,6 +62,13 @@ class Routes {
   static const String searchOrderRoute = "/searchOrder";
   static const String receivedItemListRoute = "/receivedItemList";
   static const String pdfViewRoute = "/pdfView";
+  static const String approvalRoute = "/approvalView";
+  static const String requestApprovalRoute = "/requestApprovalView";
+  static const String orderApproverPage = "/orderApproverPage";
+  static const String orderDetailsView = "/orderDetailsView";
+  static const String genericDetailRoute = "/genericDetailPage";
+  static const String thankYouRoute = "/thankYou";
+  static const String showGroupApprovalListRoute = "/showGroupApprovalList";
 }
 
 class RouteGenerator {
@@ -95,7 +111,50 @@ class RouteGenerator {
       case Routes.setPINRoute:
         return MaterialPageRoute(builder: (_) => const SetPINView());
       case Routes.homeRoute:
-        return MaterialPageRoute(builder: (_) => const HomeView());
+        return MaterialPageRoute(builder: (_) => HomeView());
+      case Routes.inventoryRoute:
+        return MaterialPageRoute(builder: (_) => const InverntoryView());
+      case Routes.approvalRoute:
+        return MaterialPageRoute(builder: (_) => const ApprovalView());
+      case Routes.requestApprovalRoute:
+        return MaterialPageRoute(builder: (_) => const RequestApproverPage());
+      case Routes.orderApproverPage:
+        return MaterialPageRoute(builder: (_) => const OrderApproverPage());
+      case Routes.orderDetailsView:
+        return MaterialPageRoute(
+          builder: (_) => const OrderDetailsView(orderId: 0),
+        );
+      case Routes.genericDetailRoute:
+        final args = routeSettings.arguments as Map<String, dynamic>;
+
+        return MaterialPageRoute(
+          builder: (_) => GenericDetailPage(
+            title: args['title'],
+            data: args['data'],
+          ),
+        );
+      case Routes.thankYouRoute:
+        final args = routeSettings.arguments as Map<String, dynamic>;
+
+        return MaterialPageRoute(
+          builder: (_) => ThankYouPage(
+              message: args['message'] ?? '',
+              approverName: args['approverName'] ?? '',
+              status: args['status'] ?? '',
+              requestName:args['requestName'] ??'',
+              number:args['number'] ??''),
+        );
+
+      case Routes.showGroupApprovalListRoute:
+        final args = routeSettings.arguments as Map<String, dynamic>;
+
+        return MaterialPageRoute(
+          builder: (_) => ShowGroupApprovalList(
+            id: args['id'],
+            from: args['from'],
+          ),
+        );
+
       case Routes.changePasswordRoute:
         return MaterialPageRoute(builder: (_) => const ChangePasswordView());
       case Routes.regionListRoute:

@@ -56,4 +56,15 @@ class ImageAssets {
   static const String splashIcon = "$imagePath/eyvo-eProcurement-logo.png";
   static const String ssoIcon = "$imagePath/sys-azure.jpg";
   static const String progressIndicator = "$imagePath/progress_indicator.gif";
+  static const String inventory = "$imagePath/inventory-image.png";
+  static const String approval = "$imagePath/approval-m.png";
+  static const String selectApproval = "$imagePath/SelectApproval.png";
+  static const String requestApproval = "$imagePath/Request-Approval.png";
+  static const String expense = "$imagePath/Expense.png";
+  static const String orderCostCentre = "$imagePath/Order-Cost-Centre.png";
+  static const String invoiceApproval = "$imagePath/Invoice-Approval.png";
+  static const String detailsRule = "$imagePath/details-rule.ico";
+  static const String common = "$imagePath/common.png";
+  static const String thankYou1 = "$imagePath/thank-you.png";
+  static const String thankYou2 = "$imagePath/thank-you2.png";
 }

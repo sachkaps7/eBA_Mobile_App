@@ -40,7 +40,8 @@ class ColorManager {
   static Color lightRed2 = HexColor.fromHex("#ffcdd2");
   static Color red = HexColor.fromHex("#b71c1c");
   static Color red2 = HexColor.fromHex("#c62827");
-  static Color green = HexColor.fromHex('09af00');
+  static Color green = HexColor.fromHex('#09af00');
+  static Color yellow = HexColor.fromHex('#ffa500');
 }
 
 extension HexColor on Color {

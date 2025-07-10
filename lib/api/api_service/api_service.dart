@@ -35,6 +35,11 @@ class ApiService {
   static const String itemsListing = 'Items/listing';
   static const String itemDetails = 'Items/details';
   static const String itemsInOut = 'Items/inout';
+  static const String switchboard = "switchboard/index";
+  static const String orderApprovalList = "order/approvallist";
+  static const String orderApprovalDetails = "order/approval";
+  static const String groupApproverList = "groupapprover/list";
+    static const String orderApprovalApproved = "order/approve";
 
   Future<bool> updateToken(BuildContext context) async {
     Map<String, dynamic> data = {

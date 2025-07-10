@@ -24,6 +24,7 @@ import 'package:eyvo_inventory/core/widgets/header_logo.dart';
 import 'package:eyvo_inventory/core/widgets/or_divider.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:eyvo_inventory/core/widgets/text_error.dart';
+import 'package:eyvo_inventory/features/auth/view/screens/dashboard/dashbord.dart';
 import 'package:eyvo_inventory/presentation/forgot_password/forgot_password.dart';
 import 'package:eyvo_inventory/presentation/forgot_user_id/forgot_user_id.dart';
 import 'package:eyvo_inventory/presentation/home/home.dart';
@@ -186,7 +187,7 @@ class _LoginViewPageState extends State<LoginViewPage> {
 
           showBiometricEnableDialog(context);
         } else {
-          navigateToScreen(context, const HomeView());
+          navigateToScreen(context, HomeView());
         }
       } else {
         isPasswordError = true;
@@ -262,7 +263,7 @@ class _LoginViewPageState extends State<LoginViewPage> {
         SharedPrefs().jwtToken = response.data.jwttoken;
         SharedPrefs().refreshToken = response.data.jwtrefreshtoken;
         SharedPrefs().userSession = response.data.userSession;
-        navigateToScreen(context, const HomeView());
+        navigateToScreen(context, HomeView());
         // Slight delay to allow loader to show (optional)
         await Future.delayed(const Duration(milliseconds: 200));
       } else {
@@ -320,11 +321,11 @@ class _LoginViewPageState extends State<LoginViewPage> {
           onDestructiveActionTap: () async {
             Navigator.pop(dialogContext);
             await BiometricAuth().enableBiometric();
-            navigateToScreen(context, const HomeView());
+            navigateToScreen(context, HomeView());
           },
           onNormalActionTap: () {
             Navigator.pop(dialogContext);
-            navigateToScreen(context, const HomeView());
+            navigateToScreen(context, HomeView());
           },
         );
       },
@@ -388,7 +389,7 @@ class _LoginViewPageState extends State<LoginViewPage> {
           SharedPrefs().jwtToken = response.data.jwttoken;
           SharedPrefs().refreshToken = response.data.jwtrefreshtoken;
           SharedPrefs().userSession = response.data.userSession;
-          navigateToScreen(context, const HomeView());
+          navigateToScreen(context, HomeView());
         } else {
           isPasswordError = true;
           errorText = response.message.join(', ');
@@ -475,7 +476,7 @@ class _LoginViewPageState extends State<LoginViewPage> {
         SharedPrefs().userSession = response.data.userSession;
         // debugPrint(
         //     " ###############################: ${response.data.username}");
-        navigateToScreen(context, const HomeView());
+        navigateToScreen(context, HomeView());
       } else {
         //Show proper message from backend
         setState(() {
@@ -573,6 +574,7 @@ class _LoginViewPageState extends State<LoginViewPage> {
                 const HeaderLogo(),
                 const SizedBox(height: 20),
                 _buildLoginForm(),
+                const SizedBox(height: 10),
                 if (biometricAvailable && biometricEnabled)
                   Padding(
                     padding: const EdgeInsets.only(left: 30, right: 30),
@@ -590,7 +592,7 @@ class _LoginViewPageState extends State<LoginViewPage> {
                                   final success =
                                       await BiometricAuth().authenticate();
                                   if (context.mounted && success == true) {
-                                    navigateToScreen(context, const HomeView());
+                                    navigateToScreen(context,  HomeView());
                                   } else {
                                     setState(() {
                                       isAuthenticating = false;

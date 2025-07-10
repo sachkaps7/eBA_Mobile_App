@@ -97,6 +97,11 @@ class AppStrings {
   static const String stockDetails = "Stock: ";
   static const String searchItems = "Search Items";
   static const String home = "Home";
+  static const String inventory = "Inventory";
+  static const String inventoryControl = "Inventory\nControl";
+  static const String approval = "Approval";
+  static const String requestApproval = "Request Approval";
+  static const String orderApproval = "Order Approval";
   static const String changePassword = "Change Password";
   static const String changePIN = "Change PIN";
   static const String oldPassword = "Old Password";

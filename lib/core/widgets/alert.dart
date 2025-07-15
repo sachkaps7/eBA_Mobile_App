@@ -1,5 +1,6 @@
 import 'package:eyvo_inventory/app/sizes_helper.dart';
 import 'package:eyvo_inventory/core/resources/color_manager.dart';
+import 'package:eyvo_inventory/core/resources/font_manager.dart';
 import 'package:eyvo_inventory/core/widgets/button.dart';
 import 'package:eyvo_inventory/core/widgets/title_header.dart';
 import 'package:flutter/material.dart';
@@ -114,6 +115,151 @@ class _CustomImageActionAlertState extends State<CustomImageActionAlert> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class CustomRejectReasonAlert extends StatefulWidget {
+  final String iconString;
+  final String imageString;
+  final String titleString;
+  final String rejectActionString;
+  final String cancelActionString;
+  final Function(String reason) onRejectTap;
+  final VoidCallback onCancelTap;
+
+  const CustomRejectReasonAlert({
+    super.key,
+    required this.iconString,
+    required this.imageString,
+    required this.titleString,
+    required this.rejectActionString,
+    required this.cancelActionString,
+    required this.onRejectTap,
+    required this.onCancelTap,
+  });
+
+  @override
+  State<CustomRejectReasonAlert> createState() =>
+      _CustomRejectReasonAlertState();
+}
+
+class _CustomRejectReasonAlertState extends State<CustomRejectReasonAlert> {
+  final TextEditingController _controller = TextEditingController();
+  final int _maxLength = 255;
+  String? _errorText;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: ColorManager.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      content: SingleChildScrollView(
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width - 30, // wider popup
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 30),
+              SizedBox(
+                height: 120,
+                child: Image.asset(widget.imageString, fit: BoxFit.contain),
+              ),
+              const SizedBox(height: 20),
+              CenterTitleHeader(
+                titleText: widget.titleString,
+                detailText: "",
+              ),
+              const SizedBox(height: 16),
+
+              /// TextField Section
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: _controller,
+                    maxLength: _maxLength,
+                    maxLines: 6,
+                    onChanged: (_) {
+                      setState(() {
+                        _errorText = null;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      hintText: "Enter reason here...",
+                      hintStyle: TextStyle(
+                        fontSize: FontSize.s14,
+                        color: ColorManager.lightGrey,
+                      ),
+                      alignLabelWithHint: true,
+                      errorText: _errorText,
+                      errorStyle: TextStyle(
+                        fontSize: FontSize.s18,
+                        fontWeight: FontWeight.bold,
+                        color: ColorManager.red,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      contentPadding: const EdgeInsets.fromLTRB(12, 16, 12, 12),
+                      counterText: "",
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      "Characters remaining ${_maxLength - _controller.text.length}",
+                      style: TextStyle(
+                        fontSize: FontSize.s14,
+                        color: ColorManager.darkGrey,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              /// Button Row
+              Row(
+                children: [
+                  Expanded(
+                    child: CustomTextActionButton(
+                      buttonText: widget.rejectActionString,
+                      backgroundColor: ColorManager.red,
+                      fontColor: ColorManager.white,
+                      borderColor: ColorManager.red,
+                      onTap: () {
+                        if (_controller.text.trim().isEmpty) {
+                          setState(() {
+                            _errorText = "Reason is required";
+                          });
+                          return;
+                        }
+                        widget.onRejectTap(_controller.text.trim());
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: CustomTextActionButton(
+                      buttonText: widget.cancelActionString,
+                      backgroundColor: ColorManager.white,
+                      fontColor: ColorManager.darkRed,
+                      borderColor: ColorManager.darkRed,
+                      onTap: widget.onCancelTap,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

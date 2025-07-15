@@ -67,4 +67,5 @@ class ImageAssets {
   static const String common = "$imagePath/common.png";
   static const String thankYou1 = "$imagePath/thank-you.png";
   static const String thankYou2 = "$imagePath/thank-you2.png";
+  static const String rejection = "$imagePath/rejection.png";
 }

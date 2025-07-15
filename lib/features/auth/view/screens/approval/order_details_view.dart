@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:eyvo_inventory/api/response_models/order_approval_approved_response.dart';
 import 'package:eyvo_inventory/core/resources/assets_manager.dart';
 import 'package:eyvo_inventory/core/resources/routes_manager.dart';
@@ -631,7 +633,28 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                               fontColor: ColorManager.white,
                               fontSize: FontSize.s18,
                               isBoldFont: true,
-                              onTap: () {},
+                              onTap: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return CustomRejectReasonAlert(
+                                      iconString: '',
+                                      imageString: ImageAssets.rejection,
+                                      titleString: "Please Add Reject Reason",
+                                      rejectActionString: "Reject",
+                                      cancelActionString: "Cancel",
+                                      onCancelTap: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      onRejectTap: (reason) {
+                                        Navigator.of(context).pop();
+                                        // Call your reject logic here with the `reason`
+                                        log("Rejected with reason: $reason");
+                                      },
+                                    );
+                                  },
+                                );
+                              },
                             ),
                           ),
                         ],

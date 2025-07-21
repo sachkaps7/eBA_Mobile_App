@@ -39,7 +39,8 @@ class ApiService {
   static const String orderApprovalList = "order/approvallist";
   static const String orderApprovalDetails = "order/approval";
   static const String groupApproverList = "groupapprover/list";
-    static const String orderApprovalApproved = "order/approve";
+  static const String orderApprovalApproved = "order/approve";
+  static const String orderApprovalReject = "order/reject";
 
   Future<bool> updateToken(BuildContext context) async {
     Map<String, dynamic> data = {

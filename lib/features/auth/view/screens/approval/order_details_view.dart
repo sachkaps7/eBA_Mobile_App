@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:eyvo_inventory/api/response_models/order_approval_approved_response.dart';
+import 'package:eyvo_inventory/api/response_models/order_approval_reject_response.dart';
 import 'package:eyvo_inventory/core/resources/assets_manager.dart';
 import 'package:eyvo_inventory/core/resources/routes_manager.dart';
 import 'package:eyvo_inventory/core/utils.dart';
@@ -109,6 +110,59 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
         );
       } else {
         errorText = resp.message ?? "Something went wrong";
+        showErrorDialog(context, errorText, false);
+      }
+    } else {
+      errorText = "No response from server";
+      showErrorDialog(context, errorText, false);
+    }
+
+    setState(() {
+      isLoading = false;
+      isError = true;
+    });
+  }
+
+  Future<void> orderApprovalReject(String reason) async {
+    setState(() {
+      isLoading = true;
+      isError = false;
+    });
+
+    final jsonResponse = await apiService.postRequest(
+      context,
+      ApiService.orderApprovalReject,
+      {
+        'uid': SharedPrefs().uID,
+        'orderId': widget.orderId,
+        'reason': reason,
+      },
+    );
+
+    if (!mounted) return;
+
+    if (jsonResponse != null) {
+      final resp = OrderApprovalRejectResponse.fromJson(jsonResponse);
+      if (resp.code == 200) {
+        final message = resp.message.isNotEmpty
+            ? resp.message.first
+            : "Rejected successfully";
+
+        Navigator.pushReplacementNamed(
+          context,
+          Routes.thankYouRoute,
+          arguments: {
+            'message': message,
+            'approverName': 'orderApproval',
+            'status': 'Order Rejected',
+            'requestName': 'Order Number',
+            'number': orderDetails!.header.orderNumber,
+          },
+        );
+      } else {
+        errorText = resp.message.isNotEmpty
+            ? resp.message.first
+            : "Something went wrong";
         showErrorDialog(context, errorText, false);
       }
     } else {
@@ -648,8 +702,8 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                       },
                                       onRejectTap: (reason) {
                                         Navigator.of(context).pop();
-                                        // Call your reject logic here with the `reason`
-                                        log("Rejected with reason: $reason");
+                                        orderApprovalReject(
+                                            reason); 
                                       },
                                     );
                                   },

@@ -76,10 +76,13 @@ class ThankYouPage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: FontSize.s20,
                       fontWeight: FontWeight.bold,
-                      color: ColorManager.black,
+                      color: status == 'Order Rejected'
+                          ? ColorManager.red
+                          : ColorManager.green,
                     ),
                     textAlign: TextAlign.center,
                   ),
+
                   const SizedBox(height: 8),
 
                   // RequestName : Number
@@ -87,10 +90,9 @@ class ThankYouPage extends StatelessWidget {
                     Text(
                       '$requestName: $number',
                       style: TextStyle(
-                        fontSize:
-                            FontSize.s20, // you can increase this if needed
+                        fontSize: FontSize.s18,
                         fontWeight: FontWeight.w600,
-                        color: ColorManager.green,
+                        color: ColorManager.darkGrey,
                       ),
                       textAlign: TextAlign.center,
                     ),

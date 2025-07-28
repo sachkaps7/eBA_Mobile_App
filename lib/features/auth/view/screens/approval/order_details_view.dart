@@ -8,6 +8,7 @@ import 'package:eyvo_inventory/core/utils.dart';
 import 'package:eyvo_inventory/core/widgets/alert.dart';
 import 'package:eyvo_inventory/core/widgets/approval_details_helper.dart';
 import 'package:eyvo_inventory/core/widgets/approver_detailed_page.dart';
+import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:eyvo_inventory/core/widgets/thankYouPage.dart';
 import 'package:eyvo_inventory/features/auth/view/screens/approval/show_group_approver_list.dart';
 import 'package:eyvo_inventory/log_data.dart/logger_data.dart';
@@ -185,7 +186,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
       ),
       backgroundColor: ColorManager.primary,
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CustomProgressIndicator())
           : isError
               ? Center(child: Text(errorText))
               : Column(

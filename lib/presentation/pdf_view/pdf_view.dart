@@ -13,6 +13,7 @@ import 'package:eyvo_inventory/core/resources/strings_manager.dart';
 import 'package:eyvo_inventory/core/resources/styles_manager.dart';
 import 'package:eyvo_inventory/core/widgets/button.dart';
 import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
+import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:path_provider/path_provider.dart';
@@ -114,7 +115,7 @@ class _PDFViewScreenState extends State<PDFViewScreen> {
         title: AppStrings.orderNumberDetail + widget.orderNumber,
       ),
       body: isLoading && filePath == null
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CustomProgressIndicator())
           : Stack(
               children: [
                 PDFView(

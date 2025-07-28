@@ -579,7 +579,7 @@ class _LoginViewPageState extends State<LoginViewPage> {
                   Padding(
                     padding: const EdgeInsets.only(left: 30, right: 30),
                     child: isAuthenticating
-                        ? const Center(child: CircularProgressIndicator())
+                        ? const Center(child: CustomProgressIndicator())
                         : Center(
                             child: GestureDetector(
                               onTap: () async {

@@ -40,80 +40,82 @@ class _CustomImageActionAlertState extends State<CustomImageActionAlert> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        AlertDialog(
-          backgroundColor: ColorManager.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0),
-          ),
-          content: SizedBox(
-            width: displayWidth(context) - 30,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image(image: AssetImage(widget.imageString)),
-                CenterTitleHeader(
-                    titleText: widget.titleString,
-                    detailText: widget.subTitleString),
-                const SizedBox(height: 24),
-                Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (widget.normalActionString.isNotEmpty)
-                        Expanded(
-                          child: CustomTextActionButton(
-                            backgroundColor: widget.isNormalAlert
-                                ? widget.isConfirmationAlert
-                                    ? ColorManager.white
-                                    : ColorManager.green
-                                : Colors.transparent,
-                            fontColor: widget.isNormalAlert
-                                ? widget.isConfirmationAlert
-                                    ? ColorManager.darkRed
-                                    : ColorManager.white
-                                : ColorManager.lightGrey1,
-                            borderColor: widget.isConfirmationAlert
-                                ? ColorManager.darkRed
-                                : ColorManager.lightGrey1,
-                            buttonText: widget.normalActionString,
-                            onTap: widget.onNormalActionTap,
+    return SingleChildScrollView(
+      child: Stack(
+        children: [
+          AlertDialog(
+            backgroundColor: ColorManager.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+            content: SizedBox(
+              width: displayWidth(context) - 30,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image(image: AssetImage(widget.imageString)),
+                  CenterTitleHeader(
+                      titleText: widget.titleString,
+                      detailText: widget.subTitleString),
+                  const SizedBox(height: 24),
+                  Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (widget.normalActionString.isNotEmpty)
+                          Expanded(
+                            child: CustomTextActionButton(
+                              backgroundColor: widget.isNormalAlert
+                                  ? widget.isConfirmationAlert
+                                      ? ColorManager.white
+                                      : ColorManager.green
+                                  : Colors.transparent,
+                              fontColor: widget.isNormalAlert
+                                  ? widget.isConfirmationAlert
+                                      ? ColorManager.darkRed
+                                      : ColorManager.white
+                                  : ColorManager.lightGrey1,
+                              borderColor: widget.isConfirmationAlert
+                                  ? ColorManager.darkRed
+                                  : ColorManager.lightGrey1,
+                              buttonText: widget.normalActionString,
+                              onTap: widget.onNormalActionTap,
+                            ),
                           ),
-                        ),
-                      if (widget.normalActionString.isNotEmpty &&
-                          widget.destructiveActionString.isNotEmpty)
-                        const SizedBox(width: 10),
-                      if (widget.destructiveActionString.isNotEmpty)
-                        Expanded(
-                          child: CustomTextActionButton(
-                            buttonText: widget.destructiveActionString,
-                            backgroundColor: widget.isNormalAlert
-                                ? widget.isConfirmationAlert
-                                    ? ColorManager.green
-                                    : ColorManager.white
-                                : ColorManager.green,
-                            fontColor: widget.isNormalAlert
-                                ? widget.isConfirmationAlert
-                                    ? ColorManager.white
-                                    : ColorManager.green
-                                : ColorManager.white,
-                            borderColor: widget.isNormalAlert
-                                ? widget.isConfirmationAlert
-                                    ? ColorManager.lightGrey1
-                                    : ColorManager.green
-                                : ColorManager.green,
-                            onTap: widget.onDestructiveActionTap,
+                        if (widget.normalActionString.isNotEmpty &&
+                            widget.destructiveActionString.isNotEmpty)
+                          const SizedBox(width: 10),
+                        if (widget.destructiveActionString.isNotEmpty)
+                          Expanded(
+                            child: CustomTextActionButton(
+                              buttonText: widget.destructiveActionString,
+                              backgroundColor: widget.isNormalAlert
+                                  ? widget.isConfirmationAlert
+                                      ? ColorManager.green
+                                      : ColorManager.white
+                                  : ColorManager.green,
+                              fontColor: widget.isNormalAlert
+                                  ? widget.isConfirmationAlert
+                                      ? ColorManager.white
+                                      : ColorManager.green
+                                  : ColorManager.white,
+                              borderColor: widget.isNormalAlert
+                                  ? widget.isConfirmationAlert
+                                      ? ColorManager.lightGrey1
+                                      : ColorManager.green
+                                  : ColorManager.green,
+                              onTap: widget.onDestructiveActionTap,
+                            ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

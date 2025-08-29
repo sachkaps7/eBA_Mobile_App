@@ -52,6 +52,13 @@ class _ItemListViewState extends State<ItemListView> with RouteAware {
     fetchListItems(false);
   }
 
+  void _scrollListener() {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
+      fetchListItems(true);
+    }
+  }
+
   @override
   void dispose() {
     _debounce?.cancel();
@@ -74,88 +81,87 @@ class _ItemListViewState extends State<ItemListView> with RouteAware {
     fetchListItems(false);
   }
 
-  void _scrollListener() {
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
-      fetchListItems(true);
-    }
-  }
+  void _onSearchChanged() {
+    if (_searchController.text.length >= 2 || _searchController.text.isEmpty) {
+      if (searchText != _searchController.text) {
+        setState(() {
+          searchText = _searchController.text;
+          isSearching = true;
+          page = 1;
+          listItems.clear();
+        });
 
-  _onSearchChanged() {
-    if ((_searchController.text.length >= 3 &&
-            searchText != _searchController.text &&
-            _searchController.text.isNotEmpty) ||
-        searchText.isNotEmpty) {
-      setState(() {
-        searchText = _searchController.text;
-        isSearching = true;
-        page = 1;
-        totalRecords = 100;
-      });
-      if (_debounce?.isActive ?? false) _debounce?.cancel();
-      _debounce = Timer(const Duration(milliseconds: 550), () {
-        fetchListItems(false);
-      });
+        _debounce?.cancel();
+
+        _debounce = Timer(const Duration(milliseconds: 550), () {
+          fetchListItems(false);
+        });
+      }
     }
   }
 
   void fetchListItems(bool isLoadingMoreItems) async {
-    if (isLoading || isLoadMore || listItems.length >= totalRecords) return;
+    if (isLoading ||
+        isLoadMore ||
+        (totalRecords > 0 && listItems.length >= totalRecords)) return;
+
     setState(() {
+      if (!isLoadingMoreItems) {
+        isError = false;
+      }
       isLoading = !isLoadingMoreItems && !isSearching;
       isLoadMore = isLoadingMoreItems;
     });
+
+    int requestPage = isLoadingMoreItems ? page + 1 : page;
+
     Map<String, dynamic> data = {
       "regionid": SharedPrefs().selectedRegionID,
       "locationid": SharedPrefs().selectedLocationID,
       "search": _searchController.text,
-      'pageno': page,
-      'pagesize': AppConstants.pageSize
+      "pageno": requestPage,
+      "pagesize": AppConstants.pageSize
     };
-    final jsonResponse =
-        await apiService.postRequest(context, ApiService.itemsListing, data);
-    if (jsonResponse != null) {
-      final response = ItemListResponse.fromJson(jsonResponse);
-      setState(() {
+
+    try {
+      final jsonResponse =
+          await apiService.postRequest(context, ApiService.itemsListing, data);
+
+      if (jsonResponse != null) {
+        final response = ItemListResponse.fromJson(jsonResponse);
         if (response.code == '200') {
-          isError = false;
-          if (isLoadingMoreItems) {
-            listItems.addAll(response.data);
-          } else {
-            listItems = response.data;
-          }
-          totalRecords = response.totalRecords;
-          page++;
+          setState(() {
+            if (isLoadingMoreItems) {
+              listItems.addAll(response.data ?? []);
+              page = requestPage;
+            } else {
+              listItems = response.data ?? [];
+              page = requestPage;
+            }
+            totalRecords = response.totalRecords ?? listItems.length;
+            isError = false;
+          });
         } else {
-          isError = true;
-          errorText = response.message.join(', ');
+          setState(() {
+            isError = true;
+            errorText = response.message.join(', ');
+            if (!isLoadingMoreItems) listItems = [];
+          });
         }
+      } else {
+        setState(() {
+          isError = true;
+          errorText = AppStrings.somethingWentWrong;
+          if (!isLoadingMoreItems) listItems = [];
+        });
+      }
+    } catch (e) {
+      setState(() {
+        isError = true;
+        errorText = AppStrings.somethingWentWrong;
+        if (!isLoadingMoreItems) listItems = [];
       });
     }
-
-    // var res = await globalBloc.doFetchItemList(
-    //   context,
-    //   regionId: SharedPrefs().selectedRegionID,
-    //   locationId: SharedPrefs().selectedLocationID,
-    //   search: _searchController.text,
-    //   pageNo: page,
-    //   pageSize: AppConstants.pageSize,
-    // );
-    // setState(() {
-    //   if (res.code == '200') {
-    //     isError = false;
-    //     if (isLoadingMoreItems) {
-    //       listItems.addAll(res.data);
-    //     } else {
-    //       listItems = res.data;
-    //     }
-    //     totalRecords = res.totalRecords;
-    //     page++;
-    //   } else {
-    //     isError = true;
-    //     errorText = res.message.join(', ');
-    //   }
-    // });
 
     setState(() {
       isLoading = false;
@@ -185,6 +191,7 @@ class _ItemListViewState extends State<ItemListView> with RouteAware {
               ? const Center(child: CustomProgressIndicator())
               : Column(
                   children: [
+                    // 🔍 Search + view toggle row
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Row(
@@ -203,9 +210,11 @@ class _ItemListViewState extends State<ItemListView> with RouteAware {
                                 icon: SizedBox(
                                   height: 20,
                                   width: 20,
-                                  child: Image.asset(isListViewSelected
-                                      ? ImageAssets.boxSelectedIcon
-                                      : ImageAssets.boxIcon),
+                                  child: Image.asset(
+                                    isListViewSelected
+                                        ? ImageAssets.boxSelectedIcon
+                                        : ImageAssets.boxIcon,
+                                  ),
                                 ),
                                 onPressed: () {
                                   setState(() => isListViewSelected = true);
@@ -222,19 +231,22 @@ class _ItemListViewState extends State<ItemListView> with RouteAware {
                                 icon: SizedBox(
                                   height: 20,
                                   width: 20,
-                                  child: Image.asset(isListViewSelected
-                                      ? ImageAssets.gridIcon
-                                      : ImageAssets.gridSelectedIcon),
+                                  child: Image.asset(
+                                    isListViewSelected
+                                        ? ImageAssets.gridIcon
+                                        : ImageAssets.gridSelectedIcon,
+                                  ),
                                 ),
                                 onPressed: () {
                                   setState(() => isListViewSelected = false);
                                 },
                               ),
                             ],
-                          )
+                          ),
                         ],
                       ),
                     ),
+
                     isError
                         ? Expanded(
                             child: Padding(
@@ -269,17 +281,9 @@ class _ItemListViewState extends State<ItemListView> with RouteAware {
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: sidePadding, vertical: 8),
-                              child: listItems.isEmpty &&
-                                      !isLoading &&
-                                      !isLoadMore
-                                  ? Center(
-                                      child: Text(
-                                        errorText,
-                                        style: getRegularStyle(
-                                          color: ColorManager.black,
-                                          fontSize: FontSize.s27,
-                                        ),
-                                      ),
+                              child: listItems.isEmpty
+                                  ? const Center(
+                                      child: CustomProgressIndicator(),
                                     )
                                   : NotificationListener<ScrollNotification>(
                                       onNotification:
@@ -354,8 +358,7 @@ class _ItemListViewState extends State<ItemListView> with RouteAware {
                                               itemBuilder: (context, index) {
                                                 if (index == listItems.length) {
                                                   return const SizedBox(
-                                                    height:
-                                                        100, // or match the height of a grid item
+                                                    height: 100,
                                                     width: double.infinity,
                                                     child: Center(
                                                       child:

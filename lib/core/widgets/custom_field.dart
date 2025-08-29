@@ -9,16 +9,100 @@ import 'package:eyvo_inventory/core/widgets/button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+// class CustomSearchField extends StatefulWidget {
+//   final TextEditingController controller;
+//   final String placeholderText;
+//   final TextInputType inputType;
+
+//   const CustomSearchField({
+//     super.key,
+//     required this.controller,
+//     required this.placeholderText,
+//     this.inputType = TextInputType.number,
+//   });
+
+//   @override
+//   State<CustomSearchField> createState() => _CustomSearchFieldState();
+// }
+
+// class _CustomSearchFieldState extends State<CustomSearchField> {
+//   @override
+//   Widget build(BuildContext context) {
+//     return SizedBox(
+//       height: 48,
+//       child: TextField(
+//         maxLines: 1,
+//         style: TextStyle(
+//           overflow: TextOverflow.ellipsis,
+//           fontSize: 13,
+//           fontFamily: FontConstants.fontFamily,
+//           fontWeight: FontWeightManager.regular,
+//           color: ColorManager.black,
+//         ),
+//         controller: widget.controller,
+//         textInputAction: TextInputAction.search,
+//         keyboardType: widget.inputType,
+//         inputFormatters: [
+//           LengthLimitingTextInputFormatter(AppConstants.maxCharacters),
+//         ],
+//         decoration: InputDecoration(
+//           hintText: widget.placeholderText,
+//           hintStyle: getRegularStyle(
+//             color: ColorManager.lightGrey3,
+//             fontSize: 14,
+//           ),
+//           fillColor: ColorManager.white,
+//           filled: true,
+//           border: OutlineInputBorder(
+//             borderSide:
+//                 BorderSide(color: ColorManager.light2, width: AppSize.s1),
+//           ),
+//           enabledBorder: OutlineInputBorder(
+//             borderSide:
+//                 BorderSide(color: ColorManager.light2, width: AppSize.s1),
+//             borderRadius: const BorderRadius.all(Radius.circular(AppSize.s8)),
+//           ),
+//           focusedBorder: OutlineInputBorder(
+//             borderSide:
+//                 BorderSide(color: ColorManager.light2, width: AppSize.s1),
+//             borderRadius: const BorderRadius.all(Radius.circular(AppSize.s8)),
+//           ),
+//           contentPadding:
+//               const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+//           suffixIcon: Padding(
+//             padding: const EdgeInsets.only(right: 8),
+//             child: Image.asset(
+//               ImageAssets.searchIcon,
+//               width: 22,
+//               height: 22,
+//               fit: BoxFit.contain,
+//             ),
+//           ),
+//           suffixIconConstraints: const BoxConstraints(
+//             maxHeight: 80,
+//             maxWidth: 80,
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
 class CustomSearchField extends StatefulWidget {
   final TextEditingController controller;
   final String placeholderText;
   final TextInputType inputType;
+  final bool autoFocus;
+  final bool readOnly; // 👈 new
+  final VoidCallback? onTap; // 👈 new
 
   const CustomSearchField({
     super.key,
     required this.controller,
     required this.placeholderText,
     this.inputType = TextInputType.number,
+    this.autoFocus = false,
+    this.readOnly = false, // 👈 default false
+    this.onTap, // 👈 optional
   });
 
   @override
@@ -31,7 +115,13 @@ class _CustomSearchFieldState extends State<CustomSearchField> {
     return SizedBox(
       height: 48,
       child: TextField(
+        controller: widget.controller,
+        autofocus: widget.autoFocus,
         maxLines: 1,
+        readOnly: widget.readOnly, 
+        onTap: widget.onTap, 
+        textInputAction: TextInputAction.search,
+        keyboardType: widget.inputType,
         style: TextStyle(
           overflow: TextOverflow.ellipsis,
           fontSize: 13,
@@ -39,9 +129,6 @@ class _CustomSearchFieldState extends State<CustomSearchField> {
           fontWeight: FontWeightManager.regular,
           color: ColorManager.black,
         ),
-        controller: widget.controller,
-        textInputAction: TextInputAction.search,
-        keyboardType: widget.inputType,
         inputFormatters: [
           LengthLimitingTextInputFormatter(AppConstants.maxCharacters),
         ],

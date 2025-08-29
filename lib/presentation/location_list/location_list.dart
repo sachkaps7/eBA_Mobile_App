@@ -8,7 +8,6 @@ import 'package:eyvo_inventory/core/resources/font_manager.dart';
 import 'package:eyvo_inventory/core/resources/strings_manager.dart';
 import 'package:eyvo_inventory/core/resources/styles_manager.dart';
 import 'package:eyvo_inventory/core/utils.dart';
-import 'package:eyvo_inventory/core/widgets/button.dart';
 import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:flutter/material.dart';
@@ -70,7 +69,6 @@ class _LocationListViewState extends State<LocationListView> {
 
   @override
   Widget build(BuildContext context) {
-    //   double topPadding = MediaQuery.of(context).padding.top;
     return Scaffold(
       appBar: buildCommonAppBar(
         context: context,
@@ -116,102 +114,92 @@ class _LocationListViewState extends State<LocationListView> {
                     ),
                   ],
                 )
-              : SingleChildScrollView(
-                  child: SizedBox(
-                    height: displayHeight(context),
-                    child: Column(
-                      children: [
-                        // SizedBox(height: topPadding),
-                        // Padding(
-                        //   padding: const EdgeInsets.symmetric(horizontal: 12),
-                        //   child: Row(
-                        //     children: [
-                        //       Text(
-                        //         widget.selectedTitle,
-                        //         style: getBoldStyle(
-                        //           color: ColorManager.darkBlue,
-                        //           fontSize: FontSize.s20,
-                        //         ),
-                        //       ),
-                        //       const Spacer(),
-                        //       SizedBox(
-                        //         height: 20,
-                        //         child: CustomImageButton(
-                        //           imageString: ImageAssets.closeIcon,
-                        //           onTap: () {
-                        //             Navigator.pop(context);
-                        //           },
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
-                        const SizedBox(height: 10),
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              left: 12, right: 12, bottom: 12),
-                          child: ListView.separated(
-                            padding: EdgeInsets.zero,
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: locationItems.length,
-                            separatorBuilder: (context, index) => Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 12.0),
-                              child: Divider(
-                                color: ColorManager.primary,
-                                height: 0.1,
-                                thickness: 0.1,
-                              ),
-                            ),
-                            itemBuilder: (context, index) {
-                              final item = locationItems[index];
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 2.0, horizontal: 4.0),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: ColorManager.white,
-                                    borderRadius: BorderRadius.circular(
-                                        6), // Match radius
+              : ListView.separated(
+                  padding: const EdgeInsets.only(
+                    left: 12,
+                    right: 12,
+                    top: 10,
+                    bottom: 12,
+                  ),
+                  itemCount: locationItems.length,
+                  separatorBuilder: (context, index) => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    child: Divider(
+                      color: ColorManager.primary,
+                      height: 0.1,
+                      thickness: 0.1,
+                    ),
+                  ),
+                  itemBuilder: (context, index) {
+                    final item = locationItems[index];
+
+                    // Split into code + name
+                    String fullCode = item.locationCode ?? '';
+                    String code = fullCode;
+                    String name = '';
+                    if (fullCode.contains(' - ')) {
+                      final parts = fullCode.split(' - ');
+                      code = parts[0].trim();
+                      name = parts.sublist(1).join(' - ').trim();
+                    }
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 2.0, horizontal: 4.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: ColorManager.white,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: ListTile(
+                          dense: true,
+                          visualDensity: const VisualDensity(vertical: -2),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 4),
+
+                          // First line
+                          title: Text(
+                            code,
+                            style: (item.locationCode == widget.selectedItem)
+                                ? getMediumStyle(
+                                    color: ColorManager.orange2,
+                                    fontSize: FontSize.s17,
+                                  )
+                                : getRegularStyle(
+                                    color: ColorManager.lightGrey2,
+                                    fontSize: FontSize.s17,
                                   ),
-                                  child: ListTile(
-                                    dense: true,
-                                    visualDensity:
-                                        const VisualDensity(vertical: -2),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 4),
-                                    title: Text(
-                                      item.locationCode!,
-                                      style: item.locationCode ==
-                                              widget.selectedItem
+                          ),
+
+                          //  Second line
+                          subtitle: name.isNotEmpty
+                              ? Text(
+                                  name,
+                                  style:
+                                      (item.locationCode == widget.selectedItem)
                                           ? getMediumStyle(
                                               color: ColorManager.orange2,
-                                              fontSize: FontSize.s17,
+                                              fontSize: FontSize.s12,
                                             )
                                           : getRegularStyle(
                                               color: ColorManager.lightGrey2,
-                                              fontSize: FontSize.s17,
+                                              fontSize: FontSize.s12,
                                             ),
-                                    ),
-                                    onTap: () {
-                                      SharedPrefs().selectedLocation =
-                                          item.locationCode!;
-                                      SharedPrefs().selectedLocationID =
-                                          item.locationId!;
-                                      showSnackBar(context,
-                                          '${AppStrings.locationSelectedMessage}${item.locationCode}');
-                                      Navigator.pop(context, item.locationCode);
-                                    },
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+                                )
+                              : null,
+                          onTap: () {
+                            SharedPrefs().selectedLocation = item.locationCode!;
+                            SharedPrefs().selectedTrimmedLocation = code;
+                            SharedPrefs().selectedLocationID = item.locationId!;
+                          //  log("hi###########${SharedPrefs().selectedLocationID}");
+                            showSnackBar(context,
+                                '${AppStrings.locationSelectedMessage}${item.locationCode}');
+                            Navigator.pop(context, item.locationCode);
+                          },
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 ),
     );
   }

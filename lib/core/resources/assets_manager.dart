@@ -24,6 +24,7 @@ class ImageAssets {
   static const String menu = "$imagePath/hamburger-menu.png";
   static const String listAllItems = "$imagePath/List-All-Items.png";
   static const String receiveGoods = "$imagePath/Receive-Goods.png";
+  static const String blindstocklisting = "$imagePath/blind-stock-listing.png";
   static const String scanYourItems = "$imagePath/Scan-Your-Item.png";
   static const String selectLocation = "$imagePath/Select-Location-icon.png";
   static const String selectSite = "$imagePath/Select-Site---icon.png";

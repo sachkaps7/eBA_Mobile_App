@@ -13,6 +13,7 @@ import 'package:eyvo_inventory/core/resources/strings_manager.dart';
 import 'package:eyvo_inventory/core/resources/styles_manager.dart';
 import 'package:eyvo_inventory/core/widgets/button.dart';
 import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
+import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:path_provider/path_provider.dart';
@@ -106,6 +107,71 @@ class _PDFViewScreenState extends State<PDFViewScreen> {
     );
   }
 
+  // @override
+  // Widget build(BuildContext context) {
+  //   return Scaffold(
+  //     appBar: buildCommonAppBar(
+  //       context: context,
+  //       title: AppStrings.orderNumberDetail + widget.orderNumber,
+  //     ),
+  //     body: isLoading && filePath == null
+  //         ? const Center(child: CircularProgressIndicator())
+  //         : Stack(
+  //             children: [
+  //               PDFView(
+  //                 filePath: filePath,
+  //                 enableSwipe: true,
+  //                 swipeHorizontal: false,
+  //                 onRender: (pages) {
+  //                   setState(() {
+  //                     _totalPages = pages!;
+  //                   });
+  //                 },
+  //                 onViewCreated: (PDFViewController pdfViewController) {},
+  //                 onPageChanged: (int? page, int? total) {
+  //                   setState(() {
+  //                     _currentPage = page!;
+  //                   });
+  //                 },
+  //               ),
+  //               if (_totalPages > 0)
+  //                 Positioned(
+  //                   top: 16,
+  //                   right: 16,
+  //                   child: Container(
+  //                     padding: const EdgeInsets.symmetric(
+  //                         horizontal: 12, vertical: 8),
+  //                     color: Colors.black54,
+  //                     child: Text(
+  //                       'Page ${_currentPage + 1} of $_totalPages',
+  //                       style: getRegularStyle(
+  //                           color: ColorManager.white, fontSize: FontSize.s16),
+  //                     ),
+  //                   ),
+  //                 ),
+  //               Positioned(
+  //                 bottom: 0,
+  //                 left: 0,
+  //                 right: 0,
+  //                 child: Container(
+  //                   width: displayWidth(context),
+  //                   height: 95,
+  //                   color: ColorManager.white,
+  //                   child: Padding(
+  //                     padding: const EdgeInsets.all(20.0),
+  //                     child: CustomButton(
+  //                         buttonText: AppStrings.print,
+  //                         onTap: () {
+  //                           printPDF();
+  //                         },
+  //                         isEnabled: true),
+  //                   ),
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //   );
+  // }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -113,62 +179,88 @@ class _PDFViewScreenState extends State<PDFViewScreen> {
         context: context,
         title: AppStrings.orderNumberDetail + widget.orderNumber,
       ),
-      body: isLoading && filePath == null
-          ? const Center(child: CircularProgressIndicator())
-          : Stack(
-              children: [
-                PDFView(
-                  filePath: filePath,
-                  enableSwipe: true,
-                  swipeHorizontal: false,
-                  onRender: (pages) {
-                    setState(() {
-                      _totalPages = pages!;
-                    });
-                  },
-                  onViewCreated: (PDFViewController pdfViewController) {},
-                  onPageChanged: (int? page, int? total) {
-                    setState(() {
-                      _currentPage = page!;
-                    });
-                  },
-                ),
-                if (_totalPages > 0)
-                  Positioned(
-                    top: 16,
-                    right: 16,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
-                      color: Colors.black54,
+      body: isLoading
+          ? const Center(child: CustomProgressIndicator())
+          : isError
+              ? Center(
+                  child: Text(
+                    errorText,
+                    style: getRegularStyle(
+                      color: ColorManager.black,
+                      fontSize: FontSize.s16,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : filePath == null
+                  ? Center(
                       child: Text(
-                        'Page ${_currentPage + 1} of $_totalPages',
+                        AppStrings.somethingWentWrong,
                         style: getRegularStyle(
-                            color: ColorManager.white, fontSize: FontSize.s16),
+                          color: ColorManager.black,
+                          fontSize: FontSize.s16,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                    ),
-                  ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    width: displayWidth(context),
-                    height: 95,
-                    color: ColorManager.white,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: CustomButton(
-                          buttonText: AppStrings.print,
-                          onTap: () {
-                            printPDF();
+                    )
+                  : Stack(
+                      children: [
+                        PDFView(
+                          filePath: filePath,
+                          enableSwipe: true,
+                          swipeHorizontal: false,
+                          onRender: (pages) {
+                            setState(() {
+                              _totalPages = pages!;
+                            });
                           },
-                          isEnabled: true),
+                          onViewCreated:
+                              (PDFViewController pdfViewController) {},
+                          onPageChanged: (int? page, int? total) {
+                            setState(() {
+                              _currentPage = page!;
+                            });
+                          },
+                        ),
+                        if (_totalPages > 0)
+                          Positioned(
+                            top: 16,
+                            right: 16,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              color: Colors.black54,
+                              child: Text(
+                                'Page ${_currentPage + 1} of $_totalPages',
+                                style: getRegularStyle(
+                                  color: ColorManager.white,
+                                  fontSize: FontSize.s16,
+                                ),
+                              ),
+                            ),
+                          ),
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            width: displayWidth(context),
+                            height: 95,
+                            color: ColorManager.white,
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: CustomButton(
+                                buttonText: AppStrings.print,
+                                onTap: () {
+                                  printPDF();
+                                },
+                                isEnabled: true,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ),
-              ],
-            ),
     );
   }
 }

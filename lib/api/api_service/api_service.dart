@@ -35,6 +35,10 @@ class ApiService {
   static const String itemsListing = 'Items/listing';
   static const String itemDetails = 'Items/details';
   static const String itemsInOut = 'Items/inout';
+  static const String blindStockListing = 'Items/blindstocklisting';
+  static const String blindStockDetails = 'Items/blindstockdetails';
+  static const String updateBlindStock = 'Items/updateblindstock';
+  static const String inventoryManagerLocationCheck = 'location/imloctioncheck';
 
   Future<bool> updateToken(BuildContext context) async {
     Map<String, dynamic> data = {

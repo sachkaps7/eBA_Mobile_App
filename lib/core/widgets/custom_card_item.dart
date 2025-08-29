@@ -86,13 +86,14 @@ class CustomItemCardWithEdit extends StatelessWidget {
       child: Stack(
         children: [
           Container(
-            height: 80,
+            // remove height: 80
             decoration: BoxDecoration(
               color: backgroundColor,
               borderRadius: BorderRadius.circular(cornerRadius),
             ),
             padding: const EdgeInsets.all(12.0),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(cornerRadius),
@@ -107,7 +108,7 @@ class CustomItemCardWithEdit extends StatelessWidget {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min, // 🔑 prevents overflow
                     children: [
                       Text(
                         title,
@@ -115,13 +116,18 @@ class CustomItemCardWithEdit extends StatelessWidget {
                           color: ColorManager.lightGrey1,
                           fontSize: FontSize.s16,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
+                      const SizedBox(height: 4),
                       Text(
                         subtitle,
                         style: getRegularStyle(
                           color: ColorManager.lightGrey2,
                           fontSize: FontSize.s14,
                         ),
+                        maxLines: 2, // clamp
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),

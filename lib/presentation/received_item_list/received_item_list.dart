@@ -686,7 +686,7 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
                                         const SizedBox(height: 18),
                                       ],
                                     ),
-                          ),
+                                  ),
                                 ],
                               ),
                             ),

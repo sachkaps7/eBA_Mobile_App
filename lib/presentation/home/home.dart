@@ -1,6 +1,9 @@
+import 'dart:developer';
+
 import 'package:eyvo_inventory/CommonCode/global_utils.dart';
 import 'package:eyvo_inventory/api/api_service/api_service.dart';
 import 'package:eyvo_inventory/api/response_models/dashboard_response.dart';
+import 'package:eyvo_inventory/api/response_models/inventory_manager_check_response.dart';
 import 'package:eyvo_inventory/api/response_models/location_response.dart';
 import 'package:eyvo_inventory/app/app_prefs.dart';
 import 'package:eyvo_inventory/app/sizes_helper.dart';
@@ -16,6 +19,7 @@ import 'package:eyvo_inventory/core/widgets/custom_list_tile.dart';
 import 'package:eyvo_inventory/core/widgets/setting_page.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:eyvo_inventory/core/widgets/title_header.dart';
+import 'package:eyvo_inventory/presentation/blind_stock/blindstock_list.dart';
 import 'package:eyvo_inventory/presentation/change_password/change_password.dart';
 import 'package:eyvo_inventory/presentation/item_details/item_details.dart';
 import 'package:eyvo_inventory/presentation/item_list/item_list.dart';
@@ -34,7 +38,7 @@ class HomeView extends StatefulWidget {
   State<HomeView> createState() => _HomeViewState();
 }
 
-class _HomeViewState extends State<HomeView> {
+class _HomeViewState extends State<HomeView> with RouteAware {
   bool isPermissionDenied = false;
   bool isLoading = false;
   bool isRegionEnabled = false;
@@ -59,6 +63,8 @@ class _HomeViewState extends State<HomeView> {
 
   int? selectedRegionId;
   bool isLocationNull = false;
+  bool inventoryManager = SharedPrefs().inventoryManager;
+  //bool blindStockEdit = SharedPrefs().blindStockEdit;
   String displayUserName = SharedPrefs().displayUserName;
   int totalRecords = 0;
   final Map<String, IconData> menuIcons = {
@@ -66,6 +72,28 @@ class _HomeViewState extends State<HomeView> {
     AppStrings.settings: Icons.settings_outlined,
     AppStrings.changePassword: Icons.lock_outlined,
   };
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    routeObserver.unsubscribe(this);
+
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    fetchNewInvebtoryMangaerLocation();
+  }
 
   @override
   void initState() {
@@ -119,6 +147,11 @@ class _HomeViewState extends State<HomeView> {
             isScanItemsEnabled = response.data[0].scanYourItem;
             isListItemsEnabled = response.data[0].listAllItems;
             selectedRegionId = response.data[0].regionId;
+            SharedPrefs().inventoryManager = response.data[0].inventoryManager;
+            SharedPrefs().blindStockEdit = response.data[0].blindStockEdit;
+            inventoryManager = response.data[0].inventoryManager;
+            // blindStockEdit =
+            //  response.data[0].blindStockEdit;
             isGREnabled = response.data[0].gr;
             SharedPrefs().decimalPlaces = response.data[0].decimalPlaces;
             SharedPrefs().decimalplacesprice =
@@ -160,6 +193,29 @@ class _HomeViewState extends State<HomeView> {
       });
     }
   }
+
+  // void navigateToLocationList() async {
+  //   final selectedCode = await Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (context) => LocationListView(
+  //         selectedItem: selectedLocation ?? '',
+  //         selectedTitle: selectLocationTitle,
+  //         selectedRegioId: selectedRegionId!,
+  //       ),
+  //     ),
+  //   );
+
+  //   if (selectedCode != null) {
+  //     setState(() {
+  //       selectedLocation = selectedCode; // update UI
+  //       SharedPrefs().selectedLocation = selectedCode;
+  //     });
+
+  //     // also refresh dashboard/items if needed
+  //     fetchDashboardItems();
+  //   }
+  // }
 
   void navigateToItemDetails(int itemId) {
     navigateToScreen(context, ItemDetailsView(itemId: itemId));
@@ -232,6 +288,43 @@ class _HomeViewState extends State<HomeView> {
 
     setState(() {
       isFetchingLocation = false;
+    });
+  }
+
+  void fetchNewInvebtoryMangaerLocation() async {
+    setState(() {
+      isLoading = true;
+    });
+    Map<String, dynamic> data = {
+      'uid': SharedPrefs().uID,
+      'locationid': SharedPrefs().selectedLocationID
+    };
+    final jsonResponse = await apiService.postRequest(
+        context, ApiService.inventoryManagerLocationCheck, data);
+
+    if (jsonResponse != null) {
+      final response = InventoryManagerCheckResponse.fromJson(jsonResponse);
+
+      if (response.code == '200') {
+        setState(() {
+          SharedPrefs().blindStockEdit = response.data.blindstockedit;
+          //  blindStockEdit = response.data.blindstockedit;
+          log("&&&&&&&&&&&&&&&&&&&&&&&blindStockEdit: ${SharedPrefs().blindStockEdit}");
+        });
+      } else if (response.code == '400') {
+        setState(() {
+          SharedPrefs().blindStockEdit = false;
+        });
+      } else {
+        setState(() {
+          isError = true;
+          errorText = response.message.join(', ');
+        });
+      }
+    }
+
+    setState(() {
+      isLoading = false;
     });
   }
 
@@ -500,7 +593,7 @@ class _HomeViewState extends State<HomeView> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceEvenly,
                                     children: [
-                                      // First card with fixed width
+                                      // First card
                                       SizedBox(
                                         width:
                                             (MediaQuery.of(context).size.width -
@@ -552,7 +645,7 @@ class _HomeViewState extends State<HomeView> {
                                         ),
                                       ),
                                       const SizedBox(width: 10),
-                                      // Second card with same fixed width
+                                      // Second card
                                       SizedBox(
                                         width:
                                             (MediaQuery.of(context).size.width -
@@ -669,41 +762,107 @@ class _HomeViewState extends State<HomeView> {
                                         MainAxisAlignment.spaceEvenly,
                                     children: [
                                       CustomItemCard(
-                                          imageString: items[2] ==
-                                                  AppStrings.apiKeyScanItems
-                                              ? ImageAssets.scanYourItems
-                                              : items[2] ==
-                                                      AppStrings.apiKeyListItems
-                                                  ? ImageAssets.listAllItems
-                                                  : ImageAssets.receiveGoods,
-                                          title: items[2] ==
-                                                  AppStrings.apiKeyScanItems
-                                              ? AppStrings.scanYourItem
-                                              : items[2] ==
-                                                      AppStrings.apiKeyListItems
-                                                  ? AppStrings.listAllItems
-                                                  : AppStrings.receiveGoods,
-                                          backgroundColor: ColorManager.white,
-                                          cornerRadius: 10,
-                                          onTap: isLocationNull
-                                              ? () {
-                                                  globalUtils.showNegativeSnackBar(
+                                        imageString: items[2] ==
+                                                AppStrings.apiKeyScanItems
+                                            ? ImageAssets.scanYourItems
+                                            : items[2] ==
+                                                    AppStrings.apiKeyListItems
+                                                ? ImageAssets.listAllItems
+                                                : ImageAssets.receiveGoods,
+                                        title: items[2] ==
+                                                AppStrings.apiKeyScanItems
+                                            ? AppStrings.scanYourItem
+                                            : items[2] ==
+                                                    AppStrings.apiKeyListItems
+                                                ? AppStrings.listAllItems
+                                                : AppStrings.receiveGoods,
+                                        backgroundColor: ColorManager.white,
+                                        cornerRadius: 10,
+                                        onTap: isLocationNull
+                                            ? () {
+                                                globalUtils
+                                                    .showNegativeSnackBar(
+                                                  context: context,
+                                                  message: "Location Required",
+                                                );
+                                              }
+                                            : () {
+                                                items[2] ==
+                                                        AppStrings
+                                                            .apiKeyScanItems
+                                                    ? navigateToScanItems()
+                                                    : items[2] ==
+                                                            AppStrings
+                                                                .apiKeyListItems
+                                                        ? navigateToListItems()
+                                                        : navigateToReceiveGoods();
+                                              },
+                                      ),
+
+                                      // Show Blind Stock card only if inventoryManager is true
+                                      if (inventoryManager == true) ...[
+                                        SizedBox(
+                                          width: (MediaQuery.of(context)
+                                                      .size
+                                                      .width -
+                                                  30) /
+                                              2,
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 8),
+                                            child: Opacity(
+                                              opacity: SharedPrefs()
+                                                          .blindStockEdit ==
+                                                      true
+                                                  ? 1.0
+                                                  : 0.5, // blur effect
+                                              child: CustomItemCard(
+                                                imageString: ImageAssets
+                                                    .blindstocklisting,
+                                                title: "Blind Stock Listing",
+                                                backgroundColor:
+                                                    ColorManager.white,
+                                                cornerRadius: 10,
+                                                onTap: () {
+                                                  if (SharedPrefs()
+                                                          .blindStockEdit !=
+                                                      true) {
+                                                    // 🚫 Not allowed → show snackbar
+                                                    globalUtils
+                                                        .showNegativeSnackBar(
                                                       context: context,
                                                       message:
-                                                          "Location Required");
-                                                }
-                                              : () {
-                                                  items[2] ==
-                                                          AppStrings
-                                                              .apiKeyScanItems
-                                                      ? navigateToScanItems()
-                                                      : items[2] ==
-                                                              AppStrings
-                                                                  .apiKeyListItems
-                                                          ? navigateToListItems()
-                                                          : navigateToReceiveGoods();
-                                                }),
-                                      const Spacer(),
+                                                          "You are not manager of this location",
+                                                    );
+                                                    return;
+                                                  }
+
+                                                  if (isLocationNull) {
+                                                    globalUtils
+                                                        .showNegativeSnackBar(
+                                                      context: context,
+                                                      message:
+                                                          "Location Required",
+                                                    );
+                                                    return;
+                                                  }
+
+                                                  // ✅ Allowed → navigate
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          const BlindStockListView(),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ] else ...[
+                                        const Spacer(),
+                                      ]
                                     ],
                                   ),
                                 ),

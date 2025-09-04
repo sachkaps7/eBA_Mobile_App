@@ -6,5 +6,5 @@ class AppConstants {
   static const totalRecords = 25;
   static const maxCharactersForComment = 100;
   static const maxCharactersForPrice = 14;
-  static const maxCharactersForQuantity = 14;
+  static const maxCharactersForQuantity = 12;
 }

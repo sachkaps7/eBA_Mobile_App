@@ -329,6 +329,555 @@ class _HomeViewState extends State<HomeView> with RouteAware {
   }
 
   @override
+  // Widget build(BuildContext context) {
+  //   double topPadding = MediaQuery.of(context).padding.top;
+  //   return Scaffold(
+  //     key: _scaffoldKey,
+  //     backgroundColor: ColorManager.primary,
+  //     appBar: AppBar(
+  //       backgroundColor: ColorManager.darkBlue,
+  //       toolbarHeight: 56,
+  //       title: Text(
+  //         AppStrings.dashboard,
+  //         style: getBoldStyle(
+  //           color: ColorManager.white,
+  //           fontSize: FontSize.s20,
+  //         ),
+  //       ),
+  //       leading: IconButton(
+  //         icon: Image.asset(
+  //           ImageAssets.menu,
+  //           width: 20,
+  //           height: 20,
+  //         ),
+  //         onPressed: () {
+  //           _scaffoldKey.currentState?.openDrawer();
+  //         },
+  //       ),
+  //     ),
+  //     drawer: Drawer(
+  //       backgroundColor: ColorManager.light3,
+  //       child: Column(
+  //         children: <Widget>[
+  //           SizedBox(height: topPadding + 10),
+  //           Image.asset(ImageAssets.splashLogo, width: 90, height: 72),
+  //           const SizedBox(height: 20),
+  //           Padding(
+  //             padding: const EdgeInsets.all(2),
+  //             child: Row(
+  //               mainAxisSize: MainAxisSize.min,
+  //               children: [
+  //                 Icon(Icons.person, color: ColorManager.blue, size: 20),
+  //                 const SizedBox(width: 6),
+  //                 Flexible(
+  //                   child: Text(
+  //                     displayUserName,
+  //                     style: TextStyle(fontSize: 18, color: ColorManager.blue),
+  //                     maxLines: 2,
+  //                     overflow: TextOverflow.visible,
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //           Padding(
+  //             padding: const EdgeInsets.all(16.0),
+  //             child: Container(
+  //               height: 300, // Reduced from 320 if you want a tighter fit
+  //               decoration: BoxDecoration(
+  //                 color: ColorManager.white,
+  //                 border: Border.all(color: ColorManager.grey4, width: 1.0),
+  //                 borderRadius: BorderRadius.circular(6),
+  //               ),
+  //               child: Column(
+  //                 children: [
+  //                   Expanded(
+  //                     child: ListView.separated(
+  //                       padding: EdgeInsets.zero,
+  //                       physics: const NeverScrollableScrollPhysics(),
+  //                       itemCount: menuItems.length,
+  //                       separatorBuilder: (context, index) => Divider(
+  //                         height: 0.5,
+  //                         thickness: 0.5,
+  //                         color: ColorManager.primary,
+  //                       ),
+  //                       itemBuilder: (context, index) {
+  //                         final title = menuItems[index];
+  //                         final icon =
+  //                             menuIcons[title] ?? Icons.arrow_forward_ios;
+
+  //                         return Padding(
+  //                           padding: const EdgeInsets.symmetric(vertical: 0.5),
+  //                           child: MenuItemListTile(
+  //                             title: title,
+  //                             iconData: icon,
+  //                             onTap: () {
+  //                               navigateFromSideMenuAsPerSelectedTitle(title);
+  //                             },
+  //                           ),
+  //                         );
+  //                       },
+  //                     ),
+  //                   ),
+  //                   const SizedBox(height: 6), // Slightly reduced
+  //                   GestureDetector(
+  //                     onTap: logoutUser,
+  //                     child: SizedBox(
+  //                       height: 60,
+  //                       width: displayWidth(context),
+  //                       child: Column(
+  //                         children: [
+  //                           Container(height: 1, color: ColorManager.grey6),
+  //                           const SizedBox(height: 10),
+  //                           Row(
+  //                             mainAxisAlignment: MainAxisAlignment.center,
+  //                             children: [
+  //                               Image.asset(ImageAssets.logoutIcon,
+  //                                   width: 20, height: 20),
+  //                               const SizedBox(width: 6),
+  //                               Text(
+  //                                 AppStrings.logout,
+  //                                 style: getSemiBoldStyle(
+  //                                   color: ColorManager.orange,
+  //                                   fontSize: FontSize.s18,
+  //                                 ),
+  //                               ),
+  //                             ],
+  //                           ),
+  //                         ],
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           ),
+  //           const Spacer(),
+  //           Padding(
+  //             padding: const EdgeInsets.all(10.0),
+  //             child: Text(
+  //               SharedPrefs().mobileVersion,
+  //               style: TextStyle(
+  //                 fontSize: 13,
+  //                 color: ColorManager.blue,
+  //                 fontWeight: FontWeight.bold,
+  //               ),
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //     body: isLoading
+  //         ? const Center(child: CustomProgressIndicator())
+  //         : isPermissionDenied
+  //             ? SingleChildScrollView(
+  //                 child: Padding(
+  //                   padding: const EdgeInsets.all(18.0),
+  //                   child: Container(
+  //                     height: displayHeight(context) - 150,
+  //                     alignment: Alignment.center,
+  //                     decoration: BoxDecoration(
+  //                       borderRadius:
+  //                           const BorderRadius.all(Radius.circular(8)),
+  //                       color: ColorManager.white,
+  //                     ),
+  //                     child: const Column(
+  //                       mainAxisAlignment: MainAxisAlignment.center,
+  //                       crossAxisAlignment: CrossAxisAlignment.center,
+  //                       children: [
+  //                         SizedBox(
+  //                           child: Image(
+  //                             image: AssetImage(ImageAssets.permissionDenied),
+  //                           ),
+  //                         ),
+  //                         SizedBox(
+  //                           child: CenterTitleHeader(
+  //                               titleText: AppStrings.permissionDeniedTitle,
+  //                               detailText:
+  //                                   AppStrings.permissionDeniedSubTitle),
+  //                         ),
+  //                       ],
+  //                     ),
+  //                   ),
+  //                 ),
+  //               )
+  //             : SingleChildScrollView(
+  //                 child: Padding(
+  //                   padding: const EdgeInsets.only(
+  //                       top: 15, left: 10, right: 10, bottom: 15),
+  //                   child: Column(
+  //                     children: [
+  //                       isRegionEnabled
+  //                           ? CustomItemCardWithEdit(
+  //                               imageString: ImageAssets.selectSite,
+  //                               title: selectRegionTitle,
+  //                               subtitle: selectedRegion!,
+  //                               onEdit: isRegionEditable
+  //                                   ? () async {
+  //                                       final result = await Navigator.push(
+  //                                         context,
+  //                                         MaterialPageRoute(
+  //                                           builder: (context) =>
+  //                                               RegionListView(
+  //                                                   selectedItem:
+  //                                                       selectedRegion!,
+  //                                                   selectedTitle:
+  //                                                       selectRegionTitle),
+  //                                         ),
+  //                                       );
+
+  //                                       if (result != null) {
+  //                                         setState(() {
+  //                                           selectedRegion =
+  //                                               SharedPrefs().selectedRegion;
+  //                                           selectedRegionId =
+  //                                               SharedPrefs().selectedRegionID;
+  //                                         });
+  //                                         fetchNewLocation(
+  //                                             SharedPrefs().selectedRegionID);
+  //                                       }
+  //                                     }
+  //                                   : () {},
+  //                               backgroundColor: ColorManager.white,
+  //                               cornerRadius: 10,
+  //                               isEditable: isRegionEditable)
+  //                           : const SizedBox(),
+  //                       isRegionEnabled
+  //                           ? const SizedBox(height: 8)
+  //                           : const SizedBox(),
+  //                       isLocationEnabled
+  //                           ? Visibility(
+  //                               visible: !isFetchingLocation,
+  //                               replacement: const Center(
+  //                                   child: CustomProgressIndicator()),
+  //                               child: CustomItemCardWithEdit(
+  //                                   imageString: ImageAssets.selectLocation,
+  //                                   title: selectLocationTitle,
+  //                                   subtitle: selectedLocation ?? "",
+  //                                   onEdit: isLocationEditable
+  //                                       ? () async {
+  //                                           final result = await Navigator.push(
+  //                                             context,
+  //                                             MaterialPageRoute(
+  //                                               builder: (context) =>
+  //                                                   LocationListView(
+  //                                                 selectedItem:
+  //                                                     selectedLocation!,
+  //                                                 selectedTitle:
+  //                                                     selectLocationTitle,
+  //                                                 selectedRegioId:
+  //                                                     selectedRegionId!,
+  //                                               ),
+  //                                             ),
+  //                                           );
+  //                                           if (result != null) {
+  //                                             setState(() {
+  //                                               selectedLocation = SharedPrefs()
+  //                                                   .selectedLocation;
+  //                                             });
+  //                                           }
+  //                                         }
+  //                                       : () {},
+  //                                   backgroundColor: ColorManager.white,
+  //                                   cornerRadius: 10,
+  //                                   isEditable: isLocationEditable),
+  //                             )
+  //                           : const SizedBox(),
+  //                       isLocationEnabled
+  //                           ? const SizedBox(height: 1)
+  //                           : const SizedBox(),
+  //                       items.length > 1
+  //                           ? SizedBox(
+  //                               child: Center(
+  //                                 child: Row(
+  //                                   mainAxisAlignment:
+  //                                       MainAxisAlignment.spaceEvenly,
+  //                                   children: [
+  //                                     // First card
+  //                                     SizedBox(
+  //                                       width:
+  //                                           (MediaQuery.of(context).size.width -
+  //                                                   30) /
+  //                                               2,
+  //                                       child: Padding(
+  //                                         padding: const EdgeInsets.symmetric(
+  //                                             vertical: 8),
+  //                                         child: CustomItemCard(
+  //                                           imageString: items[0] ==
+  //                                                   AppStrings.apiKeyScanItems
+  //                                               ? ImageAssets.scanYourItems
+  //                                               : items[0] ==
+  //                                                       AppStrings
+  //                                                           .apiKeyListItems
+  //                                                   ? ImageAssets.listAllItems
+  //                                                   : ImageAssets.receiveGoods,
+  //                                           title: items[0] ==
+  //                                                   AppStrings.apiKeyScanItems
+  //                                               ? AppStrings.scanYourItem
+  //                                               : items[0] ==
+  //                                                       AppStrings
+  //                                                           .apiKeyListItems
+  //                                                   ? AppStrings.listAllItems
+  //                                                   : AppStrings.receiveGoods,
+  //                                           backgroundColor: ColorManager.white,
+  //                                           cornerRadius: 10,
+  //                                           onTap: isLocationNull
+  //                                               ? () {
+  //                                                   globalUtils
+  //                                                       .showNegativeSnackBar(
+  //                                                     context: context,
+  //                                                     message:
+  //                                                         "Location Required",
+  //                                                   );
+  //                                                 }
+  //                                               : () {
+  //                                                   items[0] ==
+  //                                                           AppStrings
+  //                                                               .apiKeyScanItems
+  //                                                       ? navigateToScanItems()
+  //                                                       : items[0] ==
+  //                                                               AppStrings
+  //                                                                   .apiKeyListItems
+  //                                                           ? navigateToListItems()
+  //                                                           : navigateToReceiveGoods();
+  //                                                 },
+  //                                         ),
+  //                                       ),
+  //                                     ),
+  //                                     const SizedBox(width: 10),
+  //                                     // Second card
+  //                                     SizedBox(
+  //                                       width:
+  //                                           (MediaQuery.of(context).size.width -
+  //                                                   30) /
+  //                                               2,
+  //                                       child: Padding(
+  //                                         padding: const EdgeInsets.symmetric(
+  //                                             vertical: 8),
+  //                                         child: CustomItemCard(
+  //                                           imageString: items[1] ==
+  //                                                   AppStrings.apiKeyScanItems
+  //                                               ? ImageAssets.scanYourItems
+  //                                               : items[1] ==
+  //                                                       AppStrings
+  //                                                           .apiKeyListItems
+  //                                                   ? ImageAssets.listAllItems
+  //                                                   : ImageAssets.receiveGoods,
+  //                                           title: items[1] ==
+  //                                                   AppStrings.apiKeyScanItems
+  //                                               ? AppStrings.scanYourItem
+  //                                               : items[1] ==
+  //                                                       AppStrings
+  //                                                           .apiKeyListItems
+  //                                                   ? AppStrings.listAllItems
+  //                                                   : AppStrings.receiveGoods,
+  //                                           backgroundColor: ColorManager.white,
+  //                                           cornerRadius: 10,
+  //                                           onTap: isLocationNull
+  //                                               ? () {
+  //                                                   globalUtils
+  //                                                       .showNegativeSnackBar(
+  //                                                     context: context,
+  //                                                     message:
+  //                                                         "Location Required",
+  //                                                   );
+  //                                                 }
+  //                                               : () {
+  //                                                   items[1] ==
+  //                                                           AppStrings
+  //                                                               .apiKeyScanItems
+  //                                                       ? navigateToScanItems()
+  //                                                       : items[1] ==
+  //                                                               AppStrings
+  //                                                                   .apiKeyListItems
+  //                                                           ? navigateToListItems()
+  //                                                           : navigateToReceiveGoods();
+  //                                                 },
+  //                                         ),
+  //                                       ),
+  //                                     ),
+  //                                   ],
+  //                                 ),
+  //                               ),
+  //                             )
+  //                           : items.isNotEmpty
+  //                               ? SizedBox(
+  //                                   width: (MediaQuery.of(context).size.width -
+  //                                           30) /
+  //                                       2,
+  //                                   child: Center(
+  //                                     child: Row(
+  //                                       mainAxisAlignment:
+  //                                           MainAxisAlignment.spaceEvenly,
+  //                                       children: [
+  //                                         CustomItemCard(
+  //                                             imageString: items[0] ==
+  //                                                     AppStrings.apiKeyScanItems
+  //                                                 ? ImageAssets.scanYourItems
+  //                                                 : items[0] ==
+  //                                                         AppStrings
+  //                                                             .apiKeyListItems
+  //                                                     ? ImageAssets.listAllItems
+  //                                                     : ImageAssets
+  //                                                         .receiveGoods,
+  //                                             title: items[0] ==
+  //                                                     AppStrings.apiKeyScanItems
+  //                                                 ? AppStrings.scanYourItem
+  //                                                 : items[0] ==
+  //                                                         AppStrings
+  //                                                             .apiKeyListItems
+  //                                                     ? AppStrings.listAllItems
+  //                                                     : AppStrings.receiveGoods,
+  //                                             backgroundColor:
+  //                                                 ColorManager.white,
+  //                                             cornerRadius: 10,
+  //                                             onTap: isLocationNull
+  //                                                 ? () {
+  //                                                     globalUtils
+  //                                                         .showNegativeSnackBar(
+  //                                                             context: context,
+  //                                                             message:
+  //                                                                 "Location Required");
+  //                                                   }
+  //                                                 : () {
+  //                                                     items[0] ==
+  //                                                             AppStrings
+  //                                                                 .apiKeyScanItems
+  //                                                         ? navigateToScanItems()
+  //                                                         : items[0] ==
+  //                                                                 AppStrings
+  //                                                                     .apiKeyListItems
+  //                                                             ? navigateToListItems()
+  //                                                             : navigateToReceiveGoods();
+  //                                                   }),
+  //                                         const Spacer(),
+  //                                       ],
+  //                                     ),
+  //                                   ),
+  //                                 )
+  //                               : const SizedBox(),
+  //                       //const SizedBox(height: 5),
+  //                       items.length > 2
+  //                           ? SizedBox(
+  //                               child: Center(
+  //                                 child: Row(
+  //                                   mainAxisAlignment:
+  //                                       MainAxisAlignment.spaceEvenly,
+  //                                   children: [
+  //                                     CustomItemCard(
+  //                                       imageString: items[2] ==
+  //                                               AppStrings.apiKeyScanItems
+  //                                           ? ImageAssets.scanYourItems
+  //                                           : items[2] ==
+  //                                                   AppStrings.apiKeyListItems
+  //                                               ? ImageAssets.listAllItems
+  //                                               : ImageAssets.receiveGoods,
+  //                                       title: items[2] ==
+  //                                               AppStrings.apiKeyScanItems
+  //                                           ? AppStrings.scanYourItem
+  //                                           : items[2] ==
+  //                                                   AppStrings.apiKeyListItems
+  //                                               ? AppStrings.listAllItems
+  //                                               : AppStrings.receiveGoods,
+  //                                       backgroundColor: ColorManager.white,
+  //                                       cornerRadius: 10,
+  //                                       onTap: isLocationNull
+  //                                           ? () {
+  //                                               globalUtils
+  //                                                   .showNegativeSnackBar(
+  //                                                 context: context,
+  //                                                 message: "Location Required",
+  //                                               );
+  //                                             }
+  //                                           : () {
+  //                                               items[2] ==
+  //                                                       AppStrings
+  //                                                           .apiKeyScanItems
+  //                                                   ? navigateToScanItems()
+  //                                                   : items[2] ==
+  //                                                           AppStrings
+  //                                                               .apiKeyListItems
+  //                                                       ? navigateToListItems()
+  //                                                       : navigateToReceiveGoods();
+  //                                             },
+  //                                     ),
+  //                                     const SizedBox(width: 8),
+  //                                     // Show Blind Stock card only if inventoryManager is true
+  //                                     if (inventoryManager == true) ...[
+  //                                       SizedBox(
+  //                                         width: (MediaQuery.of(context)
+  //                                                     .size
+  //                                                     .width -
+  //                                                 30) /
+  //                                             2,
+  //                                         child: Padding(
+  //                                           padding: const EdgeInsets.symmetric(
+  //                                               vertical: 8),
+  //                                           child: Opacity(
+  //                                             opacity: SharedPrefs()
+  //                                                         .blindStockEdit ==
+  //                                                     true
+  //                                                 ? 1.0
+  //                                                 : 0.5, // blur effect
+  //                                             child: CustomItemCard(
+  //                                               imageString: ImageAssets
+  //                                                   .blindstocklisting,
+  //                                               title: "Blind Stock Listing",
+  //                                               backgroundColor:
+  //                                                   ColorManager.white,
+  //                                               cornerRadius: 10,
+  //                                               onTap: () {
+  //                                                 if (SharedPrefs()
+  //                                                         .blindStockEdit !=
+  //                                                     true) {
+  //                                                   // Not allowed → show snackbar
+  //                                                   globalUtils
+  //                                                       .showNegativeSnackBar(
+  //                                                     context: context,
+  //                                                     message:
+  //                                                         "You are not the Inventory Manager for this location.",
+  //                                                   );
+  //                                                   return;
+  //                                                 }
+
+  //                                                 if (isLocationNull) {
+  //                                                   globalUtils
+  //                                                       .showNegativeSnackBar(
+  //                                                     context: context,
+  //                                                     message:
+  //                                                         "Location Required",
+  //                                                   );
+  //                                                   return;
+  //                                                 }
+
+  //                                                 // Allowed → navigate
+  //                                                 Navigator.push(
+  //                                                   context,
+  //                                                   MaterialPageRoute(
+  //                                                     builder: (context) =>
+  //                                                         const BlindStockListView(),
+  //                                                   ),
+  //                                                 );
+  //                                               },
+  //                                             ),
+  //                                           ),
+  //                                         ),
+  //                                       ),
+  //                                     ] else ...[
+  //                                       const Spacer(),
+  //                                     ]
+  //                                   ],
+  //                                 ),
+  //                               ),
+  //                             )
+  //                           : const SizedBox(),
+  //                     ],
+  //                   ),
+  //                 ),
+  //               ),
+  //   );
+  // }
+  @override
   Widget build(BuildContext context) {
     double topPadding = MediaQuery.of(context).padding.top;
     return Scaffold(
@@ -383,7 +932,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Container(
-                height: 300, // Reduced from 320 if you want a tighter fit
+                height: 300,
                 decoration: BoxDecoration(
                   color: ColorManager.white,
                   border: Border.all(color: ColorManager.grey4, width: 1.0),
@@ -419,7 +968,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                         },
                       ),
                     ),
-                    const SizedBox(height: 6), // Slightly reduced
+                    const SizedBox(height: 6),
                     GestureDetector(
                       onTap: logoutUser,
                       child: SizedBox(
@@ -432,8 +981,11 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Image.asset(ImageAssets.logoutIcon,
-                                    width: 20, height: 20),
+                                Image.asset(
+                                  ImageAssets.logoutIcon,
+                                  width: 20,
+                                  height: 20,
+                                ),
                                 const SizedBox(width: 6),
                                 Text(
                                   AppStrings.logout,
@@ -492,9 +1044,9 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                           ),
                           SizedBox(
                             child: CenterTitleHeader(
-                                titleText: AppStrings.permissionDeniedTitle,
-                                detailText:
-                                    AppStrings.permissionDeniedSubTitle),
+                              titleText: AppStrings.permissionDeniedTitle,
+                              detailText: AppStrings.permissionDeniedSubTitle,
+                            ),
                           ),
                         ],
                       ),
@@ -507,6 +1059,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                         top: 15, left: 10, right: 10, bottom: 15),
                     child: Column(
                       children: [
+                        // Region card
                         isRegionEnabled
                             ? CustomItemCardWithEdit(
                                 imageString: ImageAssets.selectSite,
@@ -519,10 +1072,9 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                                           MaterialPageRoute(
                                             builder: (context) =>
                                                 RegionListView(
-                                                    selectedItem:
-                                                        selectedRegion!,
-                                                    selectedTitle:
-                                                        selectRegionTitle),
+                                              selectedItem: selectedRegion!,
+                                              selectedTitle: selectRegionTitle,
+                                            ),
                                           ),
                                         );
 
@@ -545,6 +1097,8 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                         isRegionEnabled
                             ? const SizedBox(height: 8)
                             : const SizedBox(),
+
+                        // Location card
                         isLocationEnabled
                             ? Visibility(
                                 visible: !isFetchingLocation,
@@ -583,291 +1137,102 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                                     isEditable: isLocationEditable),
                               )
                             : const SizedBox(),
-                        isLocationEnabled
-                            ? const SizedBox(height: 1)
-                            : const SizedBox(),
-                        items.length > 1
-                            ? SizedBox(
-                                child: Center(
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      // First card
-                                      SizedBox(
-                                        width:
-                                            (MediaQuery.of(context).size.width -
-                                                    30) /
-                                                2,
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 8),
-                                          child: CustomItemCard(
-                                            imageString: items[0] ==
-                                                    AppStrings.apiKeyScanItems
-                                                ? ImageAssets.scanYourItems
-                                                : items[0] ==
-                                                        AppStrings
-                                                            .apiKeyListItems
-                                                    ? ImageAssets.listAllItems
-                                                    : ImageAssets.receiveGoods,
-                                            title: items[0] ==
-                                                    AppStrings.apiKeyScanItems
-                                                ? AppStrings.scanYourItem
-                                                : items[0] ==
-                                                        AppStrings
-                                                            .apiKeyListItems
-                                                    ? AppStrings.listAllItems
-                                                    : AppStrings.receiveGoods,
-                                            backgroundColor: ColorManager.white,
-                                            cornerRadius: 10,
-                                            onTap: isLocationNull
-                                                ? () {
-                                                    globalUtils
-                                                        .showNegativeSnackBar(
-                                                      context: context,
-                                                      message:
-                                                          "Location Required",
-                                                    );
-                                                  }
-                                                : () {
-                                                    items[0] ==
-                                                            AppStrings
-                                                                .apiKeyScanItems
-                                                        ? navigateToScanItems()
-                                                        : items[0] ==
-                                                                AppStrings
-                                                                    .apiKeyListItems
-                                                            ? navigateToListItems()
-                                                            : navigateToReceiveGoods();
-                                                  },
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      // Second card
-                                      SizedBox(
-                                        width:
-                                            (MediaQuery.of(context).size.width -
-                                                    30) /
-                                                2,
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 8),
-                                          child: CustomItemCard(
-                                            imageString: items[1] ==
-                                                    AppStrings.apiKeyScanItems
-                                                ? ImageAssets.scanYourItems
-                                                : items[1] ==
-                                                        AppStrings
-                                                            .apiKeyListItems
-                                                    ? ImageAssets.listAllItems
-                                                    : ImageAssets.receiveGoods,
-                                            title: items[1] ==
-                                                    AppStrings.apiKeyScanItems
-                                                ? AppStrings.scanYourItem
-                                                : items[1] ==
-                                                        AppStrings
-                                                            .apiKeyListItems
-                                                    ? AppStrings.listAllItems
-                                                    : AppStrings.receiveGoods,
-                                            backgroundColor: ColorManager.white,
-                                            cornerRadius: 10,
-                                            onTap: isLocationNull
-                                                ? () {
-                                                    globalUtils
-                                                        .showNegativeSnackBar(
-                                                      context: context,
-                                                      message:
-                                                          "Location Required",
-                                                    );
-                                                  }
-                                                : () {
-                                                    items[1] ==
-                                                            AppStrings
-                                                                .apiKeyScanItems
-                                                        ? navigateToScanItems()
-                                                        : items[1] ==
-                                                                AppStrings
-                                                                    .apiKeyListItems
-                                                            ? navigateToListItems()
-                                                            : navigateToReceiveGoods();
-                                                  },
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            : items.isNotEmpty
-                                ? SizedBox(
-                                    child: Center(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          CustomItemCard(
-                                              imageString: items[0] ==
-                                                      AppStrings.apiKeyScanItems
-                                                  ? ImageAssets.scanYourItems
-                                                  : items[0] ==
-                                                          AppStrings
-                                                              .apiKeyListItems
-                                                      ? ImageAssets.listAllItems
-                                                      : ImageAssets
-                                                          .receiveGoods,
-                                              title: items[0] ==
-                                                      AppStrings.apiKeyScanItems
-                                                  ? AppStrings.scanYourItem
-                                                  : items[0] ==
-                                                          AppStrings
-                                                              .apiKeyListItems
-                                                      ? AppStrings.listAllItems
-                                                      : AppStrings.receiveGoods,
-                                              backgroundColor:
-                                                  ColorManager.white,
-                                              cornerRadius: 10,
-                                              onTap: isLocationNull
-                                                  ? () {
-                                                      globalUtils
-                                                          .showNegativeSnackBar(
-                                                              context: context,
-                                                              message:
-                                                                  "Location Required");
-                                                    }
-                                                  : () {
-                                                      items[0] ==
-                                                              AppStrings
-                                                                  .apiKeyScanItems
-                                                          ? navigateToScanItems()
-                                                          : items[0] ==
-                                                                  AppStrings
-                                                                      .apiKeyListItems
-                                                              ? navigateToListItems()
-                                                              : navigateToReceiveGoods();
-                                                    }),
-                                          const Spacer(),
-                                        ],
-                                      ),
-                                    ),
-                                  )
-                                : const SizedBox(),
+
                         const SizedBox(height: 10),
-                        items.length > 2
-                            ? SizedBox(
-                                child: Center(
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      CustomItemCard(
-                                        imageString: items[2] ==
-                                                AppStrings.apiKeyScanItems
-                                            ? ImageAssets.scanYourItems
-                                            : items[2] ==
-                                                    AppStrings.apiKeyListItems
-                                                ? ImageAssets.listAllItems
-                                                : ImageAssets.receiveGoods,
-                                        title: items[2] ==
-                                                AppStrings.apiKeyScanItems
-                                            ? AppStrings.scanYourItem
-                                            : items[2] ==
-                                                    AppStrings.apiKeyListItems
-                                                ? AppStrings.listAllItems
-                                                : AppStrings.receiveGoods,
-                                        backgroundColor: ColorManager.white,
-                                        cornerRadius: 10,
-                                        onTap: isLocationNull
-                                            ? () {
-                                                globalUtils
-                                                    .showNegativeSnackBar(
-                                                  context: context,
-                                                  message: "Location Required",
-                                                );
-                                              }
-                                            : () {
-                                                items[2] ==
-                                                        AppStrings
-                                                            .apiKeyScanItems
-                                                    ? navigateToScanItems()
-                                                    : items[2] ==
-                                                            AppStrings
-                                                                .apiKeyListItems
-                                                        ? navigateToListItems()
-                                                        : navigateToReceiveGoods();
-                                              },
+
+                        GridView.count(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                          childAspectRatio: 1.7,
+                          children: [
+                            // Scan Item
+                            if (items.contains(AppStrings.apiKeyScanItems))
+                              CustomItemCard(
+                                imageString: ImageAssets.scanYourItems,
+                                title: AppStrings.scanYourItem,
+                                backgroundColor: ColorManager.white,
+                                cornerRadius: 10,
+                                onTap: isLocationNull
+                                    ? () => globalUtils.showNegativeSnackBar(
+                                          context: context,
+                                          message: "Location Required",
+                                        )
+                                    : navigateToScanItems,
+                              ),
+
+                            // List Items
+                            if (items.contains(AppStrings.apiKeyListItems))
+                              CustomItemCard(
+                                imageString: ImageAssets.listAllItems,
+                                title: AppStrings.listAllItems,
+                                backgroundColor: ColorManager.white,
+                                cornerRadius: 10,
+                                onTap: isLocationNull
+                                    ? () => globalUtils.showNegativeSnackBar(
+                                          context: context,
+                                          message: "Location Required",
+                                        )
+                                    : navigateToListItems,
+                              ),
+
+                            // Receive Goods
+                            if (items.contains(AppStrings.apiKeyReceiveGoods))
+                              CustomItemCard(
+                                imageString: ImageAssets.receiveGoods,
+                                title: AppStrings.receiveGoods,
+                                backgroundColor: ColorManager.white,
+                                cornerRadius: 10,
+                                onTap: isLocationNull
+                                    ? () => globalUtils.showNegativeSnackBar(
+                                          context: context,
+                                          message: "Location Required",
+                                        )
+                                    : navigateToReceiveGoods,
+                              ),
+
+                            // Blind Stock
+                            if (inventoryManager == true)
+                              Opacity(
+                                opacity: SharedPrefs().blindStockEdit == true
+                                    ? 1.0
+                                    : 0.5,
+                                child: CustomItemCard(
+                                  imageString: ImageAssets.blindstocklisting,
+                                  title: "Blind Stock Listing",
+                                  backgroundColor: ColorManager.white,
+                                  cornerRadius: 10,
+                                  onTap: () {
+                                    if (SharedPrefs().blindStockEdit != true) {
+                                      globalUtils.showNegativeSnackBar(
+                                        context: context,
+                                        message:
+                                            "You are not designated as the Inventory Manager for ${SharedPrefs().selectedLocation} location.",
+                                      );
+                                      return;
+                                    }
+                                    if (isLocationNull) {
+                                      globalUtils.showNegativeSnackBar(
+                                        context: context,
+                                        message: "Location Required",
+                                      );
+                                      return;
+                                    }
+
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const BlindStockListView(),
                                       ),
-
-                                      // Show Blind Stock card only if inventoryManager is true
-                                      if (inventoryManager == true) ...[
-                                        SizedBox(
-                                          width: (MediaQuery.of(context)
-                                                      .size
-                                                      .width -
-                                                  30) /
-                                              2,
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 8),
-                                            child: Opacity(
-                                              opacity: SharedPrefs()
-                                                          .blindStockEdit ==
-                                                      true
-                                                  ? 1.0
-                                                  : 0.5, // blur effect
-                                              child: CustomItemCard(
-                                                imageString: ImageAssets
-                                                    .blindstocklisting,
-                                                title: "Blind Stock Listing",
-                                                backgroundColor:
-                                                    ColorManager.white,
-                                                cornerRadius: 10,
-                                                onTap: () {
-                                                  if (SharedPrefs()
-                                                          .blindStockEdit !=
-                                                      true) {
-                                                    // 🚫 Not allowed → show snackbar
-                                                    globalUtils
-                                                        .showNegativeSnackBar(
-                                                      context: context,
-                                                      message:
-                                                          "You are not manager of this location",
-                                                    );
-                                                    return;
-                                                  }
-
-                                                  if (isLocationNull) {
-                                                    globalUtils
-                                                        .showNegativeSnackBar(
-                                                      context: context,
-                                                      message:
-                                                          "Location Required",
-                                                    );
-                                                    return;
-                                                  }
-
-                                                  // ✅ Allowed → navigate
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          const BlindStockListView(),
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ] else ...[
-                                        const Spacer(),
-                                      ]
-                                    ],
-                                  ),
+                                    );
+                                  },
                                 ),
-                              )
-                            : const SizedBox(),
+                              ),
+                          ],
+                        ),
                       ],
                     ),
                   ),

@@ -125,6 +125,7 @@ class AppStrings {
   static const String categoryCodeDetails = "Category Code: ";
   static const String price = "Price";
   static const String noteDetails = "Note: ";
+  static const String notes = "Notes: ";
   static const String noteDescription =
       "‘Items OUT’ will always reflect today’s date, regardless of the selected date.";
   static const String alertTitle = 'Alert!';

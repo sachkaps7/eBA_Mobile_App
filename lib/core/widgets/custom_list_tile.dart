@@ -312,10 +312,14 @@ class ItemListTile extends StatelessWidget {
               border: Border.all(color: ColorManager.grey4, width: 1.0),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Image.network(
-              imageString,
-              fit: BoxFit.contain,
-            ),
+            child: (imageString.isNotEmpty)
+                ? Image.network(
+                    imageString,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset(ImageAssets.noImages);
+                    },
+                  )
+                : Image.asset(ImageAssets.noImages),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -442,10 +446,14 @@ class ItemGridTile extends StatelessWidget {
               ),
               child: Padding(
                 padding: const EdgeInsets.all(5.0),
-                child: Image.network(
-                  imageString,
-                  fit: BoxFit.contain,
-                ),
+                child: (imageString.isNotEmpty)
+                    ? Image.network(
+                        imageString,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(ImageAssets.noImages);
+                        },
+                      )
+                    : Image.asset(ImageAssets.noImages),
               ),
             ),
             const SizedBox(height: 8),

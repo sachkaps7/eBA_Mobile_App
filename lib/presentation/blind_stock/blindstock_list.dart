@@ -52,7 +52,6 @@ class _BlindStockListViewState extends State<BlindStockListView>
     _searchController.addListener(_onSearchChanged);
     _scrollController = ScrollController()..addListener(_scrollListener);
     fetchListItems(false);
-
   }
 
   @override
@@ -85,14 +84,14 @@ class _BlindStockListViewState extends State<BlindStockListView>
   }
 
   void _onSearchChanged() {
-    if (_searchController.text.length >= 3 || _searchController.text.isEmpty) {
+    if (_searchController.text.length >= 2 || _searchController.text.isEmpty) {
       if (searchText != _searchController.text) {
         setState(() {
           searchText = _searchController.text;
           isSearching = true;
           page = 1;
           listItems.clear();
-          totalRecords = 0; 
+          totalRecords = 0;
         });
 
         // Cancel previous debounce timer
@@ -181,16 +180,20 @@ class _BlindStockListViewState extends State<BlindStockListView>
         context, BlindStockDetailsView(itemId: selectedItem.itemId));
   }
 
+  void navigateToItemDetailsScan(itemid) {
+    navigateToScreen(context, BlindStockDetailsView(itemId: itemid));
+  }
+
   Future<void> scanBarcode() async {
     try {
       ScanResult barcodeScanResult = await BarcodeScanner.scan();
       String resultString = barcodeScanResult.rawContent;
       if (resultString.isNotEmpty && resultString != "-1") {
         Map<String, dynamic> jsonDict = jsonDecode(resultString);
-        SharedPrefs().scannedLocationID = jsonDict['location_id'];
-        SharedPrefs().scannedRegionID = jsonDict['region_id'];
-        SharedPrefs().isItemScanned = true;
-        navigateToItemDetails(jsonDict['itemid']);
+        // SharedPrefs().scannedLocationID = jsonDict['location_id'];
+        // SharedPrefs().scannedRegionID = jsonDict['region_id'];
+        // SharedPrefs().isItemScanned = true;
+        navigateToItemDetailsScan(jsonDict['itemid']);
       }
     } catch (e) {
       setState(() {
@@ -209,7 +212,7 @@ class _BlindStockListViewState extends State<BlindStockListView>
       child: Row(
         children: [
           if (_showSearchBar) ...[
-            // Expanded search bar (full width)
+            // Expanded search bar (takes max space)
             Expanded(
               child: CustomSearchField(
                 controller: _searchController,
@@ -218,7 +221,7 @@ class _BlindStockListViewState extends State<BlindStockListView>
                 autoFocus: true, // focus immediately
               ),
             ),
-            const SizedBox(width: 2),
+            const SizedBox(width: 8),
             // Cross button to close
             IconButton(
               icon: Icon(Icons.close, color: ColorManager.black),
@@ -230,16 +233,15 @@ class _BlindStockListViewState extends State<BlindStockListView>
               },
             ),
           ] else ...[
-            //  Collapsed search bar (smaller width)
-            SizedBox(
-              width: 230, // compact width
+            // Responsive compact search field
+            Flexible(
+              flex: 3, // leaves space for icons
               child: CustomSearchField(
                 controller: _searchController,
                 placeholderText: AppStrings.searchItems,
                 inputType: TextInputType.text,
-                autoFocus: false, // don’t auto focus in collapsed mode
-                readOnly:
-                    true, //  prevents typing until user taps (like collapsed mode)
+                autoFocus: false,
+                readOnly: true,
                 onTap: () {
                   // when tapped, expand to full search mode
                   setState(() => _showSearchBar = true);
@@ -247,61 +249,61 @@ class _BlindStockListViewState extends State<BlindStockListView>
               ),
             ),
 
-            const Spacer(), // pushes icons to right
+            const SizedBox(width: 8),
 
-            //  List toggle
-            IconButton(
-              icon: SizedBox(
-                height: 20,
-                width: 20,
-                child: Image.asset(
-                  isListViewSelected
-                      ? ImageAssets.boxSelectedIcon
-                      : ImageAssets.boxIcon,
+            // Right-side icons (grouped with padding)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // List toggle
+                IconButton(
+                  icon: SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: Image.asset(
+                      isListViewSelected
+                          ? ImageAssets.boxSelectedIcon
+                          : ImageAssets.boxIcon,
+                    ),
+                  ),
+                  onPressed: () => setState(() => isListViewSelected = true),
                 ),
-              ),
-              onPressed: () {
-                setState(() => isListViewSelected = true);
-              },
-            ),
-            // const SizedBox(width: 1),
 
-            // Divider
-            Container(
-              color: ColorManager.lightBlue2,
-              height: 35,
-              width: 2,
-            ),
-            // const SizedBox(width: 1),
-
-            //  Grid toggle
-            IconButton(
-              icon: SizedBox(
-                height: 20,
-                width: 20,
-                child: Image.asset(
-                  isListViewSelected
-                      ? ImageAssets.gridIcon
-                      : ImageAssets.gridSelectedIcon,
+                // Divider
+                Container(
+                  color: ColorManager.lightBlue2,
+                  height: 35,
+                  width: 2,
                 ),
-              ),
-              onPressed: () {
-                setState(() => isListViewSelected = false);
-              },
-            ),
 
-            // Scanner
-            IconButton(
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              icon: Icon(
-                Icons.qr_code_scanner_outlined,
-                color: ColorManager.blue,
-              ),
-              onPressed: () {
-                navigateToScanItems();
-                print("Scan button pressed");
-              },
+                // Grid toggle
+                IconButton(
+                  icon: SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: Image.asset(
+                      isListViewSelected
+                          ? ImageAssets.gridIcon
+                          : ImageAssets.gridSelectedIcon,
+                    ),
+                  ),
+                  onPressed: () => setState(() => isListViewSelected = false),
+                ),
+
+                // Scanner button with safe right padding
+                Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    icon: Icon(
+                      Icons.qr_code_scanner_outlined,
+                      color: ColorManager.blue,
+                    ),
+                    onPressed: () => navigateToScanItems(),
+                  ),
+                ),
+              ],
             ),
           ],
         ],
@@ -371,14 +373,8 @@ class _BlindStockListViewState extends State<BlindStockListView>
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: sidePadding, vertical: 8),
                                   child: listItems.isEmpty
-                                      ? Center(
-                                          child: Text(
-                                            'No record found',
-                                            style: getRegularStyle(
-                                              color: ColorManager.black,
-                                              fontSize: FontSize.s27,
-                                            ),
-                                          ),
+                                      ? const Center(
+                                          child: CustomProgressIndicator(),
                                         )
                                       : NotificationListener<
                                           ScrollNotification>(

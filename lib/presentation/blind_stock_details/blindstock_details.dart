@@ -148,8 +148,11 @@ class _BlindStockDetailsViewState extends State<BlindStockDetailsView> {
   }
 
   void updateBlindStack() async {
-    double adjustQuantity =
-        double.tryParse(_physicalQtyController.text.trim()) ?? 0.00;
+    double adjustQuantity = double.tryParse(
+          _physicalQtyController.text.trim().replaceAll(',', ''),
+        ) ??
+        0.00;
+
     String notes = _commmentsController.text.trim();
 
     //  Validation
@@ -157,7 +160,7 @@ class _BlindStockDetailsViewState extends State<BlindStockDetailsView> {
     if (_physicalQtyController.text.trim().isEmpty) {
       showErrorDialog(
         context,
-        "Adjust Quantity cannot be empty",
+        "Physical Quantity cannot be empty.",
         false,
       );
       return;
@@ -200,6 +203,9 @@ class _BlindStockDetailsViewState extends State<BlindStockDetailsView> {
         }
       });
     }
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override
@@ -272,12 +278,31 @@ class _BlindStockDetailsViewState extends State<BlindStockDetailsView> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       const SizedBox(height: 20),
+                                      // Center(
+                                      //     child: SizedBox(
+                                      //         height: 160,
+                                      //         width: 160,
+                                      //         child: Image.network(
+                                      //             items[0].itemImage))),
                                       Center(
-                                          child: SizedBox(
-                                              height: 160,
-                                              width: 160,
-                                              child: Image.network(
-                                                  items[0].itemImage))),
+                                        child: SizedBox(
+                                          height: 160,
+                                          width: 160,
+                                          child: (items[0].itemImage.isNotEmpty)
+                                              ? Image.network(
+                                                  items[0].itemImage,
+                                                  errorBuilder: (context, error,
+                                                      stackTrace) {
+                                                    // If URL is invalid or fails to load
+                                                    return Image.asset(
+                                                        ImageAssets.noImages);
+                                                  },
+                                                )
+                                              : Image.asset(
+                                                  ImageAssets.noImages),
+                                        ),
+                                      ),
+
                                       Padding(
                                         padding: const EdgeInsets.all(18.0),
                                         child: Column(
@@ -365,7 +390,7 @@ class _BlindStockDetailsViewState extends State<BlindStockDetailsView> {
                                                     text: items[0]
                                                         .stockCount
                                                         .toStringAsFixed(
-                                                            2), // always 2 decimals
+                                                            2), // 2 decimals
                                                     style: getBoldStyle(
                                                       color: ColorManager.green,
                                                       fontSize: FontSize.s18,
@@ -408,14 +433,15 @@ class _BlindStockDetailsViewState extends State<BlindStockDetailsView> {
                                                   ),
                                                 ],
                                                 onTap: () {
-                                                  // Select all text when tapped for easy editing
+                                                  // Place cursor at the end of the text instead of selecting all
                                                   _physicalQtyController
                                                           .selection =
-                                                      TextSelection(
-                                                    baseOffset: 0,
-                                                    extentOffset:
-                                                        _physicalQtyController
-                                                            .text.length,
+                                                      TextSelection
+                                                          .fromPosition(
+                                                    TextPosition(
+                                                        offset:
+                                                            _physicalQtyController
+                                                                .text.length),
                                                   );
                                                 },
                                                 onEditingComplete: () {
@@ -464,8 +490,7 @@ class _BlindStockDetailsViewState extends State<BlindStockDetailsView> {
                                                 decoration: InputDecoration(
                                                   contentPadding:
                                                       const EdgeInsets.all(20),
-                                                  labelText:
-                                                      AppStrings.noteDetails,
+                                                  labelText: AppStrings.notes,
                                                   alignLabelWithHint: true,
                                                   floatingLabelBehavior:
                                                       FloatingLabelBehavior

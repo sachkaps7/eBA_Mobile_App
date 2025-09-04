@@ -400,11 +400,23 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                                         ],
                                       ),
                                       Center(
-                                          child: SizedBox(
-                                              height: 160,
-                                              width: 160,
-                                              child: Image.network(
-                                                  items[0].itemImage))),
+                                        child: SizedBox(
+                                          height: 160,
+                                          width: 160,
+                                          child: (items[0].itemImage.isNotEmpty)
+                                              ? Image.network(
+                                                  items[0].itemImage,
+                                                  errorBuilder: (context, error,
+                                                      stackTrace) {
+                                                    // If URL is invalid or fails to load
+                                                    return Image.asset(
+                                                        ImageAssets.noImages);
+                                                  },
+                                                )
+                                              : Image.asset(
+                                                  ImageAssets.noImages),
+                                        ),
+                                      ),
                                       Padding(
                                         padding: const EdgeInsets.all(18.0),
                                         child: Column(

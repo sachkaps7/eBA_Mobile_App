@@ -140,6 +140,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
             selectedRegion = response.data[0].regionName;
             selectLocationTitle = response.data[0].locationLabelName;
             selectedLocation = response.data[0].locationName;
+            SharedPrefs().selectedLocation = response.data[0].locationName;
             isRegionEnabled = response.data[0].region;
             isRegionEditable = response.data[0].regionEdit;
             isLocationEnabled = response.data[0].location;

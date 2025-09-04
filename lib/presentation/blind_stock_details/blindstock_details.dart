@@ -387,10 +387,9 @@ class _BlindStockDetailsViewState extends State<BlindStockDetailsView> {
                                                 ),
                                                 children: [
                                                   TextSpan(
-                                                    text: items[0]
-                                                        .stockCount
-                                                        .toStringAsFixed(
-                                                            2), // 2 decimals
+                                                    text: getFormattedPriceStringPrice(
+                                                        items[0]
+                                                            .stockCount), 
                                                     style: getBoldStyle(
                                                       color: ColorManager.green,
                                                       fontSize: FontSize.s18,

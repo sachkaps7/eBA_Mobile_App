@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:eyvo_inventory/app/sizes_helper.dart';
 import 'package:eyvo_inventory/core/resources/assets_manager.dart';
 import 'package:eyvo_inventory/core/resources/color_manager.dart';
@@ -20,6 +22,7 @@ class OrderItemListTile extends StatefulWidget {
   final VoidCallback onTap;
   final VoidCallback onEdit;
   final bool isImageUploaded;
+  final String? uploadedImageBase64;
   final void Function(String fileName, String base64Image)? onImageUploaded;
 
   const OrderItemListTile({
@@ -35,6 +38,7 @@ class OrderItemListTile extends StatefulWidget {
     required this.onEdit,
     this.isImageUploaded = false,
     this.onImageUploaded,
+    this.uploadedImageBase64,
   });
 
   @override
@@ -176,11 +180,30 @@ class _OrderItemListTileState extends State<OrderItemListTile> {
                                       }
                                     }
                                   },
-                                  child: widget.isImageUploaded
-                                      ? Image.asset(
-                                          ImageAssets.uploaded,
-                                          height: 30,
-                                          width: 30,
+                                  // child: widget.isImageUploaded
+                                  //     ? Image.asset(
+                                  //         ImageAssets.uploaded,
+                                  //         height: 30,
+                                  //         width: 30,
+                                  //       )
+                                  //     : Image.asset(
+                                  //         ImageAssets.uploadFiles,
+                                  //         height: 20,
+                                  //         width: 20,
+                                  //       ),
+
+                                  child: widget.isImageUploaded &&
+                                          widget.uploadedImageBase64 != null
+                                      ? ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                          child: Image.memory(
+                                            base64Decode(
+                                                widget.uploadedImageBase64!),
+                                            height: 40,
+                                            width: 40,
+                                            fit: BoxFit.cover,
+                                          ),
                                         )
                                       : Image.asset(
                                           ImageAssets.uploadFiles,

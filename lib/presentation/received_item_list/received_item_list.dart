@@ -521,6 +521,11 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
                                                 //         "Uploaded Base64 for orderLineId ${orderItems[index].orderLineId}: ${uploadedImages[orderItems[index].orderLineId]}");
                                                 //   });
                                                 // }
+                                                uploadedImageBase64:
+                                                    uploadedImages[
+                                                            orderItems[index]
+                                                                .orderLineId]
+                                                        ?["base64"],
                                                 onImageUploaded:
                                                     (fileName, base64Image) {
                                                   setState(() {

@@ -21,6 +21,7 @@ import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:eyvo_inventory/core/widgets/title_header.dart';
 import 'package:eyvo_inventory/presentation/blind_stock/blindstock_list.dart';
 import 'package:eyvo_inventory/presentation/change_password/change_password.dart';
+import 'package:eyvo_inventory/presentation/image_upload/Image_upload.dart';
 import 'package:eyvo_inventory/presentation/item_details/item_details.dart';
 import 'package:eyvo_inventory/presentation/item_list/item_list.dart';
 import 'package:eyvo_inventory/presentation/location_list/location_list.dart';

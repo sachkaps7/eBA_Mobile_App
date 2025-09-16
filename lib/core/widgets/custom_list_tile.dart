@@ -5,6 +5,8 @@ import 'package:eyvo_inventory/core/resources/font_manager.dart';
 import 'package:eyvo_inventory/core/resources/strings_manager.dart';
 import 'package:eyvo_inventory/core/resources/styles_manager.dart';
 import 'package:eyvo_inventory/core/utils.dart';
+import 'package:eyvo_inventory/log_data.dart/logger_data.dart';
+import 'package:eyvo_inventory/presentation/image_upload/Image_upload_popUp.dart';
 import 'package:flutter/material.dart';
 
 class OrderItemListTile extends StatefulWidget {
@@ -17,18 +19,23 @@ class OrderItemListTile extends StatefulWidget {
   final bool isSelected;
   final VoidCallback onTap;
   final VoidCallback onEdit;
+  final bool isImageUploaded;
+  final void Function(String fileName, String base64Image)? onImageUploaded;
 
-  const OrderItemListTile(
-      {super.key,
-      required this.itemID,
-      required this.title,
-      required this.subtitle,
-      required this.imageString,
-      required this.totalQuantity,
-      required this.receivedQuantity,
-      required this.isSelected,
-      required this.onTap,
-      required this.onEdit});
+  const OrderItemListTile({
+    super.key,
+    required this.itemID,
+    required this.title,
+    required this.subtitle,
+    required this.imageString,
+    required this.totalQuantity,
+    required this.receivedQuantity,
+    required this.isSelected,
+    required this.onTap,
+    required this.onEdit,
+    this.isImageUploaded = false,
+    this.onImageUploaded,
+  });
 
   @override
   State<OrderItemListTile> createState() => _OrderItemListTileState();
@@ -41,6 +48,17 @@ class _OrderItemListTileState extends State<OrderItemListTile> {
   void initState() {
     super.initState();
     selectedQuantity = widget.receivedQuantity;
+  }
+
+  @override
+  void didUpdateWidget(covariant OrderItemListTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isSelected != widget.isSelected) {
+      setState(() {}); // rebuild if parent changes selection
+    }
+    if (oldWidget.receivedQuantity != widget.receivedQuantity) {
+      selectedQuantity = widget.receivedQuantity;
+    }
   }
 
   @override
@@ -59,24 +77,29 @@ class _OrderItemListTileState extends State<OrderItemListTile> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // LEFT SIDE (Item ID + Image)
                     Column(
                       children: [
-                        Text('${AppStrings.itemIDDetails}${widget.itemID}',
-                            maxLines: 1,
-                            style: getSemiBoldStyle(
-                                color: widget.isSelected
-                                    ? ColorManager.white
-                                    : ColorManager.lightGrey1,
-                                fontSize: FontSize.s12)),
+                        Text(
+                          '${AppStrings.itemIDDetails}${widget.itemID}',
+                          maxLines: 1,
+                          style: getSemiBoldStyle(
+                            color: widget.isSelected
+                                ? ColorManager.white
+                                : ColorManager.lightGrey1,
+                            fontSize: FontSize.s12,
+                          ),
+                        ),
                         const SizedBox(height: 4),
                         Container(
                           height: 80,
                           width: 80,
                           decoration: BoxDecoration(
-                              color: ColorManager.white,
-                              border: Border.all(
-                                  color: ColorManager.grey4, width: 1.0),
-                              borderRadius: BorderRadius.circular(6)),
+                            color: ColorManager.white,
+                            border: Border.all(
+                                color: ColorManager.grey4, width: 1.0),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
                           child: Image.network(
                             widget.imageString,
                             fit: BoxFit.contain,
@@ -84,28 +107,91 @@ class _OrderItemListTileState extends State<OrderItemListTile> {
                         ),
                       ],
                     ),
+
                     const SizedBox(width: 8),
+
+                    // MIDDLE (Title + Subtitle with camera icon)
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           if (widget.title.isNotEmpty)
-                            Text(widget.title,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: getBoldStyle(
+                            Text(
+                              widget.title,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: getBoldStyle(
+                                color: widget.isSelected
+                                    ? ColorManager.white
+                                    : ColorManager.darkBlue,
+                                fontSize: FontSize.s14,
+                              ),
+                            ),
+
+                          // Subtitle + Camera Icon Row
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  widget.subtitle,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: widget.title.isEmpty ? 3 : 2,
+                                  style: getRegularStyle(
                                     color: widget.isSelected
                                         ? ColorManager.white
-                                        : ColorManager.darkBlue,
-                                    fontSize: FontSize.s14)),
-                          Text(widget.subtitle,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: widget.title.isEmpty ? 3 : 2,
-                              style: getRegularStyle(
-                                  color: widget.isSelected
-                                      ? ColorManager.white
-                                      : ColorManager.lightGrey2,
-                                  fontSize: FontSize.s14))
+                                        : ColorManager.lightGrey2,
+                                    fontSize: FontSize.s14,
+                                  ),
+                                ),
+                              ),
+
+                              // Camera or Tick Icon
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    right: 8.0), // gap from container border
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    final result =
+                                        await showImageUploadDialog(context);
+
+                                    if (result != null &&
+                                        widget.onImageUploaded != null) {
+                                      final fileName =
+                                          result["fileName"] as String?;
+                                      final base64 =
+                                          result["base64"] as String?;
+
+                                      if (fileName != null && base64 != null) {
+                                        LoggerData.dataLog(
+                                            "Uploaded file: $fileName");
+                                        LoggerData.dataLog(
+                                            "Base64 length: ${base64.length}");
+
+                                        widget.onImageUploaded
+                                            ?.call(fileName, base64);
+                                      } else {
+                                        LoggerData.dataLog(
+                                            "Image upload failed: fileName or base64 is null");
+                                      }
+                                    }
+                                  },
+                                  child: widget.isImageUploaded
+                                      ? Image.asset(
+                                          ImageAssets.uploaded,
+                                          height: 30,
+                                          width: 30,
+                                        )
+                                      : Image.asset(
+                                          ImageAssets.uploadFiles,
+                                          height: 20,
+                                          width: 20,
+                                        ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                            ],
+                          ),
                         ],
                       ),
                     ),

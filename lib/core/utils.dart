@@ -90,6 +90,45 @@ void showErrorDialog(
   );
 }
 
+void showImageActionDialog({
+  required BuildContext context,
+  required String imageString,
+  required String titleString,
+  required String messageString,
+  String destructiveActionString = '',
+  String normalActionString = 'OK',
+  VoidCallback? onDestructiveActionTap,
+  VoidCallback? onNormalActionTap,
+  bool isNeedToPopBack = false,
+}) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return CustomImageActionAlert(
+        iconString: '',
+        imageString: imageString,
+        titleString: titleString,
+        subTitleString: messageString,
+        destructiveActionString: destructiveActionString,
+        normalActionString: normalActionString,
+        onDestructiveActionTap: onDestructiveActionTap ?? () {},
+        onNormalActionTap: () {
+          Navigator.pop(context); // close dialog
+
+          if (isNeedToPopBack) {
+            Navigator.pop(context); // go back if needed
+          }
+
+          if (onNormalActionTap != null) {
+            onNormalActionTap();
+          }
+        },
+        isNormalAlert: true,
+      );
+    },
+  );
+}
+
 String getFormattedPriceString(double price) {
   var priceFormatter = NumberFormat.currency(
       locale: 'en_US', symbol: '', decimalDigits: SharedPrefs().decimalPlaces);

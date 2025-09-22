@@ -129,6 +129,41 @@ void showImageActionDialog({
   );
 }
 
+Future<bool?> showTwoButtonDialog({
+  required BuildContext context,
+  required String title,
+  required String content,
+  String positiveButtonText = "Yes",
+  String negativeButtonText = "No",
+}) {
+  return showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text(title,
+            style: getBoldStyle(
+                color: ColorManager.darkBlue, fontSize: FontSize.s18)),
+        content: Text(content,
+            style: getRegularStyle(
+                color: ColorManager.lightGrey, fontSize: FontSize.s16)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(negativeButtonText,
+                style: getBoldStyle(
+                    color: ColorManager.black, fontSize: FontSize.s16)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(positiveButtonText,
+                style: getBoldStyle(color: Colors.red, fontSize: FontSize.s16)),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 String getFormattedPriceString(double price) {
   var priceFormatter = NumberFormat.currency(
       locale: 'en_US', symbol: '', decimalDigits: SharedPrefs().decimalPlaces);

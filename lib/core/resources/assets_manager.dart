@@ -61,4 +61,5 @@ class ImageAssets {
   static const String uploadImage = "$imagePath/upload_image.png";
   static const String uploadFiles = "$imagePath/upload-files.png";
   static const String uploaded = "$imagePath/uploaded.png";
+  static const String uploadIcon2 = "$imagePath/uploadIcon.png";
 }

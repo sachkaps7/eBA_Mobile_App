@@ -1,6 +1,7 @@
 import 'package:eyvo_inventory/core/resources/color_manager.dart';
 import 'package:eyvo_inventory/core/resources/font_manager.dart';
 import 'package:eyvo_inventory/core/resources/styles_manager.dart';
+import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:flutter/material.dart';
 
 class CustomButton extends StatelessWidget {
@@ -192,3 +193,72 @@ class CustomTextActionButton extends StatelessWidget {
     );
   }
 }
+class CustomActionIconButton extends StatelessWidget {
+  final String buttonText;
+  final Color backgroundColor;
+  final Color borderColor;
+  final Color fontColor;
+  final double buttonWidth;
+  final double buttonHeight;
+  final double fontSize;
+  final bool isBoldFont;
+  final bool isUploading;
+  final IconData? icon;
+  final Color? iconColor;
+  final double? iconSize;
+  final VoidCallback? onTap;
+
+  const CustomActionIconButton({
+    Key? key,
+    required this.buttonText,
+    required this.backgroundColor,
+    required this.borderColor,
+    required this.fontColor,
+    required this.buttonWidth,
+    required this.buttonHeight,
+    required this.fontSize,
+    this.isBoldFont = false,
+    this.isUploading = false,
+    this.icon,
+    this.iconColor,
+    this.iconSize,
+    this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: buttonWidth,
+      height: buttonHeight,
+      child: ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: backgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: borderColor),
+          ),
+        ),
+        onPressed: onTap,
+        icon: isUploading
+            ? const SizedBox(
+                height: 18,
+                width: 18,
+                child: CustomProgressIndicator(),
+              )
+            : (icon != null
+                ? Icon(icon,
+                    color: iconColor ?? fontColor, size: iconSize ?? 20)
+                : const SizedBox.shrink()),
+        label: Text(
+          isUploading ? "Uploading..." : buttonText,
+          style: TextStyle(
+            color: fontColor,
+            fontSize: fontSize,
+            fontWeight: isBoldFont ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+}
+

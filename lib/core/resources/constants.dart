@@ -7,4 +7,13 @@ class AppConstants {
   static const maxCharactersForComment = 100;
   static const maxCharactersForPrice = 14;
   static const maxCharactersForQuantity = 12;
+  static const imageSizeLimitMB = 5; // limit in MB
+  static const imageSizeLimitBytes = imageSizeLimitMB * 1024 * 1024;
+  static const List<String> allowedImageFormats = [
+    "jpg",
+    "jpeg",
+    "png",
+    "heic",
+    "heif"
+  ];
 }

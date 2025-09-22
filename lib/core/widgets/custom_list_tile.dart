@@ -111,9 +111,7 @@ class _OrderItemListTileState extends State<OrderItemListTile> {
                         ),
                       ],
                     ),
-
                     const SizedBox(width: 8),
-
                     // MIDDLE (Title + Subtitle with camera icon)
                     Expanded(
                       child: Column(
@@ -131,7 +129,6 @@ class _OrderItemListTileState extends State<OrderItemListTile> {
                                 fontSize: FontSize.s14,
                               ),
                             ),
-
                           // Subtitle + Camera Icon Row
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -149,49 +146,41 @@ class _OrderItemListTileState extends State<OrderItemListTile> {
                                   ),
                                 ),
                               ),
-
-                              // Camera or Tick Icon
                               Padding(
-                                padding: const EdgeInsets.only(
-                                    right: 8.0), // gap from container border
+                                padding: const EdgeInsets.only(right: 8.0),
                                 child: GestureDetector(
                                   onTap: () async {
-                                    final result =
-                                        await showImageUploadDialog(context);
-
-                                    if (result != null &&
-                                        widget.onImageUploaded != null) {
-                                      final fileName =
-                                          result["fileName"] as String?;
-                                      final base64 =
-                                          result["base64"] as String?;
-
-                                      if (fileName != null && base64 != null) {
-                                        LoggerData.dataLog(
-                                            "Uploaded file: $fileName");
-                                        LoggerData.dataLog(
-                                            "Base64 length: ${base64.length}");
-
-                                        widget.onImageUploaded
-                                            ?.call(fileName, base64);
-                                      } else {
-                                        LoggerData.dataLog(
-                                            "Image upload failed: fileName or base64 is null");
+                                    if (widget.isImageUploaded &&
+                                        widget.uploadedImageBase64 != null) {
+                                      // Ask if user wants to remove image with custom dialog
+                                      bool? remove =
+                                          await showRemoveImageDialog(
+                                        context,
+                                        base64Decode(
+                                            widget.uploadedImageBase64!),
+                                      );
+                                      if (remove == true &&
+                                          widget.onImageUploaded != null) {
+                                        widget.onImageUploaded!("", "");
+                                      }
+                                    } else {
+                                      // Upload new image
+                                      final result =
+                                          await showImageUploadDialog(context);
+                                      if (result != null &&
+                                          widget.onImageUploaded != null) {
+                                        final fileName =
+                                            result["fileName"] as String?;
+                                        final base64 =
+                                            result["base64"] as String?;
+                                        if (fileName != null &&
+                                            base64 != null) {
+                                          widget.onImageUploaded
+                                              ?.call(fileName, base64);
+                                        }
                                       }
                                     }
                                   },
-                                  // child: widget.isImageUploaded
-                                  //     ? Image.asset(
-                                  //         ImageAssets.uploaded,
-                                  //         height: 30,
-                                  //         width: 30,
-                                  //       )
-                                  //     : Image.asset(
-                                  //         ImageAssets.uploadFiles,
-                                  //         height: 20,
-                                  //         width: 20,
-                                  //       ),
-
                                   child: widget.isImageUploaded &&
                                           widget.uploadedImageBase64 != null
                                       ? ClipRRect(
@@ -207,8 +196,8 @@ class _OrderItemListTileState extends State<OrderItemListTile> {
                                         )
                                       : Image.asset(
                                           ImageAssets.uploadFiles,
-                                          height: 20,
-                                          width: 20,
+                                          height: 30,
+                                          width: 30,
                                         ),
                                 ),
                               ),
@@ -297,6 +286,293 @@ class _OrderItemListTileState extends State<OrderItemListTile> {
     );
   }
 }
+
+// class OrderItemListTile extends StatefulWidget {
+//   final int itemID;
+//   final String title;
+//   final String subtitle;
+//   final String imageString;
+//   final double totalQuantity;
+//   final double receivedQuantity;
+//   final bool isSelected;
+//   final VoidCallback onTap;
+//   final VoidCallback onEdit;
+//   final bool isImageUploaded;
+//   final String? uploadedImageBase64;
+//   final void Function(String fileName, String base64Image)? onImageUploaded;
+
+//   const OrderItemListTile({
+//     super.key,
+//     required this.itemID,
+//     required this.title,
+//     required this.subtitle,
+//     required this.imageString,
+//     required this.totalQuantity,
+//     required this.receivedQuantity,
+//     required this.isSelected,
+//     required this.onTap,
+//     required this.onEdit,
+//     this.isImageUploaded = false,
+//     this.onImageUploaded,
+//     this.uploadedImageBase64,
+//   });
+
+//   @override
+//   State<OrderItemListTile> createState() => _OrderItemListTileState();
+// }
+
+//  class _OrderItemListTileState extends State<OrderItemListTile> {
+//   late double selectedQuantity;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     selectedQuantity = widget.receivedQuantity;
+//   }
+
+//   @override
+//   void didUpdateWidget(covariant OrderItemListTile oldWidget) {
+//     super.didUpdateWidget(oldWidget);
+//     if (oldWidget.isSelected != widget.isSelected) {
+//       setState(() {}); // rebuild if parent changes selection
+//     }
+//     if (oldWidget.receivedQuantity != widget.receivedQuantity) {
+//       selectedQuantity = widget.receivedQuantity;
+//     }
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return GestureDetector(
+//       onTap: widget.onTap,
+//       child: Padding(
+//         padding: const EdgeInsets.only(bottom: 8),
+//         child: Card(
+//           color: widget.isSelected ? ColorManager.darkBlue : ColorManager.white,
+//           child: Padding(
+//             padding: const EdgeInsets.all(6.0),
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 Row(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     // LEFT SIDE (Item ID + Image)
+//                     Column(
+//                       children: [
+//                         Text(
+//                           '${AppStrings.itemIDDetails}${widget.itemID}',
+//                           maxLines: 1,
+//                           style: getSemiBoldStyle(
+//                             color: widget.isSelected
+//                                 ? ColorManager.white
+//                                 : ColorManager.lightGrey1,
+//                             fontSize: FontSize.s12,
+//                           ),
+//                         ),
+//                         const SizedBox(height: 4),
+//                         Container(
+//                           height: 80,
+//                           width: 80,
+//                           decoration: BoxDecoration(
+//                             color: ColorManager.white,
+//                             border: Border.all(
+//                                 color: ColorManager.grey4, width: 1.0),
+//                             borderRadius: BorderRadius.circular(6),
+//                           ),
+//                           child: Image.network(
+//                             widget.imageString,
+//                             fit: BoxFit.contain,
+//                           ),
+//                         ),
+//                       ],
+//                     ),
+
+//                     const SizedBox(width: 8),
+
+//                     // MIDDLE (Title + Subtitle with camera icon)
+//                     Expanded(
+//                       child: Column(
+//                         crossAxisAlignment: CrossAxisAlignment.start,
+//                         children: [
+//                           if (widget.title.isNotEmpty)
+//                             Text(
+//                               widget.title,
+//                               overflow: TextOverflow.ellipsis,
+//                               maxLines: 1,
+//                               style: getBoldStyle(
+//                                 color: widget.isSelected
+//                                     ? ColorManager.white
+//                                     : ColorManager.darkBlue,
+//                                 fontSize: FontSize.s14,
+//                               ),
+//                             ),
+
+//                           // Subtitle + Camera Icon Row
+//                           Row(
+//                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                             children: [
+//                               Expanded(
+//                                 child: Text(
+//                                   widget.subtitle,
+//                                   overflow: TextOverflow.ellipsis,
+//                                   maxLines: widget.title.isEmpty ? 3 : 2,
+//                                   style: getRegularStyle(
+//                                     color: widget.isSelected
+//                                         ? ColorManager.white
+//                                         : ColorManager.lightGrey2,
+//                                     fontSize: FontSize.s14,
+//                                   ),
+//                                 ),
+//                               ),
+
+//                               // Camera or Tick Icon
+//                               Padding(
+//                                 padding: const EdgeInsets.only(
+//                                     right: 8.0), // gap from container border
+//                                 child: GestureDetector(
+//                                   onTap: () async {
+//                                     final result =
+//                                         await showImageUploadDialog(context);
+
+//                                     if (result != null &&
+//                                         widget.onImageUploaded != null) {
+//                                       final fileName =
+//                                           result["fileName"] as String?;
+//                                       final base64 =
+//                                           result["base64"] as String?;
+
+//                                       if (fileName != null && base64 != null) {
+//                                         LoggerData.dataLog(
+//                                             "Uploaded file: $fileName");
+//                                         LoggerData.dataLog(
+//                                             "Base64 length: ${base64.length}");
+
+//                                         widget.onImageUploaded
+//                                             ?.call(fileName, base64);
+//                                       } else {
+//                                         LoggerData.dataLog(
+//                                             "Image upload failed: fileName or base64 is null");
+//                                       }
+//                                     }
+//                                   },
+//                                   // child: widget.isImageUploaded
+//                                   //     ? Image.asset(
+//                                   //         ImageAssets.uploaded,
+//                                   //         height: 30,
+//                                   //         width: 30,
+//                                   //       )
+//                                   //     : Image.asset(
+//                                   //         ImageAssets.uploadFiles,
+//                                   //         height: 20,
+//                                   //         width: 20,
+//                                   //       ),
+
+//                                   child: widget.isImageUploaded &&
+//                                           widget.uploadedImageBase64 != null
+//                                       ? ClipRRect(
+//                                           borderRadius:
+//                                               BorderRadius.circular(20),
+//                                           child: Image.memory(
+//                                             base64Decode(
+//                                                 widget.uploadedImageBase64!),
+//                                             height: 40,
+//                                             width: 40,
+//                                             fit: BoxFit.cover,
+//                                           ),
+//                                         )
+//                                       : Image.asset(
+//                                           ImageAssets.uploadFiles,
+//                                           height: 20,
+//                                           width: 20,
+//                                         ),
+//                                 ),
+//                               ),
+//                               const SizedBox(height: 20),
+//                             ],
+//                           ),
+//                         ],
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//                 const SizedBox(height: 6),
+//                 Row(
+//                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                   children: [
+//                     Text(
+//                       '${AppStrings.quantityDetail}${getFormattedString(widget.totalQuantity)}',
+//                       style: getBoldStyle(
+//                           color: widget.isSelected
+//                               ? ColorManager.white
+//                               : ColorManager.lightGrey2,
+//                           fontSize: FontSize.s17),
+//                     ),
+//                     Stack(
+//                       children: [
+//                         Container(
+//                           width: 150,
+//                           height: 52,
+//                           child: GestureDetector(
+//                             onTap: widget.onEdit,
+//                             child: Container(
+//                               padding: const EdgeInsets.symmetric(
+//                                   horizontal: 10, vertical: 7),
+//                               decoration: BoxDecoration(
+//                                   color: widget.isSelected
+//                                       ? ColorManager.white
+//                                       : Colors.transparent,
+//                                   border: Border.all(
+//                                       color: ColorManager.grey4, width: 1.0),
+//                                   borderRadius: BorderRadius.circular(6)),
+//                               child: Row(
+//                                 mainAxisAlignment:
+//                                     MainAxisAlignment.spaceBetween,
+//                                 children: [
+//                                   Text(
+//                                     getFormattedString(widget.receivedQuantity),
+//                                     style: getSemiBoldStyle(
+//                                         color: ColorManager.lightGrey1,
+//                                         fontSize: FontSize.s17),
+//                                   ),
+//                                   SizedBox(
+//                                     height: 12,
+//                                     width: 13,
+//                                     child: Image.asset(ImageAssets.dropDownIcon,
+//                                         height: 20),
+//                                   ),
+//                                 ],
+//                               ),
+//                             ),
+//                           ),
+//                         ),
+//                         Positioned(
+//                           left: 12,
+//                           top: -8,
+//                           child: Container(
+//                             padding: const EdgeInsets.symmetric(
+//                                 horizontal: 6, vertical: 5),
+//                             decoration: BoxDecoration(
+//                                 color: ColorManager.white,
+//                                 borderRadius: BorderRadius.circular(4)),
+//                             child: Text(AppStrings.receiveQuantity,
+//                                 style: getSemiBoldStyle(
+//                                     color: ColorManager.lightGrey1,
+//                                     fontSize: FontSize.s12)),
+//                           ),
+//                         )
+//                       ],
+//                     ),
+//                   ],
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
 
 class MenuItemListTile extends StatelessWidget {
   final String title;

@@ -1,63 +1,294 @@
 import 'dart:convert';
 import 'dart:io';
-
+import 'dart:math';
+import 'dart:typed_data';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:eyvo_inventory/core/resources/assets_manager.dart';
 import 'package:eyvo_inventory/core/resources/color_manager.dart';
+import 'package:eyvo_inventory/core/resources/constants.dart';
 import 'package:eyvo_inventory/core/resources/font_manager.dart';
-import 'package:eyvo_inventory/core/utils.dart';
+import 'package:eyvo_inventory/core/resources/strings_manager.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
-import 'package:eyvo_inventory/log_data.dart/logger_data.dart';
 import 'package:eyvo_inventory/presentation/image_upload/image_upload_helper.dart';
 import 'package:flutter/material.dart';
 
-// Future<void> showImageUploadDialog(BuildContext context) {
-//   return showDialog(
-//     context: context,
-//     barrierDismissible: false, // prevent closing on outside tap
-//     builder: (context) {
-//       return Dialog(
-//         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-//         insetPadding: const EdgeInsets.all(16),
-//         backgroundColor: ColorManager.primary,
-//         child: _ImageUploadPopup(),
-//       );
-//     },
-//   );
-// }
-Future<Map<String, String>?> showImageUploadDialog(BuildContext context) {
-  return showDialog<Map<String, String>>(
-    context: context,
-    barrierDismissible: true,
-    builder: (context) {
-      return Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        insetPadding: const EdgeInsets.all(16),
-        backgroundColor: ColorManager.white,
-        child: _ImageUploadPopup(),
-      );
-    },
-  );
-}
+/// -------------------- IMAGE PREVIEW BOX --------------------
+class ImagePreviewBox extends StatelessWidget {
+  final File? imageFile;
+  final Uint8List? imageBytes;
+  final VoidCallback? onTapUpload;
+  final VoidCallback? onTapDelete;
 
-class _ImageUploadPopup extends StatefulWidget {
+  const ImagePreviewBox({
+    Key? key,
+    this.imageFile,
+    this.imageBytes,
+    this.onTapUpload,
+    this.onTapDelete,
+  }) : super(key: key);
+
   @override
-  State<_ImageUploadPopup> createState() => _ImageUploadPopupState();
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: MediaQuery.of(context).size.width * 0.80,
+      height: MediaQuery.of(context).size.height * 0.30,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          DottedBorder(
+            borderType: BorderType.RRect,
+            radius: const Radius.circular(12),
+            dashPattern: const [6, 3],
+            color: ColorManager.lightGrey1,
+            strokeWidth: 1,
+            child: Container(
+              decoration: BoxDecoration(
+                color: ColorManager.primary,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: (imageFile == null && imageBytes == null)
+                  ? _buildUploadPlaceholder()
+                  : Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: SizedBox.expand(
+                          child: imageFile != null
+                              ? Image.file(imageFile!, fit: BoxFit.cover)
+                              : Image.memory(imageBytes!, fit: BoxFit.cover),
+                        ),
+                      ),
+                    ),
+            ),
+          ),
+          if (onTapDelete != null && (imageFile != null || imageBytes != null))
+            Positioned(
+              top: -12,
+              right: -12,
+              child: GestureDetector(
+                onTap: onTapDelete,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: ColorManager.red,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(8),
+                  child:
+                      Icon(Icons.delete, color: ColorManager.white, size: 20),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUploadPlaceholder() {
+    return Center(
+      child: GestureDetector(
+        onTap: onTapUpload,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              ImageAssets.uploadImage,
+              height: 50,
+              width: 50,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Click to upload",
+              style: TextStyle(
+                color: ColorManager.darkBlue,
+                fontSize: FontSize.s16,
+                fontWeight: FontWeightManager.medium,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              "Allowed formats: JPG, JPEG, PNG, HEIC, HEIF\n(Max ${AppConstants.imageSizeLimitMB} MB)",
+              style: TextStyle(
+                color: ColorManager.darkBlue,
+                fontSize: FontSize.s14,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-class _ImageUploadPopupState extends State<_ImageUploadPopup> {
+/// -------------------- CUSTOM BUTTON --------------------
+class CustomActionIconButton extends StatelessWidget {
+  final String buttonText;
+  final Color backgroundColor;
+  final Color borderColor;
+  final Color fontColor;
+  final double buttonWidth;
+  final double buttonHeight;
+  final double fontSize;
+  final bool isBoldFont;
+  final bool isUploading;
+  final IconData? icon;
+  final Color? iconColor;
+  final double? iconSize;
+  final VoidCallback? onTap;
+
+  const CustomActionIconButton({
+    Key? key,
+    required this.buttonText,
+    required this.backgroundColor,
+    required this.borderColor,
+    required this.fontColor,
+    required this.buttonWidth,
+    required this.buttonHeight,
+    required this.fontSize,
+    this.isBoldFont = false,
+    this.isUploading = false,
+    this.icon,
+    this.iconColor,
+    this.iconSize,
+    this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: buttonWidth,
+      height: buttonHeight,
+      child: ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: backgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: borderColor),
+          ),
+        ),
+        onPressed: onTap,
+        icon: isUploading
+            ? const SizedBox(
+                height: 18,
+                width: 18,
+                child: CustomProgressIndicator(),
+              )
+            : (icon != null
+                ? Icon(icon,
+                    color: iconColor ?? fontColor, size: iconSize ?? 20)
+                : const SizedBox.shrink()),
+        label: Text(
+          isUploading ? "Uploading..." : buttonText,
+          style: TextStyle(
+            color: fontColor,
+            fontSize: fontSize,
+            fontWeight: isBoldFont ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// -------------------- UPLOAD IMAGE DIALOG --------------------
+class ImageUploadPopup extends StatefulWidget {
+  @override
+  State<ImageUploadPopup> createState() => _ImageUploadPopupState();
+}
+
+class _ImageUploadPopupState extends State<ImageUploadPopup> {
   File? _selectedImage;
   bool _isUploading = false;
   String? _base64Image;
+  String? _fileSize;
+  bool _isFileTooLarge = false;
+  String? _fileExtension;
+  bool _isInvalidFormat = false;
 
   final ImageHelper _imageHelper = ImageHelper();
+
+  String _formatBytes(int bytes, int decimals) {
+    if (bytes <= 0) return "0 KB";
+    const suffixes = ["B", "KB", "MB", "GB"];
+    var i = (log(bytes) / log(1024)).floor(); // use 1000 not 1024
+    return ((bytes / pow(1024, i)).toStringAsFixed(decimals)) +
+        ' ' +
+        suffixes[i];
+  }
 
   Future<void> _pickImage() async {
     final pickedFile = await _imageHelper.pickImageWithChoice(context: context);
     if (pickedFile != null) {
+      final bytes = await pickedFile.length();
+      final ext = pickedFile.path.split('.').last.toLowerCase();
+
       setState(() {
+        _fileExtension = ext;
+
+        //  allow only JPG, JPEG, PNG, HEIC, HEIF
+        _isInvalidFormat = !AppConstants.allowedImageFormats.contains(ext);
+
+        _fileSize = _formatBytes(bytes, 2);
         _selectedImage = pickedFile;
+
+        //  file size check
+        _isFileTooLarge = bytes > AppConstants.imageSizeLimitBytes;
       });
+    }
+  }
+
+  // Future<void> _pickImage() async {
+  //   final pickedFile = await _imageHelper.pickImageWithChoice(context: context);
+  //   if (pickedFile != null) {
+  //     final bytes = await pickedFile.length();
+  //     final ext = pickedFile.path.split('.').last.toLowerCase();
+
+  //     setState(() {
+  //       _fileExtension = ext;
+  //       _isInvalidFormat = !AppConstants.allowedImageFormats.contains(ext);
+  //       _fileSize = _formatBytes(bytes, 2);
+  //       _selectedImage = pickedFile;
+  //       _isFileTooLarge = bytes > AppConstants.imageSizeLimitBytes;
+  //     });
+  //   }
+  // }
+  Future<void> _uploadImage() async {
+    if (_selectedImage == null) return;
+
+    final bytes = await _selectedImage!.readAsBytes();
+    final base64Image = base64Encode(bytes);
+
+    // check base64 size
+    final base64SizeInBytes =
+        (base64Image.length * 3) ~/ 4; // approximate original size
+    if (base64SizeInBytes > AppConstants.imageSizeLimitBytes) {
+      setState(() {
+        _isFileTooLarge = true;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("File too large for upload")),
+      );
+      return;
+    }
+
+    setState(() => _isUploading = true);
+    try {
+      String fileName = _selectedImage!.path.split('/').last;
+
+      Navigator.of(context).pop({
+        "fileName": fileName,
+        "base64": base64Image,
+      });
+    } finally {
+      setState(() => _isUploading = false);
     }
   }
 
@@ -69,23 +300,13 @@ class _ImageUploadPopupState extends State<_ImageUploadPopup> {
   //   try {
   //     String fileName = _selectedImage!.path.split('/').last;
   //     final bytes = await _selectedImage!.readAsBytes();
-  //     _base64Image = base64Encode(bytes);
+  //     final base64Image = base64Encode(bytes);
 
-  //     LoggerData.dataLog("IMAGE NAME: $fileName");
-  //     LoggerData.dataLog("BASE64 STRING: $_base64Image");
-
-  //     // Show success
-  //     Navigator.of(context).pop(); // close popup
-  //     showImageActionDialog(
-  //       context: context,
-  //       imageString: ImageAssets.successfulIcon,
-  //       titleString: '',
-  //       messageString: "Image uploaded successfully",
-  //       isNeedToPopBack: false,
-  //       onNormalActionTap: () {},
-  //     );
+  //     Navigator.of(context).pop({
+  //       "fileName": fileName,
+  //       "base64": base64Image,
+  //     });
   //   } catch (e) {
-  //     LoggerData.dataLog("Error converting image: $e");
   //     ScaffoldMessenger.of(context).showSnackBar(
   //       SnackBar(content: Text("Error: $e")),
   //     );
@@ -93,29 +314,24 @@ class _ImageUploadPopupState extends State<_ImageUploadPopup> {
   //     setState(() => _isUploading = false);
   //   }
   // }
-  Future<void> _uploadImage() async {
-    if (_selectedImage == null) return;
 
-    setState(() => _isUploading = true);
-
-    try {
-      String fileName = _selectedImage!.path.split('/').last;
-      final bytes = await _selectedImage!.readAsBytes();
-      final base64Image = base64Encode(bytes);
-      LoggerData.dataLog("IMAGE NAME: $fileName");
-
-      // Close dialog and return the base64
-      Navigator.of(context).pop({
-        "fileName": fileName,
-        "base64": base64Image,
-      });
-    } catch (e) {
-      LoggerData.dataLog("Error converting image: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
+  Widget _buildFileStatus() {
+    if (_isInvalidFormat) {
+      return Text(
+        "Please upload images in JPG, JPEG, PNG, HEIC, or HEIF formats.",
+        style: TextStyle(color: ColorManager.red, fontWeight: FontWeight.bold),
       );
-    } finally {
-      setState(() => _isUploading = false);
+    } else if (_isFileTooLarge) {
+      return Text(
+        "The file size exceeds ${AppConstants.imageSizeLimitMB} MB",
+        style: TextStyle(color: ColorManager.red, fontWeight: FontWeight.bold),
+      );
+    } else {
+      return Text(
+        "Size: $_fileSize",
+        style:
+            TextStyle(color: ColorManager.green, fontWeight: FontWeight.bold),
+      );
     }
   }
 
@@ -126,25 +342,6 @@ class _ImageUploadPopupState extends State<_ImageUploadPopup> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // const SizedBox(height: 8),
-
-          // Asset image with increased size
-          Container(
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Image.asset(
-              ImageAssets.uploadImage,
-              height: 150, // increased from 150
-              width: 150, // increased from 150
-              fit: BoxFit.contain,
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // Title text again below image
           Text(
             "Upload Image",
             style: TextStyle(
@@ -153,148 +350,216 @@ class _ImageUploadPopupState extends State<_ImageUploadPopup> {
               fontWeight: FontWeightManager.bold,
             ),
           ),
-
           const SizedBox(height: 16),
-
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.80, // take full width
-            height: MediaQuery.of(context).size.height *
-                0.25, // 25% of screen height
-
-            child: DottedBorder(
-              borderType: BorderType.RRect,
-              radius: const Radius.circular(12),
-              dashPattern: [6, 3],
-              color: ColorManager.lightGrey1,
-              strokeWidth: 1,
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment:
-                      MainAxisAlignment.center, // center vertically
-                  crossAxisAlignment:
-                      CrossAxisAlignment.center, // center horizontally
-                  children: [
-                    GestureDetector(
-                      onTap: _pickImage,
-                      child: _selectedImage == null
-                          ? Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Image.asset(
-                                ImageAssets.uploadIcon,
-                                height: 60,
-                                width: 60,
-                                fit: BoxFit.contain,
-                              ),
-                            )
-                          : Stack(
-                              alignment: Alignment.topRight,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Image.file(
-                                    _selectedImage!,
-                                    height: 100,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 4,
-                                  right: 4,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        _selectedImage = null;
-                                        _base64Image = null;
-                                      });
-                                    },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: ColorManager.lightGrey,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      padding: const EdgeInsets.all(4),
-                                      child: Icon(Icons.close,
-                                          color: ColorManager.white, size: 20),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      "Click to upload",
-                      style: TextStyle(
-                        color: ColorManager.darkBlue,
-                        fontSize: FontSize.s16,
-                        fontWeight: FontWeightManager.medium,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "SVG, JPG, PNG (Max 50MB)",
-                      style: TextStyle(
-                        color: ColorManager.darkBlue,
-                        fontWeight: FontWeightManager.regular,
-                        fontSize: FontSize.s14,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          ImagePreviewBox(
+            imageFile: _selectedImage,
+            onTapUpload: _pickImage,
+            onTapDelete: () {
+              setState(() {
+                _selectedImage = null;
+                _base64Image = null;
+                _fileSize = null;
+                _fileExtension = null;
+                _isFileTooLarge = false;
+                _isInvalidFormat = false;
+              });
+            },
           ),
-
-          const SizedBox(height: 12),
-
+          const SizedBox(height: 10),
+          if (_fileSize != null) _buildFileStatus(),
           const SizedBox(height: 20),
-
-          // Upload Button
-
-          SizedBox(
-            width:
-                MediaQuery.of(context).size.width * 0.80, // 80% of screen width
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ColorManager.darkBlue,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 14, horizontal: 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onPressed: (_isUploading || _selectedImage == null)
-                  ? null
-                  : _uploadImage,
-              icon: _isUploading
-                  ? const SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CustomProgressIndicator(),
-                    )
-                  : Icon(Icons.file_upload_outlined, color: ColorManager.white),
-              label: Text(
-                _isUploading ? "Uploading..." : "Upload",
-                style: TextStyle(color: ColorManager.white, fontSize: 16),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // Cancel button
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text("Cancel", style: TextStyle(color: ColorManager.white)),
+          CustomActionIconButton(
+            buttonText: "Upload",
+            backgroundColor: ColorManager.darkBlue,
+            borderColor: Colors.transparent,
+            fontColor: ColorManager.white,
+            buttonWidth: MediaQuery.of(context).size.width * 0.80,
+            buttonHeight: 50,
+            fontSize: FontSize.s16,
+            isUploading: _isUploading,
+            icon: Icons.file_upload_outlined,
+            iconColor: Colors.white,
+            iconSize: 24,
+            onTap:
+                (_selectedImage == null || _isFileTooLarge || _isInvalidFormat)
+                    ? null
+                    : _uploadImage,
           ),
         ],
       ),
     );
   }
+}
+
+/// -------------------- SHOW IMAGE UPLOAD DIALOG --------------------
+Future<Map<String, String>?> showImageUploadDialog(BuildContext context) {
+  return showDialog<Map<String, String>>(
+    context: context,
+    barrierDismissible: true,
+    builder: (context) {
+      final screenHeight = MediaQuery.of(context).size.height;
+      final screenWidth = MediaQuery.of(context).size.width;
+
+      return Stack(
+        children: [
+          Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            insetPadding: const EdgeInsets.all(16),
+            backgroundColor: ColorManager.white,
+            child: ImageUploadPopup(),
+          ),
+          Positioned(
+            top: screenHeight * 0.18,
+            right: screenWidth * 0.07,
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                padding: const EdgeInsets.all(6),
+                child: const Icon(
+                  Icons.close,
+                  color: Colors.black,
+                  size: 22,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+/// -------------------- SHOW REMOVE IMAGE DIALOG --------------------
+Future<bool?> showRemoveImageDialog(
+  BuildContext context,
+  Uint8List imageBytes,
+) {
+  bool showConfirm = false;
+
+  return showDialog<bool>(
+    context: context,
+    builder: (context) {
+      final screenWidth = MediaQuery.of(context).size.width;
+      final screenHeight = MediaQuery.of(context).size.height;
+
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "Remove Image?",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: ColorManager.darkBlue,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Image preview with delete
+                      ImagePreviewBox(
+                        imageBytes: imageBytes,
+                        onTapDelete: () {
+                          setState(() {
+                            showConfirm = true;
+                          });
+                        },
+                      ),
+
+                      // Confirmation UI
+                      if (showConfirm) ...[
+                        const SizedBox(height: 20),
+                        Text(
+                          "Are you sure you want to remove the uploaded image?",
+                          style: TextStyle(
+                            color: ColorManager.red,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 100,
+                              child: CustomActionIconButton(
+                                buttonText: "No",
+                                backgroundColor: ColorManager.white,
+                                borderColor: ColorManager.grey,
+                                fontColor: ColorManager.black,
+                                buttonWidth: double.infinity,
+                                buttonHeight: 45,
+                                fontSize: 16,
+                                icon: Icons.close,
+                                iconColor: ColorManager.black,
+                                onTap: () => Navigator.pop(context, false),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            SizedBox(
+                              width: 100,
+                              child: CustomActionIconButton(
+                                buttonText: "Yes",
+                                backgroundColor: ColorManager.green,
+                                borderColor: ColorManager.green,
+                                fontColor: ColorManager.white,
+                                buttonWidth: double.infinity,
+                                buttonHeight: 45,
+                                fontSize: 16,
+                                isBoldFont: true,
+                                icon: Icons.check,
+                                iconColor: ColorManager.white,
+                                onTap: () => Navigator.pop(context, true),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+                /// Close button
+                Positioned(
+                  top: -screenHeight * 0.045, // little above dialog border
+                  right: -screenWidth * 0.02,
+                  child: GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      padding: const EdgeInsets.all(6),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.black,
+                        size: 22,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    },
+  );
 }

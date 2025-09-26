@@ -220,14 +220,16 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
             "isstock": item.isStock,
             "isupdated": true,
             "Document_FileName": "", // default empty
-            "Document_File": "", // default empty
+            // "Document_File": "", // default empty
+            "Document_FileNameAzure": "",
           };
 
           // uploaded image data
           final imageData = uploadedImages[item.orderLineId];
           if (imageData != null) {
             data["Document_FileName"] = imageData["fileName"];
-            data["Document_File"] = imageData["base64"];
+            //   data["Document_File"] = imageData["base64"];
+            data["Document_FileNameAzure"] = imageData["azureImageName"];
           }
 
           selectedOrderItems.add(data);
@@ -526,38 +528,46 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
                                                             orderItems[index]
                                                                 .orderLineId]
                                                         ?["base64"],
+
                                                 // onImageUploaded:
                                                 //     (fileName, base64Image) {
                                                 //   setState(() {
-                                                //     uploadedImages[
-                                                //         orderItems[index]
-                                                //             .orderLineId] = {
-                                                //       "fileName": fileName,
-                                                //       "base64": base64Image,
-                                                //     };
-
-                                                //     // Auto-select this item when image is uploaded
-                                                //     orderItems[index]
-                                                //         .isSelected = true;
+                                                //     if (fileName.isEmpty &&
+                                                //         base64Image.isEmpty) {
+                                                //       uploadedImages.remove(
+                                                //           orderItems[index]
+                                                //               .orderLineId); // remove image
+                                                //     } else {
+                                                //       uploadedImages[
+                                                //           orderItems[index]
+                                                //               .orderLineId] = {
+                                                //         "fileName": fileName,
+                                                //         "base64": base64Image,
+                                                //       };
+                                                //       orderItems[index]
+                                                //           .isSelected = true;
+                                                //     }
                                                 //     checkIsAnyItemSelected();
-
-                                                //     LoggerData.dataLog(
-                                                //         "Uploaded Base64 for orderLineId ${orderItems[index].orderLineId}: ${uploadedImages[orderItems[index].orderLineId]}");
                                                 //   });
                                                 // },
-                                                onImageUploaded:
-                                                    (fileName, base64Image) {
+                                                onImageUploaded: (fileName,
+                                                    azureImageName,
+                                                    base64Image) {
                                                   setState(() {
                                                     if (fileName.isEmpty &&
-                                                        base64Image.isEmpty) {
+                                                        base64Image.isEmpty &&
+                                                        azureImageName
+                                                            .isEmpty) {
                                                       uploadedImages.remove(
                                                           orderItems[index]
-                                                              .orderLineId); // remove image
+                                                              .orderLineId);
                                                     } else {
                                                       uploadedImages[
                                                           orderItems[index]
                                                               .orderLineId] = {
                                                         "fileName": fileName,
+                                                        "azureImageName":
+                                                            azureImageName,
                                                         "base64": base64Image,
                                                       };
                                                       orderItems[index]

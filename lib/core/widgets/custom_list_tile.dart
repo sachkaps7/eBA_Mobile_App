@@ -23,7 +23,9 @@ class OrderItemListTile extends StatefulWidget {
   final VoidCallback onEdit;
   final bool isImageUploaded;
   final String? uploadedImageBase64;
-  final void Function(String fileName, String base64Image)? onImageUploaded;
+  final void Function(
+          String fileName, String azureImageName, String base64Image)?
+      onImageUploaded;
 
   const OrderItemListTile({
     super.key,
@@ -152,7 +154,7 @@ class _OrderItemListTileState extends State<OrderItemListTile> {
                                   onTap: () async {
                                     if (widget.isImageUploaded &&
                                         widget.uploadedImageBase64 != null) {
-                                      // Ask if user wants to remove image with custom dialog
+                                      // Ask if user wants to remove image
                                       bool? remove =
                                           await showRemoveImageDialog(
                                         context,
@@ -161,7 +163,7 @@ class _OrderItemListTileState extends State<OrderItemListTile> {
                                       );
                                       if (remove == true &&
                                           widget.onImageUploaded != null) {
-                                        widget.onImageUploaded!("", "");
+                                        widget.onImageUploaded!("", "", "");
                                       }
                                     } else {
                                       // Upload new image
@@ -169,29 +171,44 @@ class _OrderItemListTileState extends State<OrderItemListTile> {
                                           await showImageUploadDialog(context);
                                       if (result != null &&
                                           widget.onImageUploaded != null) {
-                                        final fileName =
-                                            result["fileName"] as String?;
-                                        final base64 =
-                                            result["base64"] as String?;
+                                        final fileName = result["fileName"];
+                                        final azureImageName =
+                                            result["azureImageName"]; // new
+                                        final base64 = result["base64"];
+
                                         if (fileName != null &&
+                                            azureImageName != null &&
                                             base64 != null) {
-                                          widget.onImageUploaded
-                                              ?.call(fileName, base64);
+                                          widget.onImageUploaded!(
+                                              fileName, azureImageName, base64);
                                         }
                                       }
                                     }
                                   },
                                   child: widget.isImageUploaded &&
                                           widget.uploadedImageBase64 != null
-                                      ? ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                          child: Image.memory(
-                                            base64Decode(
-                                                widget.uploadedImageBase64!),
-                                            height: 40,
-                                            width: 40,
-                                            fit: BoxFit.cover,
+                                      ? Container(
+                                          height: 40,
+                                          width: 40,
+                                          decoration: BoxDecoration(
+                                            color: ColorManager
+                                                .white, // white background
+                                            border: Border.all(
+                                              color: ColorManager
+                                                  .white, // border color
+                                              width: 0.8, // border thickness
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                                20), // circle shape
+                                          ),
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                            child: Image.memory(
+                                              base64Decode(
+                                                  widget.uploadedImageBase64!),
+                                              fit: BoxFit.cover,
+                                            ),
                                           ),
                                         )
                                       : Image.asset(

@@ -39,6 +39,7 @@ class ApiService {
   static const String blindStockDetails = 'Items/blindstockdetails';
   static const String updateBlindStock = 'Items/updateblindstock';
   static const String inventoryManagerLocationCheck = 'location/imloctioncheck';
+  static const String imageUpload = 'attachdocument/attachdocument';
 
   Future<bool> updateToken(BuildContext context) async {
     Map<String, dynamic> data = {

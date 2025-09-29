@@ -49,24 +49,30 @@ class ThankYouPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Thank You Image
-                Image.asset(
-                  ImageAssets.thankYou1,
-                  height: 150,
-                  fit: BoxFit.contain,
-                ),
+                status == 'Order Rejected'
+                    ? Image.asset(
+                        ImageAssets.rejection,
+                        height: 150,
+                        fit: BoxFit.contain,
+                      )
+                    : Image.asset(
+                        ImageAssets.thankYou1,
+                        height: 150,
+                        fit: BoxFit.contain,
+                      ),
                 const SizedBox(height: 24),
 
                 //  Thank You Heading
-                Text(
-                  'Thank You!!',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: ColorManager.green,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
+                // Text(
+                //   'Thank You!!',
+                //   style: TextStyle(
+                //     fontSize: 28,
+                //     fontWeight: FontWeight.bold,
+                //     color: ColorManager.green,
+                //   ),
+                //   textAlign: TextAlign.center,
+                // ),
+                // const SizedBox(height: 16),
 
                 // Status Text
 

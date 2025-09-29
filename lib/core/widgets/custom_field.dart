@@ -13,12 +13,18 @@ class CustomSearchField extends StatefulWidget {
   final TextEditingController controller;
   final String placeholderText;
   final TextInputType inputType;
+  final bool autoFocus;
+  final bool readOnly; 
+  final VoidCallback? onTap; 
 
   const CustomSearchField({
     super.key,
     required this.controller,
     required this.placeholderText,
     this.inputType = TextInputType.number,
+    this.autoFocus = false,
+    this.readOnly = false, 
+    this.onTap, 
   });
 
   @override
@@ -31,7 +37,13 @@ class _CustomSearchFieldState extends State<CustomSearchField> {
     return SizedBox(
       height: 48,
       child: TextField(
+        controller: widget.controller,
+        autofocus: widget.autoFocus,
         maxLines: 1,
+        readOnly: widget.readOnly,
+        onTap: widget.onTap,
+        textInputAction: TextInputAction.search,
+        keyboardType: widget.inputType,
         style: TextStyle(
           overflow: TextOverflow.ellipsis,
           fontSize: 13,
@@ -39,9 +51,6 @@ class _CustomSearchFieldState extends State<CustomSearchField> {
           fontWeight: FontWeightManager.regular,
           color: ColorManager.black,
         ),
-        controller: widget.controller,
-        textInputAction: TextInputAction.search,
-        keyboardType: widget.inputType,
         inputFormatters: [
           LengthLimitingTextInputFormatter(AppConstants.maxCharacters),
         ],

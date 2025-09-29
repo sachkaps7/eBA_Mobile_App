@@ -11,6 +11,7 @@ import 'package:eyvo_inventory/core/resources/styles_manager.dart';
 import 'package:eyvo_inventory/core/utils.dart';
 import 'package:eyvo_inventory/core/widgets/custom_card_item.dart';
 import 'package:eyvo_inventory/core/widgets/custom_list_tile.dart';
+import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:eyvo_inventory/core/widgets/setting_page.dart';
 import 'package:eyvo_inventory/features/auth/view/screens/approval/approval_view.dart';
 import 'package:eyvo_inventory/presentation/change_password/change_password.dart';
@@ -282,7 +283,7 @@ class _HomeViewState extends State<HomeView> {
         ),
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CustomProgressIndicator())
           : Padding(
               padding: const EdgeInsets.all(16.0),
               child: Builder(builder: (context) {

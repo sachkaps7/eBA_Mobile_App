@@ -1,5 +1,5 @@
 import 'package:eyvo_inventory/api/api_service/api_service.dart';
-import 'package:eyvo_inventory/api/response_models/order_approval_list_response.dart';
+import 'package:eyvo_inventory/api/response_models/request_approval_list_response.dart';
 import 'package:eyvo_inventory/app/app_prefs.dart';
 import 'package:eyvo_inventory/core/resources/assets_manager.dart';
 import 'package:eyvo_inventory/core/resources/color_manager.dart';
@@ -10,22 +10,22 @@ import 'package:eyvo_inventory/core/utils.dart';
 import 'package:eyvo_inventory/core/widgets/custom_card_item.dart';
 import 'package:eyvo_inventory/core/widgets/custom_field.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
-import 'package:eyvo_inventory/features/auth/view/screens/approval/order_details_view.dart';
+import 'package:eyvo_inventory/features/auth/view/screens/approval/request_approval_details.dart';
 import 'package:flutter/material.dart';
 
-class OrderApproverPage extends StatefulWidget {
-  const OrderApproverPage({super.key});
+class RequestApprovalPage extends StatefulWidget {
+  const RequestApprovalPage({super.key});
 
   @override
-  State<OrderApproverPage> createState() => _OrderApproverPageState();
+  State<RequestApprovalPage> createState() => _RequestApprovalPageState();
 }
 
-class _OrderApproverPageState extends State<OrderApproverPage> {
+class _RequestApprovalPageState extends State<RequestApprovalPage> {
   final TextEditingController _searchController = TextEditingController();
   final ApiService apiService = ApiService();
 
-  List<OrderApprovalItem> orderApprovalList = [];
-  List<OrderApprovalItem> filteredRequests = [];
+  List<Datum> requestApprovalList = [];
+  List<Datum> filteredRequests = [];
 
   bool isLoading = false;
   bool isError = false;
@@ -34,11 +34,11 @@ class _OrderApproverPageState extends State<OrderApproverPage> {
   @override
   void initState() {
     super.initState();
-    fetchOrderApprovalList();
+    fetchRequestApprovalList();
     _searchController.addListener(_filterRequests);
   }
 
-  void fetchOrderApprovalList() async {
+  void fetchRequestApprovalList() async {
     setState(() {
       isLoading = true;
     });
@@ -49,16 +49,16 @@ class _OrderApproverPageState extends State<OrderApproverPage> {
 
     final jsonResponse = await apiService.postRequest(
       context,
-      ApiService.orderApprovalList,
+      ApiService.requestApprovalList,
       requestData,
     );
 
     if (jsonResponse != null) {
-      final response = OrderApprovalListResponse.fromJson(jsonResponse);
+      final response = RequestApprovalListResponse.fromJson(jsonResponse);
 
       if (response.code == 200) {
         setState(() {
-          orderApprovalList = response.data;
+          requestApprovalList = response.data;
           filteredRequests = response.data;
           isLoading = false;
           isError = false;
@@ -82,15 +82,11 @@ class _OrderApproverPageState extends State<OrderApproverPage> {
   void _filterRequests() {
     final query = _searchController.text.toLowerCase();
     setState(() {
-      filteredRequests = orderApprovalList.where((order) {
-        return order.orderNumber.toLowerCase().contains(query) ||
-            order.orderStatus.toLowerCase().contains(query);
+      filteredRequests = requestApprovalList.where((request) {
+        return request.requestNumber.toLowerCase().contains(query) ||
+            request.requestStatus.toLowerCase().contains(query);
       }).toList();
     });
-  }
-
-  String formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
   }
 
   @override
@@ -109,7 +105,7 @@ class _OrderApproverPageState extends State<OrderApproverPage> {
         elevation: 1,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
-          AppStrings.orderApproval,
+          AppStrings.requestApproval,
           style: getBoldStyle(
             color: ColorManager.white,
             fontSize: FontSize.s20,
@@ -128,8 +124,8 @@ class _OrderApproverPageState extends State<OrderApproverPage> {
             onPressed: () {
               setState(() {
                 _searchController.clear();
-                fetchOrderApprovalList();
-                filteredRequests = orderApprovalList;
+                fetchRequestApprovalList();
+                filteredRequests = requestApprovalList;
               });
             },
             icon: const Icon(Icons.refresh, color: Colors.white),
@@ -147,7 +143,7 @@ class _OrderApproverPageState extends State<OrderApproverPage> {
                           horizontal: 12, vertical: 8),
                       child: CustomSearchField(
                         controller: _searchController,
-                        placeholderText: 'Search by order number or status',
+                        placeholderText: 'Search by request number or status',
                         inputType: TextInputType.text,
                       ),
                     ),
@@ -166,24 +162,24 @@ class _OrderApproverPageState extends State<OrderApproverPage> {
                           child: ListView.builder(
                             itemCount: filteredRequests.length,
                             itemBuilder: (context, index) {
-                              final order = filteredRequests[index];
+                              final request = filteredRequests[index];
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 2, vertical: 0),
                                 child: CommonCardWidget(
                                   subtitles: [
-                                    {'Order No': order.orderNumber},
-                                    {'Status': order.orderStatus},
-                                    {'Order Date': order.orderDate},
+                                    {'Request No': request.requestNumber},
+                                    {'Request Status': request.requestStatus},
+                                    {'Entry Date': request.entryDate},
                                     {
-                                      'Order Net Total':
-                                          order.orderValue.toStringAsFixed(2)
+                                      'Request Net Total': request.requestValue
+                                          .toStringAsFixed(2)
                                     },
                                   ],
                                   onTap: () {
                                     navigateToScreen(
                                       context,
-                                      OrderDetailsView(orderId: order.orderId),
+                                      const RequestDetailsView(),
                                     );
                                   },
                                 ),

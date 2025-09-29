@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
 import 'package:eyvo_inventory/core/widgets/custom_card_item.dart';
+import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:eyvo_inventory/api/api_service/api_service.dart';
 import 'package:eyvo_inventory/api/response_models/group_approval_list_response.dart';
@@ -90,7 +91,7 @@ class _ShowGroupApprovalListState extends State<ShowGroupApprovalList> {
         title: "Group Approver List",
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CustomProgressIndicator())
           : isError
               ? Center(child: Text(errorText))
               : groupApprovalList.isEmpty

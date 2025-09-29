@@ -20,6 +20,7 @@ import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
 import 'package:eyvo_inventory/core/widgets/custom_checkbox.dart';
 import 'package:eyvo_inventory/core/widgets/custom_list_tile.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
+import 'package:eyvo_inventory/log_data.dart/logger_data.dart';
 import 'package:eyvo_inventory/presentation/pdf_view/pdf_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -56,6 +57,7 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
   final double editBoxHeight = 205;
   late double maxQuantity;
   int selectedIndex = 0;
+  Map<int, Map<String, String>> uploadedImages = {};
 
   @override
   void didChangeDependencies() {
@@ -186,6 +188,25 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
     }
   }
 
+  // void receiveGoods() {
+  //   if (isReceiveGoodsEnabled) {
+  //     selectedOrderItems = [];
+  //     for (var item in orderItems) {
+  //       if (item.isSelected) {
+  //         Map<String, dynamic> data = {
+  //           "orderlineid": item.orderLineId,
+  //           "itemorder": item.itemOrder,
+  //           "receivedquantity": item.updatedQuantity,
+  //           "itemtype": item.itemType,
+  //           "isstock": item.isStock,
+  //           "isupdated": true
+  //         };
+  //         selectedOrderItems.add(data);
+  //       }
+  //     }
+  //     showReceiveGoodsDialog(context);
+  //   }
+  // }
   void receiveGoods() {
     if (isReceiveGoodsEnabled) {
       selectedOrderItems = [];
@@ -197,11 +218,24 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
             "receivedquantity": item.updatedQuantity,
             "itemtype": item.itemType,
             "isstock": item.isStock,
-            "isupdated": true
+            "isupdated": true,
+            "Document_FileName": "", // default empty
+            // "Document_File": "", // default empty
+            "Document_FileNameAzure": "",
           };
+
+          // uploaded image data
+          final imageData = uploadedImages[item.orderLineId];
+          if (imageData != null) {
+            data["Document_FileName"] = imageData["fileName"];
+            //   data["Document_File"] = imageData["base64"];
+            data["Document_FileNameAzure"] = imageData["azureImageName"];
+          }
+
           selectedOrderItems.add(data);
         }
       }
+
       showReceiveGoodsDialog(context);
     }
   }
@@ -432,48 +466,117 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
                                             itemCount: orderItems.length,
                                             itemBuilder: (context, index) {
                                               return OrderItemListTile(
-                                                  itemID: orderItems[index]
-                                                      .itemOrder,
-                                                  title: orderItems[index]
-                                                          .itemCode ??
-                                                      '',
-                                                  subtitle: orderItems[index]
-                                                      .description,
-                                                  imageString: orderItems[index]
-                                                      .itemImage,
-                                                  totalQuantity:
-                                                      orderItems[index]
-                                                          .quantity,
-                                                  receivedQuantity:
+                                                itemID:
+                                                    orderItems[index].itemOrder,
+                                                title: orderItems[index]
+                                                        .itemCode ??
+                                                    '',
+                                                subtitle: orderItems[index]
+                                                    .description,
+                                                imageString:
+                                                    orderItems[index].itemImage,
+                                                totalQuantity:
+                                                    orderItems[index].quantity,
+                                                receivedQuantity:
+                                                    orderItems[index].isEdited
+                                                        ? orderItems[index]
+                                                            .updatedQuantity
+                                                        : orderItems[index]
+                                                            .receivedQuantity,
+                                                isSelected: orderItems[index]
+                                                    .isSelected,
+                                                onTap: () {
+                                                  setState(() {
+                                                    orderItems[index]
+                                                            .isSelected =
+                                                        !orderItems[index]
+                                                            .isSelected;
+                                                    checkIsAnyItemSelected();
+                                                  });
+                                                },
+                                                onEdit: () {
+                                                  editReceivedQuantity(
+                                                      context,
                                                       orderItems[index].isEdited
                                                           ? orderItems[index]
                                                               .updatedQuantity
                                                           : orderItems[index]
                                                               .receivedQuantity,
-                                                  isSelected: orderItems[index]
-                                                      .isSelected,
-                                                  onTap: () {
-                                                    setState(() {
                                                       orderItems[index]
-                                                              .isSelected =
-                                                          !orderItems[index]
-                                                              .isSelected;
-                                                      checkIsAnyItemSelected();
-                                                    });
-                                                  },
-                                                  onEdit: () {
-                                                    editReceivedQuantity(
-                                                        context,
+                                                          .quantity,
+                                                      index);
+                                                },
+                                                isImageUploaded:
+                                                    uploadedImages.containsKey(
                                                         orderItems[index]
-                                                                .isEdited
-                                                            ? orderItems[index]
-                                                                .updatedQuantity
-                                                            : orderItems[index]
-                                                                .receivedQuantity,
-                                                        orderItems[index]
-                                                            .quantity,
-                                                        index);
+                                                            .orderLineId),
+                                                // onImageUploaded:
+                                                //     (fileName, base64Image) {
+                                                //   setState(() {
+                                                //     uploadedImages[
+                                                //         orderItems[index]
+                                                //             .orderLineId] = {
+                                                //       "fileName": fileName,
+                                                //       "base64": base64Image,
+                                                //     };
+                                                //     LoggerData.dataLog(
+                                                //         "Uploaded Base64 for orderLineId ${orderItems[index].orderLineId}: ${uploadedImages[orderItems[index].orderLineId]}");
+                                                //   });
+                                                // }
+                                                uploadedImageBase64:
+                                                    uploadedImages[
+                                                            orderItems[index]
+                                                                .orderLineId]
+                                                        ?["base64"],
+
+                                                // onImageUploaded:
+                                                //     (fileName, base64Image) {
+                                                //   setState(() {
+                                                //     if (fileName.isEmpty &&
+                                                //         base64Image.isEmpty) {
+                                                //       uploadedImages.remove(
+                                                //           orderItems[index]
+                                                //               .orderLineId); // remove image
+                                                //     } else {
+                                                //       uploadedImages[
+                                                //           orderItems[index]
+                                                //               .orderLineId] = {
+                                                //         "fileName": fileName,
+                                                //         "base64": base64Image,
+                                                //       };
+                                                //       orderItems[index]
+                                                //           .isSelected = true;
+                                                //     }
+                                                //     checkIsAnyItemSelected();
+                                                //   });
+                                                // },
+                                                onImageUploaded: (fileName,
+                                                    azureImageName,
+                                                    base64Image) {
+                                                  setState(() {
+                                                    if (fileName.isEmpty &&
+                                                        base64Image.isEmpty &&
+                                                        azureImageName
+                                                            .isEmpty) {
+                                                      uploadedImages.remove(
+                                                          orderItems[index]
+                                                              .orderLineId);
+                                                    } else {
+                                                      uploadedImages[
+                                                          orderItems[index]
+                                                              .orderLineId] = {
+                                                        "fileName": fileName,
+                                                        "azureImageName":
+                                                            azureImageName,
+                                                        "base64": base64Image,
+                                                      };
+                                                      orderItems[index]
+                                                          .isSelected = true;
+                                                    }
+                                                    checkIsAnyItemSelected();
                                                   });
+                                                },
+                                              );
                                             },
                                           ),
                                         ),
@@ -686,7 +789,7 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
                                         const SizedBox(height: 18),
                                       ],
                                     ),
-                          ),
+                                  ),
                                 ],
                               ),
                             ),

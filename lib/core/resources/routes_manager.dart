@@ -3,7 +3,8 @@ import 'package:eyvo_inventory/core/widgets/thankYouPage.dart';
 import 'package:eyvo_inventory/features/auth/view/screens/approval/approval_view.dart';
 import 'package:eyvo_inventory/features/auth/view/screens/approval/order_approval_view.dart';
 import 'package:eyvo_inventory/features/auth/view/screens/approval/order_details_view.dart';
-import 'package:eyvo_inventory/features/auth/view/screens/approval/request_approver_view.dart';
+import 'package:eyvo_inventory/features/auth/view/screens/approval/request_approval_details.dart';
+import 'package:eyvo_inventory/features/auth/view/screens/approval/request_approval_view.dart';
 import 'package:eyvo_inventory/features/auth/view/screens/approval/show_group_approver_list.dart';
 import 'package:eyvo_inventory/features/auth/view/screens/dashboard/dashbord.dart';
 import 'package:eyvo_inventory/features/auth/view/screens/company_code/company_code.dart';
@@ -64,6 +65,7 @@ class Routes {
   static const String pdfViewRoute = "/pdfView";
   static const String approvalRoute = "/approvalView";
   static const String requestApprovalRoute = "/requestApprovalView";
+  static const String requestApprovalDetailsRoute = "/RequestDetailsView";
   static const String orderApproverPage = "/orderApproverPage";
   static const String orderDetailsView = "/orderDetailsView";
   static const String genericDetailRoute = "/genericDetailPage";
@@ -117,7 +119,9 @@ class RouteGenerator {
       case Routes.approvalRoute:
         return MaterialPageRoute(builder: (_) => const ApprovalView());
       case Routes.requestApprovalRoute:
-        return MaterialPageRoute(builder: (_) => const RequestApproverPage());
+        return MaterialPageRoute(builder: (_) => const RequestApprovalPage());
+              case Routes.requestApprovalDetailsRoute:
+        return MaterialPageRoute(builder: (_) => const RequestDetailsView());
       case Routes.orderApproverPage:
         return MaterialPageRoute(builder: (_) => const OrderApproverPage());
       case Routes.orderDetailsView:

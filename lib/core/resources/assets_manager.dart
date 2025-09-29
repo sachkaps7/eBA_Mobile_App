@@ -24,6 +24,7 @@ class ImageAssets {
   static const String menu = "$imagePath/hamburger-menu.png";
   static const String listAllItems = "$imagePath/List-All-Items.png";
   static const String receiveGoods = "$imagePath/Receive-Goods.png";
+  static const String blindstocklisting = "$imagePath/blind-stock-listing.png";
   static const String scanYourItems = "$imagePath/Scan-Your-Item.png";
   static const String selectLocation = "$imagePath/Select-Location-icon.png";
   static const String selectSite = "$imagePath/Select-Site---icon.png";
@@ -68,4 +69,9 @@ class ImageAssets {
   static const String thankYou1 = "$imagePath/thank-you.png";
   static const String thankYou2 = "$imagePath/thank-you2.png";
   static const String rejection = "$imagePath/rejection.png";
+  static const String uploadIcon = "$imagePath/upload_icon.png";
+  static const String uploadImage = "$imagePath/upload_image.png";
+  static const String uploadFiles = "$imagePath/upload-files.png";
+  static const String uploaded = "$imagePath/uploaded.png";
+  static const String uploadIcon2 = "$imagePath/uploadIcon.png";
 }

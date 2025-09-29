@@ -18,6 +18,8 @@ const String PREFS_KEY_EMAIL = "PREFS_KEY_EMAIL";
 const String PREFS_KEY_SELECTED_REGION = "PREFS_KEY_SELECTED_REGION";
 const String PREFS_KEY_SELECTED_REGION_ID = "PREFS_KEY_SELECTED_REGION_ID";
 const String PREFS_KEY_SELECTED_LOCATION = "PREFS_KEY_SELECTED_LOCATION";
+const String PREFS_KEY_SELECTED_TRIMMED_LOCATION =
+    "PREFS_KEY_SELECTED_TRIMMED_LOCATION";
 const String PREFS_KEY_SELECTED_LOCATION_ID = "PREFS_KEY_SELECTED_LOCATION_ID";
 const String PREFS_KEY_USER_SESSION = "PREFS_KEY_USER_SESSION";
 const String PREFS_KEY_DECIMAL_PLACES = "PREFS_KEY_DECIMAL_PLACES";
@@ -42,6 +44,8 @@ const String INVOICE_FLAG = "INVOICE_FLAG";
 const String EXPENSE_FLAG = "EXPENSE_FLAG ";
 const String REGION = "REGION ";
 const String SELECT_REGIN_TITLE = "SELECT_REGIN_TITLE ";
+const String BLIND_STOCK_EDIT = "BLIND_STOCK_EDIT";
+const String INVENTORY_MANAGER = "INVENTORY_MANAGER";
 
 class SharedPrefs {
   late final SharedPreferences _sharedPrefs;
@@ -145,6 +149,13 @@ class SharedPrefs {
 
   set selectedLocation(String value) {
     _sharedPrefs.setString(PREFS_KEY_SELECTED_LOCATION, value);
+  }
+
+  String get selectedTrimmedLocation =>
+      _sharedPrefs.getString(PREFS_KEY_SELECTED_TRIMMED_LOCATION) ?? "";
+
+  set selectedTrimmedLocation(String value) {
+    _sharedPrefs.setString(PREFS_KEY_SELECTED_TRIMMED_LOCATION, value);
   }
 
   int get selectedLocationID =>
@@ -279,4 +290,13 @@ class SharedPrefs {
 
   set selectRegionTitle(String value) =>
       _sharedPrefs.setString(SELECT_REGIN_TITLE, value);
+
+  bool get blindStockEdit => _sharedPrefs.getBool(BLIND_STOCK_EDIT) ?? false;
+
+  set blindStockEdit(bool value) =>
+      _sharedPrefs.setBool(BLIND_STOCK_EDIT, value);
+
+  bool get inventoryManager => _sharedPrefs.getBool(INVENTORY_MANAGER) ?? false;
+  set inventoryManager(bool value) =>
+      _sharedPrefs.setBool(INVENTORY_MANAGER, value);
 }

@@ -10,6 +10,7 @@ import 'package:eyvo_inventory/core/utils.dart';
 import 'package:eyvo_inventory/core/widgets/custom_card_item.dart';
 import 'package:eyvo_inventory/core/widgets/custom_field.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
+import 'package:eyvo_inventory/features/auth/view/screens/approval/request_approval_details.dart';
 import 'package:flutter/material.dart';
 
 class RequestApprovalPage extends StatefulWidget {
@@ -176,11 +177,10 @@ class _RequestApprovalPageState extends State<RequestApprovalPage> {
                                     },
                                   ],
                                   onTap: () {
-                                    // navigateToScreen(
-                                    //   context,
-                                    //   RequestDetailsView(
-                                    //       requestId: request.requestId),
-                                    // );
+                                    navigateToScreen(
+                                      context,
+                                      const RequestDetailsView(),
+                                    );
                                   },
                                 ),
                               );

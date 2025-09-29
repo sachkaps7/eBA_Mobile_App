@@ -6,5 +6,14 @@ class AppConstants {
   static const totalRecords = 25;
   static const maxCharactersForComment = 100;
   static const maxCharactersForPrice = 14;
-  static const maxCharactersForQuantity = 14;
+  static const maxCharactersForQuantity = 12;
+  static const imageSizeLimitMB = 5; // limit in MB
+  static const imageSizeLimitBytes = imageSizeLimitMB * 1000 * 1000;
+  static const List<String> allowedImageFormats = [
+    "jpg",
+    "jpeg",
+    "png",
+    "heic",
+    "heif"
+  ];
 }

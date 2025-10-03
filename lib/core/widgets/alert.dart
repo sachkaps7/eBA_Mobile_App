@@ -168,10 +168,20 @@ class _CustomRejectReasonAlertState extends State<CustomRejectReasonAlert> {
                 child: Image.asset(widget.imageString, fit: BoxFit.contain),
               ),
               const SizedBox(height: 20),
-              CenterTitleHeader(
-                titleText: widget.titleString,
-                detailText: "",
+              Center(
+                child: Text(
+                  widget.titleString,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: FontSize.s16, // smaller than before
+                    fontWeight: FontWeight.w600,
+                    color: ColorManager.darkBlue,
+                  ),
+                ),
               ),
+
               const SizedBox(height: 16),
 
               /// TextField Section
@@ -188,7 +198,7 @@ class _CustomRejectReasonAlertState extends State<CustomRejectReasonAlert> {
                       });
                     },
                     decoration: InputDecoration(
-                      hintText: "Enter reason here...",
+                      hintText: "Enter Reject Reason Here...",
                       hintStyle: TextStyle(
                         fontSize: FontSize.s14,
                         color: ColorManager.lightGrey,
@@ -196,7 +206,7 @@ class _CustomRejectReasonAlertState extends State<CustomRejectReasonAlert> {
                       alignLabelWithHint: true,
                       errorText: _errorText,
                       errorStyle: TextStyle(
-                        fontSize: FontSize.s18,
+                        fontSize: FontSize.s14,
                         fontWeight: FontWeight.bold,
                         color: ColorManager.red,
                       ),

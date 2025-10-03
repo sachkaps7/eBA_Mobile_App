@@ -128,14 +128,14 @@ void showImageActionDialog({
     },
   );
 }
-
+//Returns the number as a string, properly formatted with commas and decimal points.
 String getFormattedPriceString(double price) {
   var priceFormatter = NumberFormat.currency(
       locale: 'en_US', symbol: '', decimalDigits: SharedPrefs().decimalPlaces);
   String formattedPrice = priceFormatter.format(price);
   return formattedPrice;
 }
-
+//Converts a number directly to a string with a fixed number of decimal places
 String getFormattedString(double number) {
   return number.toStringAsFixed(SharedPrefs().decimalPlaces);
 }

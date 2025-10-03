@@ -54,11 +54,17 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
   final ApiService apiService = ApiService();
   bool isEditingQuantity = false;
   final Duration duration = const Duration(milliseconds: 300);
-  final double editBoxHeight = 205;
+  final double editBoxHeight = 350;
   late double maxQuantity;
   int selectedIndex = 0;
+  bool isReject = false;
+  final TextEditingController _commentsController = TextEditingController();
+  int maxChars = AppConstants.maxCharactersForComment;
+  String? selectedRejectReason = 'Broken'; // Default value
+  String? selectedAction = 'Replace Item'; // Default value
+  String? errorMessage;
   Map<int, Map<String, String>> uploadedImages = {};
-
+  Map<int, Map<String, dynamic>> rejectDataMap = {};
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -80,7 +86,12 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
   void dispose() {
     routeObserver.unsubscribe(this);
     editQuantityController.dispose();
+    _commentsController.dispose();
     super.dispose();
+  }
+
+  bool hasRejectData(int orderLineId) {
+    return rejectDataMap.containsKey(orderLineId);
   }
 
   void fetchOrderItems() async {
@@ -136,36 +147,86 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
   }
 
   void editReceivedQuantity(BuildContext context, double bookInQuantity,
-      double totalQuantity, int editingIndex) {
+      double totalQuantity, int editingIndex, bool isRejectMode) {
     setState(() {
       isEditingQuantity = true;
       maxQuantity = bookInQuantity;
       editQuantityController.text = getFormattedString(bookInQuantity);
       selectedIndex = editingIndex;
+      isReject = isRejectMode;
+
+      // Initialize reject data if in reject mode
+      if (isRejectMode) {
+        final orderLineId = orderItems[selectedIndex].orderLineId;
+        if (!rejectDataMap.containsKey(orderLineId)) {
+          rejectDataMap[orderLineId] = {
+            'rejectQuantity': bookInQuantity,
+            'rejectReason': 'Broken',
+            'creditReplace': 'Replace Item',
+            'notes': '',
+          };
+        } else {
+          // Update the quantity if already exists
+          rejectDataMap[orderLineId]!['rejectQuantity'] = bookInQuantity;
+        }
+      }
     });
   }
 
   void updateReceivedQuantity() {
     var updatedQuantityString = '';
     var updatedQuantity = 0.0;
+
     if (editQuantityController.text.isNotEmpty) {
       updatedQuantityString =
           getFormattedString(double.parse(editQuantityController.text));
       updatedQuantity = double.parse(updatedQuantityString);
     }
+
     if (updatedQuantity <= 0) {
       showErrorDialog(context, AppStrings.quantityNotValid, false);
     } else {
       setState(() {
         isEditingQuantity = false;
-        orderItems[selectedIndex].updatedQuantity = updatedQuantity;
-        if (orderItems[selectedIndex].bookInQuantity != updatedQuantity) {
+        final orderLineId = orderItems[selectedIndex].orderLineId;
+
+        if (isReject) {
+          // Store reject data in the map - updatedQuantity goes to rejectquantity
+          rejectDataMap[orderLineId] = {
+            'rejectQuantity':
+                updatedQuantity, // Use the updatedQuantity for reject
+            'rejectReason': selectedRejectReason,
+            'creditReplace': selectedAction,
+            'notes': _commentsController.text,
+          };
+
+          // For reject items: received quantity = 0, reject quantity = updatedQuantity
+          orderItems[selectedIndex].updatedQuantity =
+              0.0; // This goes to receivedquantity in API
+        } else {
+          // For accept mode: received quantity = updatedQuantity, no reject data
+          orderItems[selectedIndex].updatedQuantity =
+              updatedQuantity; // This goes to receivedquantity in API
+          rejectDataMap.remove(orderLineId); // Remove reject data if accepting
+        }
+
+        // Mark as edited if quantity changed from original received quantity
+        if (orderItems[selectedIndex].receivedQuantity !=
+            orderItems[selectedIndex].updatedQuantity) {
           orderItems[selectedIndex].isEdited = true;
         } else {
           orderItems[selectedIndex].isEdited = false;
         }
+
         orderItems[selectedIndex].isSelected = true;
         checkIsAnyItemSelected();
+
+        // RESET DROPDOWN VALUES
+        selectedRejectReason = 'Broken';
+        selectedAction = 'Replace Item';
+        // Clear controllers
+        _commentsController.clear();
+        errorMessage = null;
       });
     }
   }
@@ -207,6 +268,38 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
   //     showReceiveGoodsDialog(context);
   //   }
   // }
+  // void receiveGoods() {
+  //   if (isReceiveGoodsEnabled) {
+  //     selectedOrderItems = [];
+  //     for (var item in orderItems) {
+  //       if (item.isSelected) {
+  //         Map<String, dynamic> data = {
+  //           "orderlineid": item.orderLineId,
+  //           "itemorder": item.itemOrder,
+  //           "receivedquantity": item.updatedQuantity,
+  //           "itemtype": item.itemType,
+  //           "isstock": item.isStock,
+  //           "isupdated": true,
+  //           "Document_FileName": "", // default empty
+  //           // "Document_File": "", // default empty
+  //           "Document_FileNameAzure": "",
+  //         };
+
+  //         // uploaded image data
+  //         final imageData = uploadedImages[item.orderLineId];
+  //         if (imageData != null) {
+  //           data["Document_FileName"] = imageData["fileName"];
+  //           //   data["Document_File"] = imageData["base64"];
+  //           data["Document_FileNameAzure"] = imageData["azureImageName"];
+  //         }
+
+  //         selectedOrderItems.add(data);
+  //       }
+  //     }
+
+  //     showReceiveGoodsDialog(context);
+  //   }
+  // }
   void receiveGoods() {
     if (isReceiveGoodsEnabled) {
       selectedOrderItems = [];
@@ -219,16 +312,24 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
             "itemtype": item.itemType,
             "isstock": item.isStock,
             "isupdated": true,
-            "Document_FileName": "", // default empty
-            // "Document_File": "", // default empty
+            "Document_FileName": "",
             "Document_FileNameAzure": "",
           };
+
+          // Check if this item has reject data
+          final rejectData = rejectDataMap[item.orderLineId];
+          if (rejectData != null) {
+            // Add reject data to the payload
+            data["rejectquantity"] = rejectData['rejectQuantity'];
+            data["rejectreason"] = rejectData['rejectReason'];
+            data["creditReplace"] = rejectData['creditReplace'];
+            data["notes"] = rejectData['notes'];
+          }
 
           // uploaded image data
           final imageData = uploadedImages[item.orderLineId];
           if (imageData != null) {
             data["Document_FileName"] = imageData["fileName"];
-            //   data["Document_File"] = imageData["base64"];
             data["Document_FileNameAzure"] = imageData["azureImageName"];
           }
 
@@ -346,6 +447,7 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = displayWidth(context);
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -485,6 +587,18 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
                                                             .receivedQuantity,
                                                 isSelected: orderItems[index]
                                                     .isSelected,
+
+                                                isReject: hasRejectData(
+                                                    orderItems[index]
+                                                        .orderLineId),
+                                                rejectQuantity: hasRejectData(
+                                                        orderItems[index]
+                                                            .orderLineId)
+                                                    ? rejectDataMap[
+                                                            orderItems[index]
+                                                                .orderLineId]![
+                                                        'rejectQuantity'] // Pass reject quantity
+                                                    : null,
                                                 onTap: () {
                                                   setState(() {
                                                     orderItems[index]
@@ -495,16 +609,28 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
                                                   });
                                                 },
                                                 onEdit: () {
+                                                  bool hasRejectData =
+                                                      rejectDataMap.containsKey(
+                                                          orderItems[index]
+                                                              .orderLineId);
+
                                                   editReceivedQuantity(
-                                                      context,
-                                                      orderItems[index].isEdited
-                                                          ? orderItems[index]
-                                                              .updatedQuantity
-                                                          : orderItems[index]
-                                                              .receivedQuantity,
-                                                      orderItems[index]
-                                                          .quantity,
-                                                      index);
+                                                    context,
+                                                    hasRejectData
+                                                        ? rejectDataMap[orderItems[
+                                                                    index]
+                                                                .orderLineId]![
+                                                            'rejectQuantity'] // Use reject quantity for editing
+                                                        : (orderItems[index]
+                                                                .isEdited
+                                                            ? orderItems[index]
+                                                                .updatedQuantity
+                                                            : orderItems[index]
+                                                                .receivedQuantity),
+                                                    orderItems[index].quantity,
+                                                    index,
+                                                    hasRejectData,
+                                                  );
                                                 },
                                                 isImageUploaded:
                                                     uploadedImages.containsKey(
@@ -670,11 +796,8 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
                           left: 0,
                           right: 0,
                           child: GestureDetector(
-                            onTap: () => {
-                              setState(() {
-                                isEditingQuantity = false;
-                              })
-                            },
+                            onTap: () =>
+                                setState(() => isEditingQuantity = false),
                             child: AnimatedContainer(
                               color: ColorManager.blackOpacity50,
                               duration: duration,
@@ -682,113 +805,36 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
                                   ? displayHeight(context)
                                   : 0,
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Spacer(),
-                                  Container(
-                                    padding: const EdgeInsets.all(20.0),
-                                    height: editBoxHeight - 20,
-                                    width: displayWidth(context),
-                                    decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius:
-                                            BorderRadius.circular(15)),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        const SizedBox(height: 10),
-                                        SizedBox(
-                                          width: displayWidth(context),
-                                          child: Text(
-                                              AppStrings.editReceiveQuantity,
-                                              style: getBoldStyle(
-                                                  color:
-                                                      ColorManager.lightGrey2,
-                                                  fontSize: FontSize.s20)),
-                                        ),
-                                        const SizedBox(height: 30),
-                                        Row(
-                                          children: [
-                                            Container(
-                                              decoration: BoxDecoration(
-                                                  color: ColorManager.darkBlue,
-                                                  borderRadius:
-                                                      BorderRadius.circular(4)),
-                                              width: 50,
-                                              height: 30,
-                                              child: IconButton(
-                                                  // iconSize: 40,
-                                                  onPressed: () {
-                                                    decreaseReceivedQuantity();
-                                                  },
-                                                  icon: Image.asset(
-                                                      width: 15,
-                                                      height: 15,
-                                                      ImageAssets.minusIcon)),
-                                            ),
-                                            const Spacer(),
-                                            Container(
-                                                alignment: Alignment.center,
-                                                width: 150,
-                                                height: 30,
-                                                child: TextField(
-                                                  controller:
-                                                      editQuantityController,
-                                                  style: getBoldStyle(
-                                                      color: ColorManager
-                                                          .lightGrey2,
-                                                      fontSize: FontSize.s21),
-                                                  textInputAction:
-                                                      TextInputAction.done,
-                                                  keyboardType:
-                                                      const TextInputType
-                                                          .numberWithOptions(
-                                                          decimal: true),
-                                                  inputFormatters: [
-                                                    DecimalTextInputFormatter(
-                                                        decimalPlaces:
-                                                            SharedPrefs()
-                                                                .decimalPlaces,
-                                                        minValue: 0.1,
-                                                        maxValue: orderItems[
-                                                                selectedIndex]
-                                                            .bookInQuantity),
-                                                    LengthLimitingTextInputFormatter(
-                                                        AppConstants
-                                                            .maxCharactersForQuantity),
-                                                  ],
-                                                  decoration:
-                                                      const InputDecoration(
-                                                          // isDense: true,
-                                                          contentPadding:
-                                                              EdgeInsets.all(
-                                                                  0)),
-                                                  textAlign: TextAlign.center,
-                                                )),
-                                            const Spacer(),
-                                            Container(
-                                              width: 50,
-                                              height: 30,
-                                              decoration: BoxDecoration(
-                                                  color: ColorManager.darkBlue,
-                                                  borderRadius:
-                                                      BorderRadius.circular(4)),
-                                              child: IconButton(
-                                                  // iconSize: 40,
-                                                  onPressed: () {
-                                                    increaseReceivedQuantity();
-                                                  },
-                                                  icon: Image.asset(
-                                                      width: 15,
-                                                      height: 15,
-                                                      ImageAssets.plusIcon)),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 18),
-                                      ],
-                                    ),
+                                  QuantityEditPopup(
+                                    quantityController: editQuantityController,
+                                    commentsController: _commentsController,
+                                    isReject: isReject,
+                                    isReceiveGoodsEnabled:
+                                        isReceiveGoodsEnabled,
+                                    onIncrease: increaseReceivedQuantity,
+                                    onDecrease: decreaseReceivedQuantity,
+                                    onToggleAcceptReject: (value) {
+                                      setState(() {
+                                        isReject = !value;
+                                        isReceiveGoodsEnabled = value;
+                                      });
+                                    },
+                                    // Add the new parameters for dropdowns
+                                    selectedRejectReason: selectedRejectReason,
+                                    selectedAction: selectedAction,
+                                    onRejectReasonChanged: (newValue) {
+                                      setState(() {
+                                        selectedRejectReason = newValue;
+                                      });
+                                    },
+                                    onActionChanged: (newValue) {
+                                      setState(() {
+                                        selectedAction = newValue;
+                                      });
+                                    },
+                                    boxHeight: editBoxHeight,
                                   ),
                                 ],
                               ),
@@ -796,34 +842,623 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
                           ),
                         )
                       : const SizedBox(),
-                  isEditingQuantity
-                      ? Positioned(
-                          bottom: editBoxHeight - 60,
-                          child: Container(
-                            width: displayWidth(context),
-                            height: 80,
-                            alignment: Alignment.topRight,
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 10),
-                              child: IconButton(
-                                onPressed: () {
-                                  if (editQuantityController.text.isNotEmpty) {
-                                    updateReceivedQuantity();
-                                  } else {
-                                    showErrorDialog(
-                                        context,
-                                        AppStrings.quantityCannotBeBlank,
-                                        false);
-                                  }
-                                },
-                                icon: Image.asset(ImageAssets.tickIcon),
-                              ),
-                            ),
-                          ),
-                        )
-                      : const SizedBox(),
+                  if (isEditingQuantity)
+                    PopupTickButton(
+                      isReject: isReject, // Pass the current state
+                      onTap: () {
+                        if (editQuantityController.text.isNotEmpty) {
+                          updateReceivedQuantity();
+
+                          // Clear the comments box after update
+                          _commentsController.clear();
+
+                          // Also clear any error message
+                          setState(() {
+                            errorMessage = null;
+                          });
+                        } else {
+                          showErrorDialog(
+                              context, AppStrings.quantityCannotBeBlank, false);
+                        }
+                      },
+                    ),
                 ],
               ),
+      ),
+    );
+  }
+}
+
+class PopupTickButton extends StatelessWidget {
+  final VoidCallback onTap;
+  final bool isReject;
+
+  const PopupTickButton({
+    super.key,
+    required this.onTap,
+    required this.isReject,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.sizeOf(context).width;
+    // Adjust offset based on reject state (increased for dropdowns)
+    double calculatedBottomOffset = isReject
+        ? screenHeight * 0.43 // Higher when dropdowns are visible
+        : screenHeight * 0.25; // Lower when no dropdowns
+
+    return Positioned(
+      bottom: calculatedBottomOffset,
+      right: screenHeight * 0.02,
+      child: Container(
+        width: screenWidth,
+        height: 80,
+        alignment: Alignment.topRight,
+        child: Padding(
+          padding: const EdgeInsets.only(right: 10),
+          child: IconButton(
+            onPressed: onTap,
+            icon: Image.asset(
+              isReject ? ImageAssets.tickIconRed : ImageAssets.tickIcon,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class QuantityEditPopup extends StatefulWidget {
+  final TextEditingController quantityController;
+  final TextEditingController commentsController;
+  final bool isReject;
+  final bool isReceiveGoodsEnabled;
+  final VoidCallback onIncrease;
+  final VoidCallback onDecrease;
+  final ValueChanged<bool> onToggleAcceptReject;
+  final double boxHeight;
+
+  // Add these new parameters
+  final String? selectedRejectReason;
+  final String? selectedAction;
+  final ValueChanged<String?> onRejectReasonChanged;
+  final ValueChanged<String?> onActionChanged;
+
+  const QuantityEditPopup({
+    super.key,
+    required this.quantityController,
+    required this.commentsController,
+    required this.isReject,
+    required this.isReceiveGoodsEnabled,
+    required this.onIncrease,
+    required this.onDecrease,
+    required this.onToggleAcceptReject,
+    required this.selectedRejectReason,
+    required this.selectedAction,
+    required this.onRejectReasonChanged,
+    required this.onActionChanged,
+    this.boxHeight = 350,
+  });
+
+  @override
+  State<QuantityEditPopup> createState() => _QuantityEditPopupState();
+}
+
+class _QuantityEditPopupState extends State<QuantityEditPopup> {
+  int maxChars = AppConstants.maxCharactersForComment;
+  String? errorMessage;
+
+  // Animated height based on Accept/Reject
+  double get _calculatedHeight {
+    double screenHeight = MediaQuery.of(context).size.height;
+    return widget.isReject ? screenHeight * 0.48 : screenHeight * 0.30;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      padding: EdgeInsets.all(screenHeight * 0.02),
+      height: _calculatedHeight,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(screenHeight * 0.02),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ToggleButtons Row
+            Row(
+              children: [
+                SizedBox(width: screenWidth * 0.01),
+                Container(
+                  height: screenHeight * 0.05,
+                  decoration: BoxDecoration(
+                    color: ColorManager.white,
+                    borderRadius: BorderRadius.circular(screenHeight * 0.01),
+                    border: Border.all(
+                      color: ColorManager.grey.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: ToggleButtons(
+                    isSelected: [!widget.isReject, widget.isReject],
+                    onPressed: (index) {
+                      widget.onToggleAcceptReject(index == 0);
+                    },
+                    borderRadius: BorderRadius.circular(screenHeight * 0.01),
+                    constraints: BoxConstraints(
+                      minWidth: screenWidth * 0.20,
+                      minHeight: screenHeight * 0.10,
+                    ),
+                    color: Colors.black,
+                    selectedColor: Colors.white,
+                    fillColor: MaterialStateColor.resolveWith((states) {
+                      if (states.contains(MaterialState.selected)) {
+                        final selectedIndex = [
+                          !widget.isReject,
+                          widget.isReject
+                        ].indexWhere((selected) => selected);
+                        return selectedIndex == 0
+                            ? ColorManager.green
+                            : ColorManager.red2;
+                      }
+                      return Colors.transparent;
+                    }),
+                    children: [
+                      // Accept Button with icon
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.02),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.check_circle_outline,
+                              size: screenHeight * 0.03,
+                              color: !widget.isReject
+                                  ? Colors.white
+                                  : ColorManager.green,
+                            ),
+                            SizedBox(width: screenWidth * 0.01),
+                            Text(
+                              "Accept",
+                              style: getBoldStyle(
+                                fontSize: screenHeight * 0.018,
+                                color: !widget.isReject
+                                    ? Colors.white
+                                    : ColorManager.green,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Reject Button with icon
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.02),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              ImageAssets.closeIcon,
+                              width: screenHeight * 0.025,
+                              height: screenHeight * 0.025,
+                              color: widget.isReject
+                                  ? Colors.white
+                                  : ColorManager.red2,
+                            ),
+                            SizedBox(width: screenWidth * 0.01),
+                            Text(
+                              "Reject",
+                              style: getBoldStyle(
+                                fontSize: screenHeight * 0.018,
+                                color: widget.isReject
+                                    ? Colors.white
+                                    : ColorManager.red2,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: screenWidth * 0.01),
+              ],
+            ),
+            SizedBox(height: screenHeight * 0.01),
+            const Divider(thickness: 1),
+            SizedBox(height: screenHeight * 0.02),
+
+            // Quantity Label
+            Text(
+              widget.isReject
+                  ? "Edit Reject Quantity"
+                  : AppStrings.editReceiveQuantity,
+              style: getBoldStyle(
+                color: ColorManager.lightGrey2,
+                fontSize: screenHeight * 0.025,
+              ),
+            ),
+            SizedBox(height: screenHeight * 0.02),
+
+            // Quantity Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _quantityButton(
+                  icon: ImageAssets.minusIcon,
+                  onPressed: widget.onDecrease,
+                  size: screenHeight,
+                ),
+                SizedBox(
+                  width: screenWidth * 0.35,
+                  height: screenHeight * 0.04,
+                  child: TextField(
+                    controller: widget.quantityController,
+                    style: getBoldStyle(
+                      color: ColorManager.lightGrey2,
+                      fontSize: screenHeight * 0.022,
+                    ),
+                    textInputAction: TextInputAction.done,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      DecimalTextInputFormatter(
+                        decimalPlaces: SharedPrefs().decimalPlaces,
+                        minValue: 0.1,
+                        maxValue: double.infinity,
+                      ),
+                      LengthLimitingTextInputFormatter(
+                          AppConstants.maxCharactersForQuantity),
+                    ],
+                    textAlign: TextAlign.center,
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.zero,
+                      border: InputBorder.none,
+                      filled: true,
+                      fillColor: ColorManager.grey.withOpacity(0.1),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(screenHeight * 0.008),
+                        borderSide: BorderSide(
+                          color: ColorManager.grey.withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(screenHeight * 0.008),
+                        borderSide: BorderSide(
+                          color: ColorManager.darkBlue,
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                _quantityButton(
+                  icon: ImageAssets.plusIcon,
+                  onPressed: widget.onIncrease,
+                  size: screenHeight,
+                ),
+              ],
+            ),
+
+            SizedBox(height: screenHeight * 0.03),
+
+            // Dropdowns for Reject only - Using InputDecorator with proper styling
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 300),
+              opacity: widget.isReject ? 1.0 : 0.0,
+              child: Visibility(
+                visible: widget.isReject,
+                child: Column(
+                  children: [
+                    SizedBox(height: screenHeight * 0.02),
+
+                    // Two Dropdowns in Row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Reject Reason Dropdown
+                        Expanded(
+                          child: Container(
+                            padding: EdgeInsets.only(right: screenWidth * 0.01),
+                            child: _buildDropdownWithInputDecoration(
+                              label: 'Reject Reason :',
+                              value: widget
+                                  .selectedRejectReason, // Use widget.selectedRejectReason
+                              items: [
+                                'Broken',
+                                'Not Required',
+                                'Shortage',
+                                'Unavailable',
+                                'Wrong Specification'
+                              ],
+                              onChanged: widget
+                                  .onRejectReasonChanged, // Use the callback
+                              screenWidth: screenWidth,
+                              screenHeight: screenHeight,
+                              fixedWidth: screenWidth * 0.38,
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(width: screenWidth * 0.02),
+
+                        // Action Dropdown
+                        Expanded(
+                          child: Container(
+                            padding: EdgeInsets.only(left: screenWidth * 0.01),
+                            child: _buildDropdownWithInputDecoration(
+                              label: 'Action :',
+                              value: widget
+                                  .selectedAction, // Use widget.selectedAction
+                              items: ['Replace Item', 'Credit Note'],
+                              onChanged: widget.onActionChanged,
+                              screenWidth: screenWidth,
+                              screenHeight: screenHeight,
+                              fixedWidth: screenWidth * 0.38,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: screenHeight * 0.02),
+
+            // Comments for Reject only
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 300),
+              opacity: widget.isReject ? 1.0 : 0.0,
+              child: Visibility(
+                visible: widget.isReject,
+                child: SizedBox(
+                  width: screenWidth * 0.95,
+                  height: screenHeight * 0.12,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: widget.commentsController,
+                          style: getSemiBoldStyle(
+                            color: ColorManager.black,
+                            fontSize: FontSize.s18,
+                          ),
+                          expands: true,
+                          maxLines: null,
+                          minLines: null,
+                          textAlignVertical: TextAlignVertical.top,
+                          keyboardType: TextInputType.multiline,
+                          inputFormatters: [
+                            LengthLimitingTextInputFormatter(maxChars),
+                          ],
+                          onChanged: (_) {
+                            setState(() {}); // rebuild to update counter
+                          },
+                          decoration: InputDecoration(
+                            contentPadding:
+                                EdgeInsets.all(screenHeight * 0.015),
+                            labelText: 'Notes :',
+                            alignLabelWithHint: true,
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                            floatingLabelStyle: getSemiBoldStyle(
+                              color: ColorManager.lightGrey1,
+                              fontSize: FontSize.s18,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.circular(screenHeight * 0.01),
+                              borderSide: BorderSide(
+                                color: ColorManager.grey.withOpacity(0.5),
+                                width: 1,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.circular(screenHeight * 0.01),
+                              borderSide: BorderSide(
+                                color: ColorManager.grey.withOpacity(0.5),
+                                width: 1,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.circular(screenHeight * 0.01),
+                              borderSide: BorderSide(
+                                color: ColorManager.darkBlue,
+                                width: 1.5,
+                              ),
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                          ),
+                        ),
+                      ),
+
+                      // Characters remaining
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4, right: 4),
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            "Characters remaining ${maxChars - widget.commentsController.text.length}",
+                            style: TextStyle(
+                              fontSize: FontSize.s14,
+                              color: ColorManager.darkGrey,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: screenHeight * 0.02),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdownWithInputDecoration({
+    required String label,
+    required String? value,
+    required List<String> items,
+    required Function(String?) onChanged,
+    required double screenWidth,
+    required double screenHeight,
+    double? fixedWidth,
+  }) {
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minWidth: screenWidth * 0.3,
+        maxWidth: fixedWidth ?? screenWidth * 0.5,
+      ),
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          alignLabelWithHint: true,
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+          floatingLabelStyle: getSemiBoldStyle(
+            color: ColorManager.lightGrey1,
+            fontSize: FontSize.s18,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(screenHeight * 0.01),
+            borderSide: BorderSide(
+              color: ColorManager.grey.withOpacity(0.5),
+              width: 1,
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(screenHeight * 0.008),
+            borderSide: BorderSide(
+              color: ColorManager.grey.withOpacity(0.5),
+              width: 1,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(screenHeight * 0.008),
+            borderSide: BorderSide(
+              color: ColorManager.darkBlue,
+              width: 1.5,
+            ),
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: screenWidth * 0.02,
+            vertical: screenHeight * 0.008,
+          ),
+          isCollapsed: true,
+          constraints: BoxConstraints(
+            maxHeight: screenHeight * 0.05,
+          ),
+        ),
+        isEmpty: value == null,
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: value,
+            isExpanded: true,
+            icon: Icon(
+              Icons.arrow_drop_down_rounded,
+              color: ColorManager.darkBlue,
+              size: screenHeight * 0.028,
+            ),
+            style: getSemiBoldStyle(
+              color: ColorManager.black,
+              fontSize: FontSize.s18,
+            ),
+            dropdownColor: Colors.white,
+            elevation: 4,
+            borderRadius: BorderRadius.circular(screenHeight * 0.008),
+            menuMaxHeight: screenHeight * 0.35,
+            underline: const SizedBox(),
+            selectedItemBuilder: (BuildContext context) {
+              return items.map<Widget>((String item) {
+                return Text(
+                  item,
+                  style: getSemiBoldStyle(
+                    color: ColorManager.darkBlue,
+                    fontSize: FontSize.s16,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                );
+              }).toList();
+            },
+            items: items.map((String item) {
+              return DropdownMenuItem<String>(
+                value: item,
+                child: Text(
+                  item,
+                  style: getSemiBoldStyle(
+                    color: value == item
+                        ? ColorManager.darkBlue
+                        : ColorManager.black,
+                    fontSize: FontSize.s16,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              );
+            }).toList(),
+            onChanged: onChanged,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _quantityButton({
+    required String icon,
+    required VoidCallback onPressed,
+    required double size,
+  }) {
+    return Container(
+      width: size * 0.06,
+      height: size * 0.04,
+      decoration: BoxDecoration(
+        color: ColorManager.darkBlue,
+        borderRadius: BorderRadius.circular(size * 0.008),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: IconButton(
+        padding: EdgeInsets.zero,
+        onPressed: onPressed,
+        icon: Image.asset(
+          icon,
+          width: size * 0.02,
+          height: size * 0.02,
+          color: Colors.white,
+        ),
       ),
     );
   }

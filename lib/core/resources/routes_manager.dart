@@ -120,13 +120,17 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const ApprovalView());
       case Routes.requestApprovalRoute:
         return MaterialPageRoute(builder: (_) => const RequestApprovalPage());
-              case Routes.requestApprovalDetailsRoute:
-        return MaterialPageRoute(builder: (_) => const RequestDetailsView());
+      case Routes.requestApprovalDetailsRoute:
+        return MaterialPageRoute(
+            builder: (_) => const RequestDetailsView(requestId: 0));
       case Routes.orderApproverPage:
         return MaterialPageRoute(builder: (_) => const OrderApproverPage());
       case Routes.orderDetailsView:
         return MaterialPageRoute(
-          builder: (_) => const OrderDetailsView(orderId: 0),
+          builder: (_) => const OrderDetailsView(
+            orderId: 0,
+            orderNumber: '0',
+          ),
         );
       case Routes.genericDetailRoute:
         final args = routeSettings.arguments as Map<String, dynamic>;
@@ -145,8 +149,8 @@ class RouteGenerator {
               message: args['message'] ?? '',
               approverName: args['approverName'] ?? '',
               status: args['status'] ?? '',
-              requestName:args['requestName'] ??'',
-              number:args['number'] ??''),
+              requestName: args['requestName'] ?? '',
+              number: args['number'] ?? ''),
         );
 
       case Routes.showGroupApprovalListRoute:

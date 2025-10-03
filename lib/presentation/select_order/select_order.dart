@@ -7,6 +7,7 @@ import 'package:eyvo_inventory/core/resources/assets_manager.dart';
 import 'package:eyvo_inventory/core/resources/color_manager.dart';
 import 'package:eyvo_inventory/core/resources/constants.dart';
 import 'package:eyvo_inventory/core/resources/font_manager.dart';
+import 'package:eyvo_inventory/core/resources/routes_manager.dart';
 import 'package:eyvo_inventory/core/resources/strings_manager.dart';
 import 'package:eyvo_inventory/core/resources/styles_manager.dart';
 import 'package:eyvo_inventory/core/utils.dart';
@@ -23,7 +24,7 @@ class SelectOrderView extends StatefulWidget {
   State<SelectOrderView> createState() => _SelectOrderViewState();
 }
 
-class _SelectOrderViewState extends State<SelectOrderView> {
+class _SelectOrderViewState extends State<SelectOrderView> with RouteAware {
   Timer? _debounce;
   late ScrollController _scrollController;
   final TextEditingController searchController = TextEditingController();
@@ -38,6 +39,17 @@ class _SelectOrderViewState extends State<SelectOrderView> {
   int page = 1;
   int totalRecords = AppConstants.totalRecords;
   int pageSize = AppConstants.pageSize;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute);
+  }
+
+  @override
+  void didPopNext() {
+    fetchOrders(false);
+  }
 
   @override
   void initState() {
@@ -56,6 +68,7 @@ class _SelectOrderViewState extends State<SelectOrderView> {
 
   @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     _debounce?.cancel();
     searchController.removeListener(_onSearchChanged);
     searchController.dispose();
@@ -106,12 +119,16 @@ class _SelectOrderViewState extends State<SelectOrderView> {
     setState(() {
       if (!isLoadingMoreItems) {
         isError = false; // reset before fetch
+        orderItems.clear(); // clear items only on full refresh
+        page = 1;
+        totalRecords = 0;
       }
       isLoading = !isLoadingMoreItems && !isSearching;
       isLoadMore = isLoadingMoreItems;
     });
 
-    int requestPage = isLoadingMoreItems ? page + 1 : page;
+    int requestPage =
+        isLoadingMoreItems ? page + 1 : 1; // reset page for refresh
 
     Map<String, dynamic> data = {
       'uid': SharedPrefs().uID,
@@ -129,13 +146,8 @@ class _SelectOrderViewState extends State<SelectOrderView> {
         final response = OrderResponse.fromJson(jsonResponse);
         if (response.code == '200') {
           setState(() {
-            if (isLoadingMoreItems) {
-              orderItems.addAll(response.data ?? []);
-              page = requestPage;
-            } else {
-              orderItems = response.data ?? [];
-              page = requestPage;
-            }
+            orderItems.addAll(response.data ?? []);
+            page = requestPage;
             totalRecords = response.totalRecords ?? orderItems.length;
             isError = false;
           });
@@ -144,21 +156,18 @@ class _SelectOrderViewState extends State<SelectOrderView> {
             isError = true;
             errorText =
                 response.message?.join(', ') ?? AppStrings.somethingWentWrong;
-            if (!isLoadingMoreItems) orderItems = [];
           });
         }
       } else {
         setState(() {
           isError = true;
           errorText = AppStrings.somethingWentWrong;
-          if (!isLoadingMoreItems) orderItems = [];
         });
       }
     } catch (e) {
       setState(() {
         isError = true;
         errorText = AppStrings.somethingWentWrong;
-        if (!isLoadingMoreItems) orderItems = [];
       });
     }
 

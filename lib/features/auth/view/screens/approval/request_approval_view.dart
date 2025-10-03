@@ -179,7 +179,8 @@ class _RequestApprovalPageState extends State<RequestApprovalPage> {
                                   onTap: () {
                                     navigateToScreen(
                                       context,
-                                      const RequestDetailsView(),
+                                      RequestDetailsView(
+                                          requestId: request.requestId),
                                     );
                                   },
                                 ),

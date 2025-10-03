@@ -41,6 +41,7 @@ class ImageAssets {
   static const String minusIcon = "$imagePath/minus-icon.png";
   static const String plusIcon = "$imagePath/plus-icon.png";
   static const String tickIcon = "$imagePath/tick-icon.png";
+  static const String tickIconRed = "$imagePath/tick-icon_red.png";
   static const String printIcon = "$imagePath/print-btn.png";
   static const String noItems = "$imagePath/No-Items-For-Receive.png";
   static const String receiveGoodsImage = "$imagePath/receive-goods-image.png";

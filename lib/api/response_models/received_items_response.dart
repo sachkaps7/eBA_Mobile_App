@@ -37,8 +37,12 @@ class OrderData {
   final String imageName;
   final String itemImage;
   final double quantity;
-  final double receivedQuantity;
+ late double receivedQuantity;
   final double bookInQuantity;
+  late double rejectquantity;
+  final String rejectReason;
+  final String action;
+  final String notes;
   final int regionId;
   final int itemType;
   final bool isStock;
@@ -47,43 +51,60 @@ class OrderData {
   late bool isSelected;
   late bool isEdited;
 
-  OrderData(
-      {required this.orderId,
-      required this.orderLineId,
-      required this.itemId,
-      this.itemCode,
-      required this.description,
-      required this.imageName,
-      required this.itemImage,
-      required this.quantity,
-      required this.receivedQuantity,
-      required this.bookInQuantity,
-      required this.regionId,
-      required this.itemType,
-      required this.isStock,
-      required this.itemOrder,
-      this.updatedQuantity = 0.0,
-      this.isSelected = false,
-      this.isEdited = false});
+  OrderData({
+    required this.orderId,
+    required this.orderLineId,
+    required this.itemId,
+    this.itemCode,
+    required this.description,
+    required this.imageName,
+    required this.itemImage,
+    required this.quantity,
+    required this.receivedQuantity,
+    required this.bookInQuantity,
+    required this.notes,
+    required this.rejectquantity,
+    required this.rejectReason,
+    required this.action,
+    required this.regionId,
+    required this.itemType,
+    required this.isStock,
+    required this.itemOrder,
+    this.updatedQuantity = 0.0,
+    this.isSelected = false,
+    this.isEdited = false,
+  });
 
   factory OrderData.fromJson(Map<String, dynamic> json) {
+    double parseDouble(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is int) return value.toDouble();
+      if (value is double) return value;
+      return double.tryParse(value.toString()) ?? 0.0;
+    }
+
     return OrderData(
-        orderId: json['orderid'],
-        orderLineId: json['orderlineid'],
-        itemId: json['itemid'],
-        itemCode: json['itemcode'],
-        description: json['description'],
-        imageName: json['imagename'] ?? '',
-        itemImage: json['itemimage'],
-        quantity: json['quantity'],
-        receivedQuantity: json['receivedquantity'],
-        bookInQuantity: json['bookinquantity'],
-        regionId: json['regionid'],
-        itemType: json['itemtype'],
-        isStock: json['isstock'],
-        itemOrder: json['itemorder'],
-        updatedQuantity: json['receivedquantity'],
-        isEdited: false,
-        isSelected: false);
+      orderId: json['orderid'] ?? 0,
+      orderLineId: json['orderlineid'] ?? 0,
+      itemId: json['itemid'] ?? 0,
+      itemCode: json['itemcode'],
+      description: json['description'] ?? '',
+      imageName: json['imagename'] ?? '',
+      itemImage: json['itemimage'] ?? '',
+      quantity: parseDouble(json['quantity']),
+      receivedQuantity: parseDouble(json['receivedquantity']),
+      bookInQuantity: parseDouble(json['bookinquantity']),
+      rejectquantity: parseDouble(json['rejectquantity']),
+      rejectReason: json['rejectReason'] ?? '',
+      action: json['action'] ?? '',
+      notes: json['notes'] ?? '',
+      regionId: json['regionid'] ?? 0,
+      itemType: json['itemtype'] ?? 0,
+      isStock: json['isstock'] ?? false,
+      itemOrder: json['itemorder'] ?? 0,
+      updatedQuantity: parseDouble(json['receivedquantity']),
+      isEdited: false,
+      isSelected: false,
+    );
   }
 }

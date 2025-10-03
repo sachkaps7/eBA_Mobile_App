@@ -25,8 +25,11 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class OrderDetailsView extends StatefulWidget {
   final int orderId;
+  final String orderNumber;
 
-  const OrderDetailsView({Key? key, required this.orderId}) : super(key: key);
+  const OrderDetailsView(
+      {Key? key, required this.orderId, required this.orderNumber})
+      : super(key: key);
 
   @override
   State<OrderDetailsView> createState() => _OrderDetailsViewState();
@@ -182,7 +185,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
     return Scaffold(
       appBar: buildCommonAppBar(
         context: context,
-        title: "#Order No ${widget.orderId.toString()}",
+        title: "#Order No ${widget.orderNumber.toString()}",
       ),
       backgroundColor: ColorManager.primary,
       body: isLoading
@@ -245,31 +248,32 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                               orderDetails!.header.referenceNo,
                                           'Supplier Name':
                                               orderDetails!.header.supplierName,
-                                          'FAO': orderDetails!.header.fao,
+                                          'Delivery To':
+                                              orderDetails!.header.fao,
                                           'Delivery Code':
                                               orderDetails!.header.deliveryCode,
-                                          'InvoicePt Code': orderDetails!
+                                          'Invoice Code': orderDetails!
                                               .header.invoicePtCode,
                                           'Category Code':
                                               orderDetails!.header.categoryCode,
-                                          orderDetails!.header.expCode1:
-                                              orderDetails!.header.expName1,
-                                          orderDetails!.header.expCode2:
-                                              orderDetails!.header.expName2,
-                                          orderDetails!.header.expCode3:
-                                              orderDetails!.header.expName3,
-                                          'FOB': orderDetails!.header.fob,
-                                          'Order Budget Header': orderDetails!
+                                          orderDetails!.header.expName1:
+                                              orderDetails!.header.expCode1,
+                                          orderDetails!.header.expName2:
+                                              orderDetails!.header.expCode2,
+                                          orderDetails!.header.expName3:
+                                              orderDetails!.header.expCode3,
+                                          'Incoterms': orderDetails!.header.fob,
+                                          'Budget': orderDetails!
                                               .header.orderBudgetHeader,
-                                          'Approval Type': orderDetails!
-                                                  .header.approvalType ??
-                                              '',
-                                          'CC Approver Status': orderDetails!
-                                              .header.ccApproverStatus,
+                                          // 'Approval Type': orderDetails!
+                                          //         .header.approvalType ??
+                                          //     '',
+                                          'Rule Approver Status':
+                                              orderDetails!.header.ruleStatus,
                                           'Group Approver Status': orderDetails!
                                               .header.groupApproverStatus,
-                                          'Rule Status':
-                                              orderDetails!.header.ruleStatus,
+                                          'CC Approver Status': orderDetails!
+                                              .header.ccApproverStatus,
                                         },
                                       },
                                     );
@@ -295,13 +299,13 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                       : orderDetails!.line.map((lineItem) {
                                           return ApprovalDetailsHelper
                                               .buildMiniCardWithEditIcon({
-                                            'Item': lineItem.itemCode,
+                                            'Item Code': lineItem.itemCode,
                                             'Description': lineItem.description,
                                             'Quantity': lineItem.quantity,
                                             'Unit Price':
-                                                '${getFormattedPriceString(lineItem.price)}(${lineItem.supplierCcyCode})',
+                                                '${getFormattedPriceString(lineItem.price)} (${lineItem.supplierCcyCode})',
                                             'Net Price':
-                                                '${getFormattedPriceString(lineItem.netPrice)}(${lineItem.supplierCcyCode})',
+                                                '${getFormattedPriceString(lineItem.netPrice)} (${lineItem.supplierCcyCode})',
                                           }, () {
                                             Navigator.pushNamed(
                                               context,
@@ -309,8 +313,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                               arguments: {
                                                 'title': 'Order Line',
                                                 'data': {
-                                                  'Item Order':
-                                                      lineItem.itemOrder,
+                                                  'Item No.': lineItem.itemCode,
                                                   'Item Code':
                                                       lineItem.itemCode,
                                                   'Description':
@@ -324,7 +327,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                                   'Pack Size':
                                                       lineItem.packSize,
                                                   'Unit Price':
-                                                      '${getFormattedPriceString(lineItem.price)}(${lineItem.supplierCcyCode})',
+                                                      '${getFormattedPriceString(lineItem.price)} (${lineItem.supplierCcyCode})',
                                                   'Discount': lineItem
                                                               .discountType ==
                                                           1
@@ -334,9 +337,9 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                                   'Tax Value':
                                                       lineItem.taxValue,
                                                   'Net Price':
-                                                      '${getFormattedPriceString(lineItem.netPrice)}(${lineItem.supplierCcyCode})',
+                                                      '${getFormattedPriceString(lineItem.netPrice)} (${lineItem.supplierCcyCode})',
                                                   'Gross Price':
-                                                      '${getFormattedPriceString(lineItem.grossPrice)}(${lineItem.supplierCcyCode})',
+                                                      '${getFormattedPriceString(lineItem.grossPrice)} (${lineItem.supplierCcyCode})',
                                                   lineItem.expName4:
                                                       lineItem.expCode4,
                                                   'Shipping Charges':
@@ -408,8 +411,8 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                               'User Name': ra.userName,
                                               'Group Name': ra.userGroupName,
                                               'Proxy User': ra.proxyUserName,
-                                              'UID Group':
-                                                  ra.uidGroup.toString(),
+                                              // 'UID Group':
+                                              //     ra.uidGroup.toString(),
                                               'Email': ra.email,
                                             },
                                             () {
@@ -455,8 +458,9 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                             'Code': c.costCode,
                                             'Description': c.costDescription,
                                             'Split Percent':
-                                                "${c.splitPercentage}%",
-                                            'Split Value': c.splitValue,
+                                                "${getFormattedString(c.splitPercentage)}%",
+                                            'Split Value':
+                                                '${getFormattedPriceString(c.splitValue)}',
                                           });
                                         }).toList(),
                                   count: orderDetails!.costcenter.length,
@@ -471,7 +475,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                   },
                                 ),
                                 ApprovalDetailsHelper.buildSection(
-                                  "Cost center Approvers",
+                                  "Cost Center Approvers",
                                   FontAwesomeIcons.userCheck,
                                   orderDetails!.approver.isEmpty
                                       ? [
@@ -660,7 +664,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                       imageString: ImageAssets.common,
                                       titleString: "Confirm Approval",
                                       subTitleString:
-                                          "Are you sure you want to approve this request?",
+                                          "Are you sure you want to approve this order?",
                                       destructiveActionString: "Yes",
                                       normalActionString: "No",
                                       onDestructiveActionTap: () {
@@ -703,8 +707,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                       },
                                       onRejectTap: (reason) {
                                         Navigator.of(context).pop();
-                                        orderApprovalReject(
-                                            reason); 
+                                        orderApprovalReject(reason);
                                       },
                                     );
                                   },

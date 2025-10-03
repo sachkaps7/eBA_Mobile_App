@@ -23,6 +23,8 @@ class OrderItemListTile extends StatefulWidget {
   final VoidCallback onEdit;
   final bool isImageUploaded;
   final String? uploadedImageBase64;
+  final bool isReject;
+  final double? rejectQuantity; // Add this parameter to show reject quantity
   final void Function(
           String fileName, String azureImageName, String base64Image)?
       onImageUploaded;
@@ -41,6 +43,8 @@ class OrderItemListTile extends StatefulWidget {
     this.isImageUploaded = false,
     this.onImageUploaded,
     this.uploadedImageBase64,
+    required this.isReject,
+    this.rejectQuantity, // Add this
   });
 
   @override
@@ -60,15 +64,34 @@ class _OrderItemListTileState extends State<OrderItemListTile> {
   void didUpdateWidget(covariant OrderItemListTile oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.isSelected != widget.isSelected) {
-      setState(() {}); // rebuild if parent changes selection
+      setState(() {});
     }
     if (oldWidget.receivedQuantity != widget.receivedQuantity) {
       selectedQuantity = widget.receivedQuantity;
+    }
+    if (oldWidget.isReject != widget.isReject) {
+      setState(() {});
+    }
+    if (oldWidget.rejectQuantity != widget.rejectQuantity) {
+      setState(() {});
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // For rejected items, show reject quantity, for accepted items show received quantity
+    final displayQuantity = widget.isReject
+        ? widget.rejectQuantity ?? 0.0 // Show reject quantity if available
+        : widget.receivedQuantity; // Show received quantity for accepted items
+
+    // colors based on reject state
+    final quantityLabel =
+        widget.isReject ? "Rejected Quantity" : "Receive Quantity";
+    final quantityColor =
+        widget.isReject ? ColorManager.red2 : ColorManager.lightGrey1;
+    final amountColor =
+        widget.isReject ? ColorManager.red2 : ColorManager.lightGrey1;
+
     return GestureDetector(
       onTap: widget.onTap,
       child: Padding(
@@ -173,7 +196,7 @@ class _OrderItemListTileState extends State<OrderItemListTile> {
                                           widget.onImageUploaded != null) {
                                         final fileName = result["fileName"];
                                         final azureImageName =
-                                            result["azureImageName"]; // new
+                                            result["azureImageName"];
                                         final base64 = result["base64"];
 
                                         if (fileName != null &&
@@ -191,15 +214,13 @@ class _OrderItemListTileState extends State<OrderItemListTile> {
                                           height: 40,
                                           width: 40,
                                           decoration: BoxDecoration(
-                                            color: ColorManager
-                                                .white, // white background
+                                            color: ColorManager.white,
                                             border: Border.all(
-                                              color: ColorManager
-                                                  .white, // border color
-                                              width: 0.8, // border thickness
+                                              color: ColorManager.white,
+                                              width: 0.8,
                                             ),
-                                            borderRadius: BorderRadius.circular(
-                                                20), // circle shape
+                                            borderRadius:
+                                                BorderRadius.circular(20),
                                           ),
                                           child: ClipRRect(
                                             borderRadius:
@@ -253,16 +274,20 @@ class _OrderItemListTileState extends State<OrderItemListTile> {
                                       ? ColorManager.white
                                       : Colors.transparent,
                                   border: Border.all(
-                                      color: ColorManager.grey4, width: 1.0),
+                                      color: widget.isReject
+                                          ? ColorManager.red2
+                                          : ColorManager.grey4,
+                                      width: 1.0),
                                   borderRadius: BorderRadius.circular(6)),
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    getFormattedString(widget.receivedQuantity),
+                                    getFormattedString(
+                                        displayQuantity), // Use displayQuantity instead of widget.receivedQuantity
                                     style: getSemiBoldStyle(
-                                        color: ColorManager.lightGrey1,
+                                        color: amountColor,
                                         fontSize: FontSize.s17),
                                   ),
                                   SizedBox(
@@ -285,9 +310,9 @@ class _OrderItemListTileState extends State<OrderItemListTile> {
                             decoration: BoxDecoration(
                                 color: ColorManager.white,
                                 borderRadius: BorderRadius.circular(4)),
-                            child: Text(AppStrings.receiveQuantity,
+                            child: Text(quantityLabel,
                                 style: getSemiBoldStyle(
-                                    color: ColorManager.lightGrey1,
+                                    color: quantityColor,
                                     fontSize: FontSize.s12)),
                           ),
                         )
@@ -303,7 +328,6 @@ class _OrderItemListTileState extends State<OrderItemListTile> {
     );
   }
 }
-
 // class OrderItemListTile extends StatefulWidget {
 //   final int itemID;
 //   final String title;

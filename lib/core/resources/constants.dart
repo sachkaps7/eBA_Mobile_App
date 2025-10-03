@@ -4,7 +4,7 @@ class AppConstants {
   static const resentCodeTimer = 60;
   static const pageSize = 25;
   static const totalRecords = 25;
-  static const maxCharactersForComment = 100;
+  static const maxCharactersForComment = 250;
   static const maxCharactersForPrice = 14;
   static const maxCharactersForQuantity = 12;
   static const imageSizeLimitMB = 5; // limit in MB

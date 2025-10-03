@@ -4,6 +4,7 @@ import 'package:eyvo_inventory/app/app_prefs.dart';
 import 'package:eyvo_inventory/core/resources/assets_manager.dart';
 import 'package:eyvo_inventory/core/resources/color_manager.dart';
 import 'package:eyvo_inventory/core/resources/font_manager.dart';
+import 'package:eyvo_inventory/core/resources/routes_manager.dart';
 import 'package:eyvo_inventory/core/resources/strings_manager.dart';
 import 'package:eyvo_inventory/core/resources/styles_manager.dart';
 import 'package:eyvo_inventory/core/utils.dart';
@@ -20,7 +21,7 @@ class OrderApproverPage extends StatefulWidget {
   State<OrderApproverPage> createState() => _OrderApproverPageState();
 }
 
-class _OrderApproverPageState extends State<OrderApproverPage> {
+class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
   final TextEditingController _searchController = TextEditingController();
   final ApiService apiService = ApiService();
 
@@ -30,12 +31,31 @@ class _OrderApproverPageState extends State<OrderApproverPage> {
   bool isLoading = false;
   bool isError = false;
   String errorText = AppStrings.somethingWentWrong;
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)! as PageRoute);
+  }
 
   @override
   void initState() {
     super.initState();
     fetchOrderApprovalList();
     _searchController.addListener(_filterRequests);
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // Called when coming back from a pushed page
+    fetchOrderApprovalList();
   }
 
   void fetchOrderApprovalList() async {
@@ -91,12 +111,6 @@ class _OrderApproverPageState extends State<OrderApproverPage> {
 
   String formatDate(DateTime date) {
     return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
   }
 
   @override
@@ -177,13 +191,15 @@ class _OrderApproverPageState extends State<OrderApproverPage> {
                                     {'Order Date': order.orderDate},
                                     {
                                       'Order Net Total':
-                                          order.orderValue.toStringAsFixed(2)
+                                          '${getFormattedPriceString(order.orderValue)}'
                                     },
                                   ],
                                   onTap: () {
                                     navigateToScreen(
                                       context,
-                                      OrderDetailsView(orderId: order.orderId),
+                                      OrderDetailsView(
+                                          orderId: order.orderId,
+                                          orderNumber: order.orderNumber),
                                     );
                                   },
                                 ),

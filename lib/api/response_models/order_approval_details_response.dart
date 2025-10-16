@@ -305,7 +305,7 @@ class RuleApprover {
   String userGroupDescription;
   String userName;
   String proxyUserName;
-  String? email; // New field
+  String? email; 
 
   RuleApprover({
     required this.ruleStatusId,
@@ -477,7 +477,7 @@ class Line {
         "GrossPrice": grossPrice,
         "ExpCode4_ID": expCode4Id,
         "ExpCode4": expCode4,
-        "ExpName4": expName4, // <-- new field
+        "ExpName4": expName4, 
         "Shipping_Charges": shippingCharges,
         "Supplier_CcyID": supplierCcyId,
         "Supplier_CcyCode": supplierCcyCode,

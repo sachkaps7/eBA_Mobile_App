@@ -1183,7 +1183,7 @@ class _QuantityEditPopupState extends State<QuantityEditPopup> {
                             child: _buildDropdownWithInputDecoration(
                               label: 'Reject Reason :',
                               value: widget
-                                  .selectedRejectReason, // Use widget.selectedRejectReason
+                                  .selectedRejectReason, 
                               items: [
                                 'Broken',
                                 'Not Required',
@@ -1192,7 +1192,7 @@ class _QuantityEditPopupState extends State<QuantityEditPopup> {
                                 'Wrong Specification'
                               ],
                               onChanged: widget
-                                  .onRejectReasonChanged, // Use the callback
+                                  .onRejectReasonChanged, 
                               screenWidth: screenWidth,
                               screenHeight: screenHeight,
                               fixedWidth: screenWidth * 0.38,
@@ -1254,7 +1254,7 @@ class _QuantityEditPopupState extends State<QuantityEditPopup> {
                             LengthLimitingTextInputFormatter(maxChars),
                           ],
                           onChanged: (_) {
-                            setState(() {}); // rebuild to update counter
+                            setState(() {}); 
                           },
                           decoration: InputDecoration(
                             contentPadding:

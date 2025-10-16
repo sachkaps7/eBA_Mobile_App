@@ -252,7 +252,7 @@ class _OrderItemListTileState extends State<OrderItemListTile> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '${AppStrings.quantityDetail}${getFormattedString(widget.totalQuantity)}',
+                      '${AppStrings.quantityDetail}${getFormattedPriceString(widget.totalQuantity)}',
                       style: getBoldStyle(
                           color: widget.isSelected
                               ? ColorManager.white

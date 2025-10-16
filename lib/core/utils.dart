@@ -128,6 +128,7 @@ void showImageActionDialog({
     },
   );
 }
+
 //Returns the number as a string, properly formatted with commas and decimal points.
 String getFormattedPriceString(double price) {
   var priceFormatter = NumberFormat.currency(
@@ -135,6 +136,7 @@ String getFormattedPriceString(double price) {
   String formattedPrice = priceFormatter.format(price);
   return formattedPrice;
 }
+
 //Converts a number directly to a string with a fixed number of decimal places
 String getFormattedString(double number) {
   return number.toStringAsFixed(SharedPrefs().decimalPlaces);
@@ -251,4 +253,35 @@ class DecimalTextInputFormatter extends TextInputFormatter {
 String capitalizeFirstLetter(String? text) {
   if (text == null || text.isEmpty) return '';
   return text[0].toUpperCase() + text.substring(1).toLowerCase();
+}
+
+String getNormalizedStatus(String? status) {
+  return (status != null && status.trim().isNotEmpty)
+      ? status.trim().toUpperCase()
+      : 'REJECTED';
+}
+
+Color getStatusColor(String? status) {
+     switch (getNormalizedStatus(status)) {
+    case 'UNISSUED':
+      return const Color(0xFF09AF00);
+    case 'ISSUED':
+      return const Color(0xFF1976D2);
+    case 'PARTIAL':
+      return const Color(0xFF4DD0E1);
+    case 'CLOSED':
+      return const Color(0xFF8D6E63);
+    case 'REJECTED':
+      return const Color(0xFFC62809);
+    case 'PENDING':
+      return Colors.orange;
+    case 'APPROVED':
+      return const Color(0xFFAFB42B);
+    case 'RECEIVED':
+      return const Color(0xFFA07C03);
+    case 'CANCELLED':
+      return const Color(0xFFB0BEC5);
+    default:
+      return Colors.grey;
+  }
 }

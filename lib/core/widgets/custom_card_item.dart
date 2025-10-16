@@ -3,6 +3,7 @@ import 'package:eyvo_inventory/core/resources/assets_manager.dart';
 import 'package:eyvo_inventory/core/resources/color_manager.dart';
 import 'package:eyvo_inventory/core/resources/font_manager.dart';
 import 'package:eyvo_inventory/core/resources/styles_manager.dart';
+import 'package:eyvo_inventory/core/utils.dart';
 import 'package:flutter/material.dart';
 
 class CustomItemCard extends StatelessWidget {
@@ -239,6 +240,7 @@ class CommonCardWidget extends StatelessWidget {
               final value = item.values.first;
 
               final isOrderNo = label == 'Order No';
+              final isRequestNo = label == 'Request No';
 
               return TableRow(
                 children: [
@@ -271,16 +273,209 @@ class CommonCardWidget extends StatelessWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.normal,
                         fontSize: FontSize.s16,
-                        color: isOrderNo
+                        color: isOrderNo || isRequestNo
                             ? ColorManager.blue
                             : ColorManager.darkGrey,
-                        decoration: isOrderNo ? TextDecoration.underline : null,
+                        decoration: isOrderNo || isRequestNo
+                            ? TextDecoration.underline
+                            : null,
                       ),
                     ),
                   ),
                 ],
               );
             }),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+class GenericCardWidget extends StatelessWidget {
+  final String? titleKey;
+  final String? statusKey;
+  final String? supplierKey;
+  final String? dateKey;
+  final String? valueKey;
+  final String? valueNameKey;
+  final String? itemCountKey;
+  final VoidCallback? onTap;
+
+  const GenericCardWidget({
+    super.key,
+    this.titleKey,
+    this.statusKey,
+    this.supplierKey,
+    this.dateKey,
+    this.valueKey,
+    this.valueNameKey,
+    this.itemCountKey,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final title = titleKey ?? '-';
+    final status = statusKey ?? '-';
+    final supplier = supplierKey ?? '-';
+    final date = dateKey ?? '-';
+    final itemCount = itemCountKey ?? '-';
+    final value = valueKey ?? '-';
+    final labelName = valueNameKey ?? '';
+    final statusColor = getStatusColor(status);
+    return Card(
+      color: ColorManager.white,
+      elevation: 2,
+      surfaceTintColor: ColorManager.white,
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top Row: title + status chip
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: FontSize.s20,
+                      color: ColorManager.blue,
+                    ),
+                  ),
+                  if (status.isNotEmpty && status != '-')
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        getNormalizedStatus(status),
+                        style: getBoldStyle(
+                          color: statusColor,
+                          fontSize: FontSize.s12,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 6),
+
+              // Supplier Name
+              if (supplier.isNotEmpty && supplier != '-')
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.person_2_sharp,
+                      color: ColorManager.lightBlack,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        supplier,
+                        style: getMediumStyle(
+                          color: ColorManager.lightBlack,
+                          fontSize: FontSize.s16,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+
+              if (supplier.isNotEmpty && supplier != '-')
+                const SizedBox(height: 8),
+
+              Divider(color: ColorManager.grey4, thickness: 1, height: 10),
+              const SizedBox(height: 4),
+
+              // Bottom Row: date & value
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Date left side
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.date_range,
+                              color: ColorManager.grey,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              date,
+                              style: getSemiBoldStyle(
+                                color: ColorManager.darkGrey,
+                                fontSize: FontSize.s14,
+                              ),
+                            ),
+                          ]),
+                      const SizedBox(height: 6),
+                      Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.calendar_today,
+                              color: ColorManager.grey,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              '${itemCount} Items',
+                              style: getSemiBoldStyle(
+                                color: ColorManager.darkGrey,
+                                fontSize: FontSize.s14,
+                              ),
+                            ),
+                          ]),
+                    ],
+                  ),
+
+                  // Value section right side
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      if (labelName.isNotEmpty)
+                        Text(
+                          labelName,
+                          style: getMediumStyle(
+                            color: ColorManager.grey,
+                            fontSize: FontSize.s14,
+                          ),
+                        ),
+                      const SizedBox(height: 4),
+                      Text(
+                        value,
+                        style: getBoldStyle(
+                          color: ColorManager.lightBlack,
+                          fontSize: FontSize.s18,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

@@ -4,7 +4,7 @@ import 'package:eyvo_inventory/core/resources/assets_manager.dart';
 import 'package:eyvo_inventory/core/utils.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:eyvo_inventory/log_data.dart/logger_data.dart';
-import 'package:eyvo_inventory/presentation/image_upload/image_upload_helper.dart';
+import 'package:eyvo_inventory/services/image_upload_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:eyvo_inventory/core/resources/color_manager.dart';

@@ -166,7 +166,8 @@ class _RequestApprovalPageState extends State<RequestApprovalPage> {
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 2, vertical: 0),
-                                child: CommonCardWidget(
+                                child: 
+                                CommonCardWidget(
                                   subtitles: [
                                     {'Request No': request.requestNumber},
                                     {'Request Status': request.requestStatus},
@@ -180,7 +181,8 @@ class _RequestApprovalPageState extends State<RequestApprovalPage> {
                                     navigateToScreen(
                                       context,
                                       RequestDetailsView(
-                                          requestId: request.requestId),
+                                          requestId: request.requestId,
+                                          requestNumber: request.requestNumber),
                                     );
                                   },
                                 ),

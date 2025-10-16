@@ -14,7 +14,7 @@ import 'package:eyvo_inventory/core/resources/strings_manager.dart';
 import 'package:eyvo_inventory/core/utils.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:eyvo_inventory/log_data.dart/logger_data.dart';
-import 'package:eyvo_inventory/presentation/image_upload/image_upload_helper.dart';
+import 'package:eyvo_inventory/services/image_upload_helper.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
@@ -24,7 +24,7 @@ class ImagePreviewBox extends StatelessWidget {
   final Uint8List? imageBytes;
   final VoidCallback? onTapUpload;
   final VoidCallback? onTapDelete;
-  final bool isUploading; // ✅ new field
+  final bool isUploading; 
 
   const ImagePreviewBox({
     Key? key,
@@ -263,7 +263,7 @@ class CustomActionIconButton extends StatelessWidget {
 
 /// -------------------- UPLOAD IMAGE DIALOG --------------------
 class ImageUploadPopup extends StatefulWidget {
-  final ValueChanged<bool>? onUploadingChanged; // ✅ new
+  final ValueChanged<bool>? onUploadingChanged; 
 
   const ImageUploadPopup({Key? key, this.onUploadingChanged}) : super(key: key);
 
@@ -282,22 +282,6 @@ class _ImageUploadPopupState extends State<ImageUploadPopup> {
   final ApiService apiService = ApiService();
   final ImageHelper _imageHelper = ImageHelper();
   bool isLoading = false;
-
-  // String _formatBytes(int bytes, int decimals) {
-  //   if (bytes <= 0) return "0 KB";
-  //   const suffixes = ["B", "KB", "MB", "GB"];
-  //   var i = (log(bytes) / log(1024)).floor(); // use 1000 not 1024
-  //   return ((bytes / pow(1024, i)).toStringAsFixed(decimals)) +
-  //       ' ' +
-  //       suffixes[i];
-  // }
-  // String _formatBytes(int bytes, int decimals) {
-  //   if (bytes <= 0) return "0 KB";
-  //   const suffixes = ["B", "KB", "MB", "GB", "TB"];
-  //   var i = (log(bytes) / log(1024)).floor();
-  //   double size = bytes / pow(1024, i);
-  //   return size.toStringAsFixed(decimals) + ' ' + suffixes[i];
-  // }
 
   String _formatBytes(int bytes, int decimals) {
     if (bytes <= 0) return "0 KB";
@@ -463,48 +447,7 @@ class _ImageUploadPopupState extends State<ImageUploadPopup> {
 }
 
 /// -------------------- SHOW IMAGE UPLOAD DIALOG --------------------
-// Future<Map<String, String>?> showImageUploadDialog(BuildContext context) {
-//   return showDialog<Map<String, String>>(
-//     context: context,
-//     barrierDismissible: true,
-//     builder: (context) {
-//       final screenHeight = MediaQuery.of(context).size.height;
-//       final screenWidth = MediaQuery.of(context).size.width;
 
-//       return Stack(
-//         children: [
-//           Dialog(
-//             shape: RoundedRectangleBorder(
-//               borderRadius: BorderRadius.circular(16),
-//             ),
-//             insetPadding: const EdgeInsets.all(16),
-//             backgroundColor: ColorManager.white,
-//             child: ImageUploadPopup(),
-//           ),
-//           Positioned(
-//             top: screenHeight * 0.18,
-//             right: screenWidth * 0.07,
-//             child: GestureDetector(
-//               onTap: () => Navigator.of(context).pop(),
-//               child: Container(
-//                 decoration: const BoxDecoration(
-//                   color: Colors.white,
-//                   shape: BoxShape.circle,
-//                 ),
-//                 padding: const EdgeInsets.all(6),
-//                 child: const Icon(
-//                   Icons.close,
-//                   color: Colors.black,
-//                   size: 22,
-//                 ),
-//               ),
-//             ),
-//           ),
-//         ],
-//       );
-//     },
-//   );
-// }
 Future<Map<String, String>?> showImageUploadDialog(BuildContext context) {
   return showDialog<Map<String, String>>(
     context: context,
@@ -534,7 +477,7 @@ Future<Map<String, String>?> showImageUploadDialog(BuildContext context) {
                   ),
                 ),
 
-                // ❌ Show close button only if not uploading
+                //  Show close button only if not uploading
                 if (!isUploading)
                   Positioned(
                     top: screenHeight * 0.18,

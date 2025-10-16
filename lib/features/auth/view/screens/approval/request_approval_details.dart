@@ -2,10 +2,13 @@ import 'dart:developer';
 import 'package:eyvo_inventory/api/api_service/api_service.dart';
 import 'package:eyvo_inventory/api/response_models/request_approval_details_response.dart';
 import 'package:eyvo_inventory/app/app_prefs.dart';
+import 'package:eyvo_inventory/core/resources/assets_manager.dart';
 import 'package:eyvo_inventory/core/resources/color_manager.dart';
+import 'package:eyvo_inventory/core/resources/font_manager.dart';
 import 'package:eyvo_inventory/core/resources/routes_manager.dart';
 import 'package:eyvo_inventory/core/resources/strings_manager.dart';
 import 'package:eyvo_inventory/core/utils.dart';
+import 'package:eyvo_inventory/core/widgets/alert.dart';
 import 'package:eyvo_inventory/core/widgets/approval_details_helper.dart';
 import 'package:eyvo_inventory/core/widgets/button.dart';
 import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
@@ -14,8 +17,10 @@ import 'package:flutter/material.dart';
 
 class RequestDetailsView extends StatefulWidget {
   final int requestId;
+  final String requestNumber;
 
-  const RequestDetailsView({Key? key, required this.requestId})
+  const RequestDetailsView(
+      {Key? key, required this.requestId, required this.requestNumber})
       : super(key: key);
 
   @override
@@ -71,72 +76,76 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
     });
   }
 
-  // Future<void> requestApprovalApprove() async {
-  //   setState(() => isLoading = true);
+  Future<void> requestApprovalApprove() async {
+    setState(() => isLoading = true);
 
-  //   final jsonResponse = await apiService.postRequest(
-  //     context,
-  //     ApiService.requestApprovalApprove,
-  //     {'uid': SharedPrefs().uID, 'requestId': widget.requestId},
-  //   );
+    final jsonResponse = await apiService.postRequest(
+      context,
+      ApiService.requestApprovalApproved,
+      {'uid': SharedPrefs().uID, 'requestId': widget.requestId},
+    );
 
-  //   if (jsonResponse != null) {
-  //     if (jsonResponse['code'] == 200) {
-  //       Navigator.pushReplacementNamed(
-  //         context,
-  //         Routes.thankYouRoute,
-  //         arguments: {
-  //           'message': "Request approved successfully",
-  //           'status': "Request Approved",
-  //           'number': requestDetails?.header.requestNumber ?? "",
-  //         },
-  //       );
-  //     } else {
-  //       showErrorDialog(context, jsonResponse['message'].toString(), false);
-  //     }
-  //   } else {
-  //     showErrorDialog(context, "No response from server", false);
-  //   }
+    if (jsonResponse != null) {
+      if (jsonResponse['code'] == 200) {
+        Navigator.pushReplacementNamed(
+          context,
+          Routes.thankYouRoute,
+          arguments: {
+            'message': "Request approved successfully",
+            'status': "Request Approved",
+            'number': requestDetails?.header.requestNumber ?? "",
+          },
+        );
+      } else {
+        showErrorDialog(context, jsonResponse['message'].toString(), false);
+      }
+    } else {
+      showErrorDialog(context, "No response from server", false);
+    }
 
-  //   setState(() => isLoading = false);
-  // }
+    setState(() => isLoading = false);
+  }
 
-  // Future<void> requestApprovalReject(String reason) async {
-  //   setState(() => isLoading = true);
+  Future<void> requestApprovalReject(String reason) async {
+    setState(() => isLoading = true);
 
-  //   final jsonResponse = await apiService.postRequest(
-  //     context,
-  //     ApiService.requestApprovalReject,
-  //     {'uid': SharedPrefs().uID, 'requestId': widget.requestId, 'reason': reason},
-  //   );
+    final jsonResponse = await apiService.postRequest(
+      context,
+      ApiService.requestApprovalReject,
+      {
+        'uid': SharedPrefs().uID,
+        'requestId': widget.requestId,
+        'reason': reason
+      },
+    );
 
-  //   if (jsonResponse != null) {
-  //     if (jsonResponse['code'] == 200) {
-  //       Navigator.pushReplacementNamed(
-  //         context,
-  //         Routes.thankYouRoute,
-  //         arguments: {
-  //           'message': "Request rejected successfully",
-  //           'status': "Request Rejected",
-  //           'number': requestDetails?.header.requestNumber ?? "",
-  //         },
-  //       );
-  //     } else {
-  //       showErrorDialog(context, jsonResponse['message'].toString(), false);
-  //     }
-  //   } else {
-  //     showErrorDialog(context, "No response from server", false);
-  //   }
+    if (jsonResponse != null) {
+      if (jsonResponse['code'] == 200) {
+        Navigator.pushReplacementNamed(
+          context,
+          Routes.thankYouRoute,
+          arguments: {
+            'message': "Request rejected successfully",
+            'status': "Request Rejected",
+            'number': requestDetails?.header.requestNumber ?? "",
+          },
+        );
+      } else {
+        showErrorDialog(context, jsonResponse['message'].toString(), false);
+      }
+    } else {
+      showErrorDialog(context, "No response from server", false);
+    }
 
-  //   setState(() => isLoading = false);
-  // }
+    setState(() => isLoading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: buildCommonAppBar(
         context: context,
-        title: "#Request No ${widget.requestId}",
+        title: "Request #${widget.requestNumber}",
       ),
       body: isLoading
           ? const Center(child: CustomProgressIndicator())
@@ -148,7 +157,7 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
-                            // -------------------- DETAILS --------------------
+// --------------------------------------------------------------- DETAILS ---------------------------------------------------------------
                             ApprovalDetailsHelper.buildSectionForDetails(
                               "Details",
                               Icons.description_outlined,
@@ -159,7 +168,7 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
                                 'Request Status':
                                     requestDetails!.header.requestStatus,
                                 'Request Net Total':
-                                    '${requestDetails!.header.grossTotal}(${requestDetails!.header.headerCcyCode})',
+                                    '${requestDetails!.header.grossTotal} (${requestDetails!.header.headerCcyCode})',
                                 'Approver Name':
                                     requestDetails!.header.originatorName,
                               },
@@ -185,11 +194,18 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
                                       'Instructions':
                                           requestDetails!.header.instructions ??
                                               '',
+                                      'Delivery To':
+                                          requestDetails!.header.fao ?? '',
+                                      'Document Type':
+                                          requestDetails!.header.orderTypeId ??
+                                              '',
                                       'Delivery Code':
                                           requestDetails!.header.deliveryCode ??
                                               '',
                                       requestDetails!.header.expName1:
                                           requestDetails!.header.expCode1 ?? '',
+                                      'Incoterms':
+                                          requestDetails!.header.fob ?? '',
                                     },
                                   },
                                 );
@@ -202,7 +218,7 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
                               }),
                             ),
 
-                            // -------------------- LINE ITEMS --------------------
+// ---------------------------------------------------------------------------- LINE ITEMS ------------------------------------------------------------------------------------
 
                             ApprovalDetailsHelper.buildSection(
                               "Line Items",
@@ -212,55 +228,65 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
                                       ApprovalDetailsHelper.buildEmptyView(
                                           "No line items")
                                     ]
-                                  : requestDetails!.line!.map((lineItem) {
-                                      return ApprovalDetailsHelper
-                                          .buildMiniCardWithEditIcon({
-                                        'Item': lineItem.itemCode,
-                                        'Description': lineItem.description,
-                                        'Quantity': lineItem.quantity,
-                                        'Unit Price':
-                                            '${getFormattedPriceString(lineItem.price)}(${lineItem.supplierCcyCode})',
-                                        'Net Price':
-                                            '${getFormattedPriceString(lineItem.netPrice)}(${lineItem.supplierCcyCode})',
-                                      }, () {
-                                        Navigator.pushNamed(
-                                          context,
-                                          Routes.genericDetailRoute,
-                                          arguments: {
-                                            'title': 'Request Line',
-                                            'data': {
-                                              //  'Item Order': lineItem.itemOrder,
-                                              'Item Code': lineItem.itemCode,
-                                              'Item Description':
-                                                  lineItem.description,
-                                              'Suppliers Part No':
-                                                  lineItem.suppliersPartNo ??
-                                                      'N/A',
-                                              'Item Due Date': lineItem.dueDate,
-                                              'Quantity': lineItem.quantity,
-                                              'Unit': lineItem.unit,
-                                              'Pack Size': lineItem.packSize,
-                                              'Unit Price':
-                                                  '${getFormattedPriceString(lineItem.price)}(${lineItem.supplierCcyCode})',
-                                              'Discount': lineItem
-                                                          .discountType ==
-                                                      1
-                                                  ? '${lineItem.discount}(value)'
-                                                  : '${lineItem.discount}(%)',
-                                              'Tax': lineItem.tax,
-                                              'Tax Value': lineItem.taxValue,
-                                              // 'Net Price':
-                                              //     '${getFormattedPriceString(lineItem.netPrice)}(${lineItem.supplierCcyCode})',
-                                              // 'Gross Price':
-                                              //     '${getFormattedPriceString(lineItem.grossPrice)}(${lineItem.supplierCcyCode})',
-                                              //  '${lineItem.expName4}': lineItem.expCode4,
-                                              //'Shipping Charges': ,
-                                              //'Supplier Ccy Rate': lineItem.supplierCcyRate,
+                                  : [
+                                      ...requestDetails!.line!.map((lineItem) {
+                                        return ApprovalDetailsHelper
+                                            .buildMiniCardWithEditIcon({
+                                          'Item': lineItem.itemCode,
+                                          'Description': lineItem.description,
+                                          'Quantity': lineItem.quantity,
+                                          'Unit Price':
+                                              '${getFormattedPriceString(lineItem.price)} (${lineItem.supplierCcyCode})',
+                                          'Net Price':
+                                              '${getFormattedPriceString(lineItem.netPrice)} (${lineItem.supplierCcyCode})',
+                                        }, () {
+                                          Navigator.pushNamed(
+                                            context,
+                                            Routes.genericDetailRoute,
+                                            arguments: {
+                                              'title': 'Request Line',
+                                              'data': {
+                                                //  'Item Order': lineItem.itemOrder,
+                                                'Item Code': lineItem.itemCode,
+                                                'Item Description': lineItem
+                                                            .description
+                                                            .length >
+                                                        100
+                                                    ? '${lineItem.description.substring(0, 100)}...'
+                                                    : lineItem.description,
+                                                'Item Due Date':
+                                                    lineItem.dueDate,
+                                                'Quantity': lineItem.quantity,
+                                                'Unit': lineItem.unit,
+                                                'Pack Size': lineItem.packSize,
+                                                'Unit Price':
+                                                    '${getFormattedPriceString(lineItem.price)} (${lineItem.supplierCcyCode})',
+                                                'Discount': lineItem
+                                                            .discountType ==
+                                                        1
+                                                    ? '${lineItem.discount}(value)'
+                                                    : '${lineItem.discount}(%)',
+                                                'Tax':
+                                                    '${lineItem.tax.toStringAsFixed(3)}%',
+                                                'Tax Value': lineItem.taxValue
+                                                    .toStringAsFixed(3),
+                                              },
                                             },
-                                          },
-                                        );
-                                      });
-                                    }).toList(),
+                                          );
+                                        });
+                                      }).toList(),
+                                      ApprovalDetailsHelper
+                                          .buildNetGrossTotalWidget(
+                                              context, requestDetails!.line,
+                                              dialogTitle:
+                                                  'Request Total Summary',
+                                              netTotalLabel: 'Total Net Amount',
+                                              salesTaxLabel: 'Total Tax',
+                                              grossTotalLabel:
+                                                  'Request Gross Amount',
+                                              currencyLabel:
+                                                  'Request Currency'),
+                                    ],
                               count: requestDetails?.line?.length ?? 0,
                               isExpanded: expandedSection == "Line Items",
                               toggleSection: () => setState(() {
@@ -271,7 +297,7 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
                               }),
                             ),
 
-// -------------------- RULES --------------------
+// ---------------------------------------------------------------------- RULES -------------------------------------------------------------------
                             ApprovalDetailsHelper.buildSection(
                               "Rules",
                               Icons.rule,
@@ -297,7 +323,7 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
                               }),
                             ),
 
-// -------------------- RULE APPROVERS --------------------
+// ---------------------------------------------- RULE APPROVERS ----------------------------------------------------------
                             ApprovalDetailsHelper.buildSection(
                               "Rule Approvers",
                               Icons.person_outline,
@@ -308,13 +334,29 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
                                     ]
                                   : requestDetails!.ruleApprovers!.map((ra) {
                                       return ApprovalDetailsHelper
-                                          .buildMiniCard({
-                                        'Approval Order': ra.approvalOrder,
-                                        'User Name': ra.userName,
-                                        'Group': ra.userGroupName,
-                                        'Status': ra.approvalStatus,
-                                        'Proxy User': ra.proxyUserName,
-                                      });
+                                          .buildMiniCardForApproval(
+                                        {
+                                          'Approval Order': ra.approvalOrder,
+                                          'User Name': ra.userName,
+                                          'Group': ra.userGroupName,
+                                          'Status': ra.approvalStatus,
+                                          'Proxy User': ra.proxyUserName,
+                                          'UID Group': ra.uidGroup.toString(),
+                                        },
+                                        () {
+                                          Navigator.pushNamed(
+                                            context,
+                                            Routes.showGroupApprovalListRoute,
+                                            arguments: {
+                                              'id': ra.uidGroup,
+                                              'from': 'rulegroup',
+                                            },
+                                          );
+                                        },
+                                        showIconCondition: (data) =>
+                                            data['UID Group']?.toString() !=
+                                            "0",
+                                      );
                                     }).toList(),
                               count: requestDetails?.ruleApprovers?.length ?? 0,
                               isExpanded: expandedSection == "Rule Approvers",
@@ -326,7 +368,8 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
                               }),
                             ),
 
-                            // -------------------- COST CENTERS --------------------
+//-------------------------------------------------------------------- COST CENTERS ------------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
                             ApprovalDetailsHelper.buildSection(
                               "Cost Center Split",
                               Icons.account_balance_wallet_outlined,
@@ -412,46 +455,84 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
                     ),
 
                     // -------------------- APPROVE / REJECT BUTTONS --------------------
-                    // Padding(
-                    //   padding: const EdgeInsets.all(16.0),
-                    //   child: Row(
-                    //     children: [
-                    //       Expanded(
-                    //         child: CustomTextActionButton(
-                    //           buttonText: "Approve",
-                    //           icon: Icons.thumb_up,
-                    //           backgroundColor: ColorManager.green,
-                    //           onTap: () => requestApprovalApprove(),
-                    //           borderColor: null,
-                    //           fontColor: null,
-                    //         ),
-                    //       ),
-                    //       const SizedBox(width: 10),
-                    //       Expanded(
-                    //         child: CustomTextActionButton(
-                    //           buttonText: "Reject",
-                    //           icon: Icons.thumb_down,
-                    //           backgroundColor: ColorManager.red,
-                    //           onTap: () {
-                    //             showDialog(
-                    //               context: context,
-                    //               builder: (_) => CustomRejectReasonAlert(
-                    //                 titleString: "Enter reject reason",
-                    //                 rejectActionString: "Reject",
-                    //                 cancelActionString: "Cancel",
-                    //                 onRejectTap: (reason) {
-                    //                   Navigator.pop(context);
-                    //                   requestApprovalReject(reason);
-                    //                 },
-                    //                 onCancelTap: () => Navigator.pop(context),
-                    //               ),
-                    //             );
-                    //           },
-                    //         ),
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
+                    Container(
+                      color: ColorManager.white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: CustomTextActionButton(
+                              buttonText: "Approve",
+                              icon: Icons.thumb_up_outlined,
+                              backgroundColor: ColorManager.green,
+                              borderColor: ColorManager.white,
+                              fontColor: ColorManager.white,
+                              fontSize: FontSize.s18,
+                              isBoldFont: true,
+                              onTap: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return CustomImageActionAlert(
+                                      iconString: '',
+                                      imageString: ImageAssets.common,
+                                      titleString: "Confirm Approval",
+                                      subTitleString:
+                                          "Are you sure you want to approve this order?",
+                                      destructiveActionString: "Yes",
+                                      normalActionString: "No",
+                                      onDestructiveActionTap: () {
+                                        Navigator.of(context).pop();
+                                        requestApprovalApprove();
+                                      },
+                                      onNormalActionTap: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      isConfirmationAlert: true,
+                                      isNormalAlert: true,
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: CustomTextActionButton(
+                              buttonText: "Reject",
+                              icon: Icons.thumb_down_outlined,
+                              backgroundColor: ColorManager.red,
+                              borderColor: ColorManager.white,
+                              fontColor: ColorManager.white,
+                              fontSize: FontSize.s18,
+                              isBoldFont: true,
+                              onTap: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return CustomRejectReasonAlert(
+                                      iconString: '',
+                                      imageString: ImageAssets.rejection,
+                                      titleString: "Please Add Reject Reason",
+                                      rejectActionString: "Reject",
+                                      cancelActionString: "Cancel",
+                                      onCancelTap: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      onRejectTap: (reason) {
+                                        Navigator.of(context).pop();
+                                        requestApprovalReject(reason);
+                                      },
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
     );

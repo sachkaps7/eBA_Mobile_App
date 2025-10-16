@@ -234,8 +234,21 @@ class _CustomRejectReasonAlertState extends State<CustomRejectReasonAlert> {
               const SizedBox(height: 20),
 
               /// Button Row
+
               Row(
                 children: [
+                  // Left: Cancel
+                  Expanded(
+                    child: CustomTextActionButton(
+                      buttonText: widget.cancelActionString,
+                      backgroundColor: ColorManager.white,
+                      fontColor: ColorManager.darkRed,
+                      borderColor: ColorManager.darkRed,
+                      onTap: widget.onCancelTap,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  // Right: Reject
                   Expanded(
                     child: CustomTextActionButton(
                       buttonText: widget.rejectActionString,
@@ -251,16 +264,6 @@ class _CustomRejectReasonAlertState extends State<CustomRejectReasonAlert> {
                         }
                         widget.onRejectTap(_controller.text.trim());
                       },
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: CustomTextActionButton(
-                      buttonText: widget.cancelActionString,
-                      backgroundColor: ColorManager.white,
-                      fontColor: ColorManager.darkRed,
-                      borderColor: ColorManager.darkRed,
-                      onTap: widget.onCancelTap,
                     ),
                   ),
                 ],

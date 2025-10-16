@@ -4,6 +4,7 @@ import 'package:eyvo_inventory/api/response_models/order_approval_approved_respo
 import 'package:eyvo_inventory/api/response_models/order_approval_reject_response.dart';
 import 'package:eyvo_inventory/core/resources/assets_manager.dart';
 import 'package:eyvo_inventory/core/resources/routes_manager.dart';
+import 'package:eyvo_inventory/core/resources/styles_manager.dart';
 import 'package:eyvo_inventory/core/utils.dart';
 import 'package:eyvo_inventory/core/widgets/alert.dart';
 import 'package:eyvo_inventory/core/widgets/approval_details_helper.dart';
@@ -185,7 +186,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
     return Scaffold(
       appBar: buildCommonAppBar(
         context: context,
-        title: "#Order No ${widget.orderNumber.toString()}",
+        title: "Order #${widget.orderNumber.toString()}",
       ),
       backgroundColor: ColorManager.primary,
       body: isLoading
@@ -208,6 +209,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                             padding: const EdgeInsets.only(bottom: 20),
                             child: Column(
                               children: [
+                                //------------------------------------ order header--------------------------
                                 ApprovalDetailsHelper.buildSectionForDetails(
                                   "Details",
                                   Icons.description_outlined,
@@ -270,10 +272,10 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                           //     '',
                                           'Rule Approver Status':
                                               orderDetails!.header.ruleStatus,
-                                          'Group Approver Status': orderDetails!
-                                              .header.groupApproverStatus,
                                           'CC Approver Status': orderDetails!
                                               .header.ccApproverStatus,
+                                          'Group Approver Status': orderDetails!
+                                              .header.groupApproverStatus,
                                         },
                                       },
                                     );
@@ -288,6 +290,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                     });
                                   },
                                 ),
+//------------------------------------------ Line Item ----------------------------------
                                 ApprovalDetailsHelper.buildSection(
                                   "Line Items",
                                   Icons.list_alt_outlined,
@@ -296,61 +299,91 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                           ApprovalDetailsHelper.buildEmptyView(
                                               "No line items found"),
                                         ]
-                                      : orderDetails!.line.map((lineItem) {
-                                          return ApprovalDetailsHelper
-                                              .buildMiniCardWithEditIcon({
-                                            'Item Code': lineItem.itemCode,
-                                            'Description': lineItem.description,
-                                            'Quantity': lineItem.quantity,
-                                            'Unit Price':
-                                                '${getFormattedPriceString(lineItem.price)} (${lineItem.supplierCcyCode})',
-                                            'Net Price':
-                                                '${getFormattedPriceString(lineItem.netPrice)} (${lineItem.supplierCcyCode})',
-                                          }, () {
-                                            Navigator.pushNamed(
-                                              context,
-                                              Routes.genericDetailRoute,
-                                              arguments: {
-                                                'title': 'Order Line',
-                                                'data': {
-                                                  'Item No.': lineItem.itemCode,
-                                                  'Item Code':
-                                                      lineItem.itemCode,
-                                                  'Description':
-                                                      lineItem.description,
-                                                  'Suppliers Part No': lineItem
-                                                          .suppliersPartNo ??
-                                                      'N/A',
-                                                  'Due Date': lineItem.dueDate,
-                                                  'Quantity': lineItem.quantity,
-                                                  'Unit': lineItem.unit,
-                                                  'Pack Size':
-                                                      lineItem.packSize,
-                                                  'Unit Price':
-                                                      '${getFormattedPriceString(lineItem.price)} (${lineItem.supplierCcyCode})',
-                                                  'Discount': lineItem
-                                                              .discountType ==
-                                                          1
-                                                      ? '${lineItem.discount}(value)'
-                                                      : '${lineItem.discount}(%)',
-                                                  'Tax': lineItem.tax,
-                                                  'Tax Value':
-                                                      lineItem.taxValue,
-                                                  'Net Price':
-                                                      '${getFormattedPriceString(lineItem.netPrice)} (${lineItem.supplierCcyCode})',
-                                                  'Gross Price':
-                                                      '${getFormattedPriceString(lineItem.grossPrice)} (${lineItem.supplierCcyCode})',
-                                                  lineItem.expName4:
-                                                      lineItem.expCode4,
-                                                  'Shipping Charges':
-                                                      lineItem.shippingCharges,
-                                                  'Supplier Ccy Rate':
-                                                      lineItem.supplierCcyRate,
+                                      : [
+                                          ...orderDetails!.line.map((lineItem) {
+                                            return ApprovalDetailsHelper
+                                                .buildMiniCardWithEditIcon({
+                                              'Item Code': lineItem.itemCode,
+                                              'Description': lineItem
+                                                          .description.length >
+                                                      100
+                                                  ? '${lineItem.description.substring(0, 100)}...'
+                                                  : lineItem.description,
+                                              'Quantity':
+                                                  '${getFormattedPriceString(lineItem.quantity)}',
+                                              'Unit Price':
+                                                  '${getFormattedPriceString(lineItem.price)} (${lineItem.supplierCcyCode})',
+                                              'Net Price':
+                                                  '${getFormattedPriceString(lineItem.netPrice)} (${lineItem.supplierCcyCode})',
+                                            }, () {
+                                              Navigator.pushNamed(
+                                                context,
+                                                Routes.genericDetailRoute,
+                                                arguments: {
+                                                  'title': 'Order Line',
+                                                  'data': {
+                                                    'Item No.':
+                                                        lineItem.itemOrder,
+                                                    'Item Code':
+                                                        lineItem.itemCode,
+                                                    'Description':
+                                                        lineItem.description,
+                                                    'Suppliers Part No':
+                                                        lineItem
+                                                            .suppliersPartNo,
+                                                    'Due Date':
+                                                        lineItem.dueDate,
+                                                    'Quantity':
+                                                        '${getFormattedPriceString(lineItem.quantity)}',
+                                                    'Unit': lineItem.unit,
+                                                    'Pack Size': lineItem
+                                                        .packSize
+                                                        .toInt()
+                                                        .toString(),
+                                                    'Unit Price':
+                                                        '${getFormattedPriceString(lineItem.price)} (${lineItem.supplierCcyCode})',
+                                                    'Discount': lineItem
+                                                                .discountType ==
+                                                            1
+                                                        ? '${lineItem.discount}(value)'
+                                                        : '${lineItem.discount}(%)',
+                                                    'Tax':
+                                                        '${lineItem.tax.toStringAsFixed(3)}%',
+                                                    'Tax Value': lineItem
+                                                        .taxValue
+                                                        .toStringAsFixed(3),
+                                                    'Net Price':
+                                                        '${getFormattedPriceString(lineItem.netPrice)} (${lineItem.supplierCcyCode})',
+                                                    'Gross Price':
+                                                        '${getFormattedPriceString(lineItem.grossPrice)} (${lineItem.supplierCcyCode})',
+                                                    lineItem.expName4:
+                                                        lineItem.expCode4,
+                                                    lineItem.expName5:
+                                                        lineItem.expCode5,
+                                                    lineItem.expName6:
+                                                        lineItem.expCode6,
+                                                  },
                                                 },
-                                              },
-                                            );
-                                          });
-                                        }).toList(),
+                                              );
+                                            });
+                                          }).toList(),
+
+                                          // Add the total net price at the bottom
+                                          ApprovalDetailsHelper
+                                              .buildNetGrossTotalWidget(
+                                                  context, orderDetails!.line,
+                                                  dialogTitle:
+                                                      'Order Total Summary',
+                                                  netTotalLabel:
+                                                      'Total Net Amount',
+                                                  shippingChargesLabel:
+                                                      'Shipping Charges',
+                                                  salesTaxLabel: 'Total Tax',
+                                                  grossTotalLabel:
+                                                      'Order Gross Amount',
+                                                  currencyLabel:
+                                                      'Order Currency'),
+                                        ],
                                   count: orderDetails!.line.length,
                                   isExpanded: expandedSection == "Line Items",
                                   toggleSection: () {
@@ -362,6 +395,8 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                     });
                                   },
                                 ),
+
+                                //--------------------------- Rule------------------------------------------------
                                 ApprovalDetailsHelper.buildSection(
                                   "Rules",
                                   Icons.rule,
@@ -392,6 +427,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                     });
                                   },
                                 ),
+//--------------------------------- Rule Approvers---------------------------------------
                                 ApprovalDetailsHelper.buildSection(
                                   "Rule Approvers",
                                   FontAwesomeIcons.userCheck,
@@ -411,8 +447,8 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                               'User Name': ra.userName,
                                               'Group Name': ra.userGroupName,
                                               'Proxy User': ra.proxyUserName,
-                                              // 'UID Group':
-                                              //     ra.uidGroup.toString(),
+                                              'UID Group':
+                                                  ra.uidGroup.toString(),
                                               'Email': ra.email,
                                             },
                                             () {
@@ -444,6 +480,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                     });
                                   },
                                 ),
+//------------------------ Cost Center Split -----------------------------------------
                                 ApprovalDetailsHelper.buildSection(
                                   "Cost Center Split",
                                   Icons.share,
@@ -474,6 +511,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                     });
                                   },
                                 ),
+                                //-----------------------------------------------------Cost Center Approvers----------------------------------------------------------------
                                 ApprovalDetailsHelper.buildSection(
                                   "Cost Center Approvers",
                                   FontAwesomeIcons.userCheck,
@@ -533,6 +571,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                     });
                                   },
                                 ),
+//-----------------------------------------------Group Approvers----------------------------------------------
                                 ApprovalDetailsHelper.buildSection(
                                   "Group Approvers",
                                   Icons.groups,
@@ -575,6 +614,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                     });
                                   },
                                 ),
+//----------------------------------Attachments------------------------------------------------------
                                 ApprovalDetailsHelper.buildSection(
                                   "Attachments",
                                   Icons.attach_file,
@@ -607,6 +647,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                     });
                                   },
                                 ),
+//---------------------------------------------Event Log-------------------------------------------------------------------------------
                                 ApprovalDetailsHelper.buildSection(
                                   "Event Log",
                                   Icons.history,
@@ -640,6 +681,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                         ),
                       ),
                     ),
+//---------------------------------Approve/Reject-----------------------------------------------------
                     Container(
                       color: ColorManager.white,
                       padding: const EdgeInsets.symmetric(

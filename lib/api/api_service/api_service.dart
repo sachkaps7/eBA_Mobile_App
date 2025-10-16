@@ -43,6 +43,8 @@ class ApiService {
   static const String orderApprovalReject = "order/reject";
   static const String requestApprovalList = "request/approvallist";
   static const String requestApprovalDetails = "request/Approval";
+  static const String requestApprovalReject = "request/reject";
+  static const String requestApprovalApproved = "request/approve";
   static const String blindStockListing = 'Items/blindstocklisting';
   static const String blindStockDetails = 'Items/blindstockdetails';
   static const String updateBlindStock = 'Items/updateblindstock';

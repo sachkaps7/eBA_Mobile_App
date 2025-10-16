@@ -178,37 +178,6 @@ class _SelectOrderViewState extends State<SelectOrderView> with RouteAware {
     });
   }
 
-  String getNormalizedStatus(String? status) {
-    return (status != null && status.trim().isNotEmpty)
-        ? status.trim().toUpperCase()
-        : 'REJECTED';
-  }
-
-  Color getStatusColor(String? status) {
-    switch (getNormalizedStatus(status)) {
-      case 'UNISSUED':
-        return const Color(0xFF09AF00);
-      case 'ISSUED':
-        return const Color(0xFF1976D2);
-      case 'PARTIAL':
-        return const Color(0xFF4DD0E1);
-      case 'CLOSED':
-        return const Color(0xFF8D6E63);
-      case 'REJECTED':
-        return const Color(0xFFC62809);
-      case 'PENDING':
-        return const Color(0xFFF57F17);
-      case 'APPROVED':
-        return const Color(0xFFAFB42B);
-      case 'RECEIVED':
-        return const Color(0xFFA07C03);
-      case 'CANCELLED':
-        return const Color(0xFFB0BEC5);
-      default:
-        return Colors.grey;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -385,7 +354,9 @@ class _SelectOrderViewState extends State<SelectOrderView> with RouteAware {
                                               horizontal: 6.0, vertical: 2.0),
                                           decoration: BoxDecoration(
                                             color: getStatusColor(
-                                                orderItems[index].orderStatus),
+                                                    orderItems[index]
+                                                        .orderStatus)
+                                                .withOpacity(0.2),
                                             borderRadius:
                                                 BorderRadius.circular(8),
                                           ),
@@ -394,7 +365,9 @@ class _SelectOrderViewState extends State<SelectOrderView> with RouteAware {
                                               orderItems[index].orderStatus ??
                                                   'REJECTED',
                                               style: getSemiBoldStyle(
-                                                color: Colors.white,
+                                                color: getStatusColor(
+                                                    orderItems[index]
+                                                        .orderStatus),
                                                 fontSize: FontSize.s12,
                                               ),
                                               textAlign: TextAlign.center,

@@ -373,7 +373,13 @@ class Line {
   final double grossPrice;
   final int expCode4Id;
   final String expCode4;
-  final String expName4; // <-- new field
+  final String expName4;
+  final int expCode5Id;
+  final String expCode5;
+  final String expName5;
+  final int expCode6Id;
+  final String expCode6;
+  final String expName6;
   final double shippingCharges;
   final int supplierCcyId;
   final String supplierCcyCode;
@@ -401,7 +407,13 @@ class Line {
     required this.grossPrice,
     required this.expCode4Id,
     required this.expCode4,
-    required this.expName4, // <-- new field
+    required this.expName4,
+    required this.expCode5Id,
+    required this.expCode5,
+    required this.expName5,
+    required this.expCode6Id,
+    required this.expCode6,
+    required this.expName6,
     required this.shippingCharges,
     required this.supplierCcyId,
     required this.supplierCcyCode,
@@ -419,7 +431,7 @@ class Line {
         suppliersPartNo: json["SuppliersPartNo"],
         dueDate: json["DueDate"] ?? '',
         quantity: (json["Quantity"] ?? 0).toDouble(),
-        unit: json["Unit"]?.toString() ?? '', // `30` is int in your sample
+        unit: json["Unit"]?.toString() ?? '',
         packSize: (json["PackSize"] ?? 0).toDouble(),
         price: (json["Price"] ?? 0).toDouble(),
         discountType: json["Discount_Type"] ?? 0,
@@ -430,7 +442,13 @@ class Line {
         grossPrice: (json["GrossPrice"] ?? 0).toDouble(),
         expCode4Id: json["ExpCode4_ID"] ?? 0,
         expCode4: json["ExpCode4"] ?? '',
-        expName4: json["ExpName4"] ?? '', // <-- new field
+        expName4: json["ExpName4"] ?? '',
+        expCode5Id: json["ExpCode5_ID"] ?? 0,
+        expCode5: json["ExpCode5"] ?? '',
+        expName5: json["ExpName5"] ?? '',
+        expCode6Id: json["ExpCode6_ID"] ?? 0,
+        expCode6: json["ExpCode6"] ?? '',
+        expName6: json["ExpName6"] ?? '',
         shippingCharges: (json["Shipping_Charges"] ?? 0).toDouble(),
         supplierCcyId: json["Supplier_CcyID"] ?? 0,
         supplierCcyCode: json["Supplier_CcyCode"] ?? '',

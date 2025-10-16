@@ -18,14 +18,14 @@ import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:eyvo_inventory/features/auth/view/screens/approval/order_details_view.dart';
 import 'package:flutter/material.dart';
 
-class OrderApproverPage extends StatefulWidget {
-  const OrderApproverPage({super.key});
+class CreateRequestPage extends StatefulWidget {
+  const CreateRequestPage({super.key});
 
   @override
-  State<OrderApproverPage> createState() => _OrderApproverPageState();
+  State<CreateRequestPage> createState() => _CreateRequestPageState();
 }
 
-class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
+class _CreateRequestPageState extends State<CreateRequestPage> with RouteAware {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   final ApiService apiService = ApiService();
@@ -58,7 +58,7 @@ class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
         searchText = _searchController.text;
         _debounce?.cancel();
         _debounce = Timer(const Duration(milliseconds: 500), () {
-          fetchOrderApprovalList(); // re-fetch API with search
+          fetchOrderApprovalList();
         });
       }
     }
@@ -73,7 +73,7 @@ class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
 
     Map<String, dynamic> requestData = {
       'uid': SharedPrefs().uID,
-      'search': _searchController.text, // pass search query to API
+      'search': _searchController.text,
     };
 
     final jsonResponse = await apiService.postRequest(
@@ -131,6 +131,13 @@ class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
+          // Plus Button
+          IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.add, color: ColorManager.white),
+          ),
+
+          // Refresh Button
           IconButton(
             onPressed: () {
               setState(() {
@@ -138,7 +145,7 @@ class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
                 fetchOrderApprovalList();
               });
             },
-            icon: const Icon(Icons.refresh, color: Colors.white),
+            icon: Icon(Icons.refresh, color: ColorManager.white),
           ),
         ],
       ),

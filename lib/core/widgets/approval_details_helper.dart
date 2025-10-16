@@ -1,3 +1,5 @@
+import 'package:eyvo_inventory/core/resources/styles_manager.dart';
+import 'package:eyvo_inventory/core/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:eyvo_inventory/core/resources/color_manager.dart';
 import 'package:eyvo_inventory/core/resources/font_manager.dart';
@@ -48,6 +50,7 @@ class ApprovalDetailsHelper {
     }).toList();
   }
 
+//-----------------------------------buildMiniCard----------------------------------------------------------
   static Widget buildMiniCard(Map<dynamic, dynamic> data,
       {VoidCallback? onTap}) {
     return InkWell(
@@ -65,6 +68,7 @@ class ApprovalDetailsHelper {
     );
   }
 
+//-----------------------------------buildEmptyView----------------------------------------------------------
   static Widget buildEmptyView(String message) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -86,6 +90,7 @@ class ApprovalDetailsHelper {
     );
   }
 
+//-----------------------------------buildSection----------------------------------------------------------
   static Widget buildSection(
     String title,
     IconData icon,
@@ -178,6 +183,7 @@ class ApprovalDetailsHelper {
     );
   }
 
+//-----------------------------------buildMiniCardWithEditIcon----------------------------------------------------------
   static Widget buildMiniCardWithEditIcon(
       Map<String, dynamic> data, VoidCallback onTap) {
     final entries = data.entries.toList();
@@ -230,17 +236,18 @@ class ApprovalDetailsHelper {
                             e.key,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                              fontSize: FontSize.s16,
                               color: ColorManager.darkGrey,
                             ),
                           ),
                         ),
-                        const Text(":", style: TextStyle(fontSize: 14)),
+                        const Text(":",
+                            style: TextStyle(fontSize: FontSize.s16)),
                         Expanded(
                           child: Text(
                             e.value.toString(),
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: FontSize.s16,
                               color: ColorManager.darkGrey,
                             ),
                           ),
@@ -255,6 +262,7 @@ class ApprovalDetailsHelper {
     );
   }
 
+//-----------------------------------buildMiniCardForApproval----------------------------------------------------------
   static Widget buildMiniCardForApproval(
     Map<dynamic, dynamic> data,
     VoidCallback onIconTap, {
@@ -343,6 +351,7 @@ class ApprovalDetailsHelper {
     );
   }
 
+//-----------------------------------buildSectionForDetails----------------------------------------------------------
   static Widget buildSectionForDetails(
     String title,
     IconData icon,
@@ -401,6 +410,196 @@ class ApprovalDetailsHelper {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+//-----------------------------------buildNetGrossTotalWidget----------------------------------------------------------
+  static Widget buildNetGrossTotalWidget(
+    BuildContext context,
+    List<dynamic> lineItems, {
+    String? dialogTitle,
+    String? netTotalLabel,
+    String? salesTaxLabel,
+    String? shippingChargesLabel,
+    String? grossTotalLabel,
+    String? currencyLabel,
+  }) {
+    double orderNetTotal =
+        lineItems.fold(0.0, (sum, item) => sum + item.netPrice);
+    double salesTaxTotal =
+        lineItems.fold(0.0, (sum, item) => sum + item.taxValue);
+    double shippingChargesTotal = 0.0;
+    if (shippingChargesLabel != null) {
+      shippingChargesTotal = lineItems.fold(0.0, (sum, item) {
+        // Check if item has the property
+        try {
+          return sum + (item.shippingCharges ?? 0.0);
+        } catch (e) {
+          return sum;
+        }
+      });
+    }
+
+    double GrossTotal = orderNetTotal + salesTaxTotal;
+    String currency =
+        lineItems.isNotEmpty ? lineItems.first.supplierCcyCode : '';
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    Widget buildRow(String label, String value,
+        {bool isBold = false, Color? color}) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 180,
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                  fontSize: FontSize.s16,
+                  color: color ?? ColorManager.darkGrey,
+                ),
+              ),
+            ),
+            const Text(
+              " : ",
+              style: TextStyle(
+                fontSize: FontSize.s16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Expanded(
+              child: Text(
+                value,
+                style: TextStyle(
+                  fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                  fontSize: FontSize.s16,
+                  color: color ?? ColorManager.darkGrey,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0, left: 12, right: 12),
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: Material(
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return Stack(
+                    children: [
+                      // Dialog positioned in the center
+                      Positioned(
+                        child: Dialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          backgroundColor: ColorManager.white,
+                          child: Container(
+                            width: screenWidth * 0.9,
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Center(
+                                  child: Text(
+                                    dialogTitle ?? 'Title',
+                                    style: getSemiBoldStyle(
+                                      color: ColorManager.darkBlue,
+                                      fontSize: FontSize.s18,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                buildRow(
+                                  netTotalLabel ?? 'Net Total',
+                                  getFormattedPriceString(orderNetTotal),
+                                ),
+                                buildRow(
+                                  salesTaxLabel ?? 'Sales Tax',
+                                  salesTaxTotal.toStringAsFixed(3),
+                                ),
+                                //  Only show shipping charges if label is provided
+                                if (shippingChargesLabel != null)
+                                  buildRow(
+                                    shippingChargesLabel,
+                                    getFormattedPriceString(
+                                        shippingChargesTotal),
+                                  ),
+                                buildRow(
+                                  currencyLabel ?? 'Currency',
+                                  currency,
+                                  color: ColorManager.darkGrey,
+                                ),
+                                const Divider(height: 20, thickness: 1),
+                                buildRow(
+                                  grossTotalLabel ?? 'Gross Total',
+                                  getFormattedPriceString(GrossTotal),
+                                  isBold: true,
+                                  color: ColorManager.darkBlue,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Close icon positioned above the dialog
+                      Positioned(
+                        top: screenHeight * 0.27,
+                        right: screenWidth * 0.075,
+                        child: GestureDetector(
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: ColorManager.darkGrey,
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            padding: const EdgeInsets.all(8),
+                            child: Icon(
+                              Icons.close,
+                              color: ColorManager.darkGrey,
+                              size: 24,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 4.0, horizontal: 6.0),
+              child: Text(
+                '${netTotalLabel ?? 'Order Net Total'}: ${getFormattedPriceString(orderNetTotal)} ($currency)',
+                style: getSemiBoldStyle(
+                  color: ColorManager.darkBlue,
+                  fontSize: FontSize.s16,
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -5,6 +5,7 @@ class ColorManager {
   static Color white = HexColor.fromHex("#FFFFFF");
   static Color error = HexColor.fromHex("#E61F34");
   static Color black = HexColor.fromHex("#000000");
+  static Color lightBlack = HexColor.fromHex("#343a40");
   static Color blackOpacity50 = HexColor.fromHex("#80000000");
   static Color blue = HexColor.fromHex("#334994");
   static Color lightBlue = HexColor.fromHex("#0d47ee");
@@ -42,6 +43,7 @@ class ColorManager {
   static Color red2 = HexColor.fromHex("#c62827");
   static Color green = HexColor.fromHex('#09af00');
   static Color yellow = HexColor.fromHex('#ffa500');
+  static Color highlightColor = HexColor.fromHex('#f0f6ff');
 }
 
 extension HexColor on Color {

@@ -5,6 +5,7 @@ import 'package:eyvo_inventory/core/resources/font_manager.dart';
 import 'package:eyvo_inventory/core/resources/routes_manager.dart';
 import 'package:eyvo_inventory/core/utils.dart';
 import 'package:eyvo_inventory/features/auth/view/screens/approval/order_approval_view.dart';
+import 'package:eyvo_inventory/features/auth/view/screens/approval/order_details_view.dart';
 import 'package:eyvo_inventory/features/auth/view/screens/approval/request_approval_view.dart';
 import 'package:eyvo_inventory/log_data.dart/logger_data.dart';
 import 'package:flutter/material.dart';

@@ -122,7 +122,10 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const RequestApprovalPage());
       case Routes.requestApprovalDetailsRoute:
         return MaterialPageRoute(
-            builder: (_) => const RequestDetailsView(requestId: 0));
+            builder: (_) => const RequestDetailsView(
+                  requestId: 0,
+                  requestNumber: '',
+                ));
       case Routes.orderApproverPage:
         return MaterialPageRoute(builder: (_) => const OrderApproverPage());
       case Routes.orderDetailsView:

@@ -15,17 +15,18 @@ import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
 import 'package:eyvo_inventory/core/widgets/custom_card_item.dart';
 import 'package:eyvo_inventory/core/widgets/custom_field.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
+import 'package:eyvo_inventory/features/auth/view/screens/approval/create_order_details.dart';
 import 'package:eyvo_inventory/features/auth/view/screens/approval/order_details_view.dart';
 import 'package:flutter/material.dart';
 
-class OrderApproverPage extends StatefulWidget {
-  const OrderApproverPage({super.key});
+class CreateOrderPage extends StatefulWidget {
+  const CreateOrderPage({super.key});
 
   @override
-  State<OrderApproverPage> createState() => _OrderApproverPageState();
+  State<CreateOrderPage> createState() => _CreateOrderPageState();
 }
 
-class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
+class _CreateOrderPageState extends State<CreateOrderPage> with RouteAware {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   final ApiService apiService = ApiService();
@@ -35,6 +36,7 @@ class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
   bool isError = false;
   String errorText = AppStrings.somethingWentWrong;
   String searchText = '';
+  bool _showSearchBar = false;
 
   @override
   void initState() {
@@ -58,7 +60,7 @@ class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
         searchText = _searchController.text;
         _debounce?.cancel();
         _debounce = Timer(const Duration(milliseconds: 500), () {
-          fetchOrderApprovalList(); // re-fetch API with search
+          fetchOrderApprovalList();
         });
       }
     }
@@ -73,7 +75,7 @@ class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
 
     Map<String, dynamic> requestData = {
       'uid': SharedPrefs().uID,
-      'search': _searchController.text, // pass search query to API
+      'search': _searchController.text,
     };
 
     final jsonResponse = await apiService.postRequest(
@@ -106,6 +108,81 @@ class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
     }
   }
 
+  Widget _buildSearchRow() {
+    return Padding(
+      padding: const EdgeInsets.all(2.0),
+      child: Row(
+        children: [
+          if (_showSearchBar) ...[
+            // Expanded search bar
+            Expanded(
+              child: CustomSearchField(
+                controller: _searchController,
+                placeholderText: AppStrings.searchOrderNumber,
+                inputType: TextInputType.text,
+                autoFocus: true,
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Close button
+            IconButton(
+              icon: Icon(Icons.close, color: ColorManager.black),
+              onPressed: () {
+                setState(() {
+                  _showSearchBar = false;
+                  _searchController.clear();
+                });
+              },
+            ),
+          ] else ...[
+            // Compact search field
+            Flexible(
+              flex: 1, // leaves space for icons
+              child: CustomSearchField(
+                controller: _searchController,
+                placeholderText: AppStrings.searchItems,
+                inputType: TextInputType.text,
+                autoFocus: false,
+                readOnly: true,
+                onTap: () {
+                  setState(() => _showSearchBar = true);
+                },
+              ),
+            ),
+            const SizedBox(width: 10),
+
+            GestureDetector(
+              onTap: () {
+                // Navigate to CreateOrderDetailsPage
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CreateOrderDetailsPage(),
+                  ),
+                );
+              },
+              child: Container(
+                height: 40,
+                width: 40,
+                decoration: BoxDecoration(
+                  color: ColorManager.blue,
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.add,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,7 +193,7 @@ class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
         elevation: 1,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
-          AppStrings.requestApproval,
+          'Create Order',
           style: getBoldStyle(
             color: ColorManager.white,
             fontSize: FontSize.s20,
@@ -131,6 +208,7 @@ class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
+          // Refresh Button
           IconButton(
             onPressed: () {
               setState(() {
@@ -138,7 +216,7 @@ class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
                 fetchOrderApprovalList();
               });
             },
-            icon: const Icon(Icons.refresh, color: Colors.white),
+            icon: Icon(Icons.refresh, color: ColorManager.white),
           ),
         ],
       ),
@@ -146,10 +224,7 @@ class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
         children: [
           Padding(
             padding: const EdgeInsets.all(12.0),
-            child: CustomSearchField(
-              controller: _searchController,
-              placeholderText: 'Search by order number,status or net total',
-            ),
+            child: _buildSearchRow(),
           ),
 
           // Loading
@@ -198,30 +273,46 @@ class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
               ),
             )
 
-          // Data List
           else
             Expanded(
               child: ListView.builder(
                 itemCount: orderApprovalList.length,
                 itemBuilder: (context, index) {
                   final order = orderApprovalList[index];
-                  return CommonCardWidget(
-                    subtitles: [
-                      {'Order No': order.orderNumber},
-                      {'Status': order.orderStatus},
-                      {'Order Date': order.orderDate},
-                      {
-                        'Order Net Total':
-                            '${getFormattedPriceString(order.orderValue)}'
-                      },
-                    ],
+                  return
+                      // CommonCardWidget(
+                      //   subtitles: [
+                      //     {'Order No': order.orderNumber},
+                      //     {'Status': order.orderStatus},
+                      //     {'Supplier Name': order.supplierName},
+                      //     {'Order Date': order.orderDate},
+                      //     {
+                      //       'Order Net Total':
+                      //           '${getFormattedPriceString(order.orderValue)}'
+                      //     },
+                      //   ],
+                      //   onTap: () {
+                      //     navigateToScreen(
+                      //       context,
+                      //       OrderDetailsView(
+                      //         orderId: order.orderId,
+                      //         orderNumber: order.orderNumber,
+                      //       ),
+                      //     );
+                      //   },
+                      // );
+                      GenericCardWidget(
+                    titleKey: 'Order #${order.orderNumber}',
+                    statusKey: order.orderStatus,
+                    supplierKey: 'Tanuja Patil',
+                    dateKey: order.orderDate,
+                    valueKey: getFormattedPriceString(order.orderValue),
+                    valueNameKey: 'Order Value',
+                    itemCountKey: '5',
                     onTap: () {
                       navigateToScreen(
                         context,
-                        OrderDetailsView(
-                          orderId: order.orderId,
-                          orderNumber: order.orderNumber,
-                        ),
+                        const CreateOrderDetailsPage(),
                       );
                     },
                   );

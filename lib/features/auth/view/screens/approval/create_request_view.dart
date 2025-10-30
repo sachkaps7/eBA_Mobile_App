@@ -15,6 +15,8 @@ import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
 import 'package:eyvo_inventory/core/widgets/custom_card_item.dart';
 import 'package:eyvo_inventory/core/widgets/custom_field.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
+import 'package:eyvo_inventory/features/auth/view/screens/approval/create_order_details.dart';
+import 'package:eyvo_inventory/features/auth/view/screens/approval/create_request_details.dart';
 import 'package:eyvo_inventory/features/auth/view/screens/approval/order_details_view.dart';
 import 'package:flutter/material.dart';
 
@@ -35,6 +37,7 @@ class _CreateRequestPageState extends State<CreateRequestPage> with RouteAware {
   bool isError = false;
   String errorText = AppStrings.somethingWentWrong;
   String searchText = '';
+  bool _showSearchBar = false;
 
   @override
   void initState() {
@@ -106,6 +109,80 @@ class _CreateRequestPageState extends State<CreateRequestPage> with RouteAware {
     }
   }
 
+  Widget _buildSearchRow() {
+    return Padding(
+      padding: const EdgeInsets.all(2.0),
+      child: Row(
+        children: [
+          if (_showSearchBar) ...[
+            // Expanded search bar
+            Expanded(
+              child: CustomSearchField(
+                controller: _searchController,
+                placeholderText: AppStrings.searchOrderNumber,
+                inputType: TextInputType.text,
+                autoFocus: true,
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Close button
+            IconButton(
+              icon: Icon(Icons.close, color: ColorManager.black),
+              onPressed: () {
+                setState(() {
+                  _showSearchBar = false;
+                  _searchController.clear();
+                });
+              },
+            ),
+          ] else ...[
+            // Compact search field
+            Flexible(
+              flex: 1,
+              child: CustomSearchField(
+                controller: _searchController,
+                placeholderText: AppStrings.searchItems,
+                inputType: TextInputType.text,
+                autoFocus: false,
+                readOnly: true,
+                onTap: () {
+                  setState(() => _showSearchBar = true);
+                },
+              ),
+            ),
+            const SizedBox(width: 10),
+
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CreateRequestDetailsPage(),
+                  ),
+                );
+              },
+              child: Container(
+                height: 40,
+                width: 40,
+                decoration: BoxDecoration(
+                  color: ColorManager.blue,
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.add,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,7 +193,7 @@ class _CreateRequestPageState extends State<CreateRequestPage> with RouteAware {
         elevation: 1,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
-          AppStrings.requestApproval,
+          'Create Request',
           style: getBoldStyle(
             color: ColorManager.white,
             fontSize: FontSize.s20,
@@ -131,12 +208,6 @@ class _CreateRequestPageState extends State<CreateRequestPage> with RouteAware {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          // Plus Button
-          IconButton(
-            onPressed: () {},
-            icon: Icon(Icons.add, color: ColorManager.white),
-          ),
-
           // Refresh Button
           IconButton(
             onPressed: () {
@@ -153,10 +224,7 @@ class _CreateRequestPageState extends State<CreateRequestPage> with RouteAware {
         children: [
           Padding(
             padding: const EdgeInsets.all(12.0),
-            child: CustomSearchField(
-              controller: _searchController,
-              placeholderText: 'Search by order number,status or net total',
-            ),
+            child: _buildSearchRow(),
           ),
 
           // Loading
@@ -204,24 +272,42 @@ class _CreateRequestPageState extends State<CreateRequestPage> with RouteAware {
                 ),
               ),
             )
-
-          // Data List
           else
             Expanded(
               child: ListView.builder(
                 itemCount: orderApprovalList.length,
                 itemBuilder: (context, index) {
                   final order = orderApprovalList[index];
-                  return CommonCardWidget(
-                    subtitles: [
-                      {'Order No': order.orderNumber},
-                      {'Status': order.orderStatus},
-                      {'Order Date': order.orderDate},
-                      {
-                        'Order Net Total':
-                            '${getFormattedPriceString(order.orderValue)}'
-                      },
-                    ],
+                  return
+                      // CommonCardWidget(
+                      //   subtitles: [
+                      //     {'Order No': order.orderNumber},
+                      //     {'Status': order.orderStatus},
+                      //     {'Supplier Name': order.supplierName},
+                      //     {'Order Date': order.orderDate},
+                      //     {
+                      //       'Order Net Total':
+                      //           '${getFormattedPriceString(order.orderValue)}'
+                      //     },
+                      //   ],
+                      //   onTap: () {
+                      //     navigateToScreen(
+                      //       context,
+                      //       OrderDetailsView(
+                      //         orderId: order.orderId,
+                      //         orderNumber: order.orderNumber,
+                      //       ),
+                      //     );
+                      //   },
+                      // );
+                      GenericCardWidget(
+                    titleKey: 'Order #${order.orderNumber}',
+                    statusKey: order.orderStatus,
+                    supplierKey: 'Tanuja Patil',
+                    dateKey: order.orderDate,
+                    valueKey: getFormattedPriceString(order.orderValue),
+                    valueNameKey: 'Order Value',
+                    itemCountKey: '5',
                     onTap: () {
                       navigateToScreen(
                         context,

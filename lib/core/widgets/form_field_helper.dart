@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dotted_border/dotted_border.dart';
+import 'package:eyvo_inventory/api/response_models/order_header_response.dart';
 import 'package:eyvo_inventory/core/resources/assets_manager.dart';
 import 'package:eyvo_inventory/core/resources/constants.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
@@ -12,12 +13,14 @@ import 'package:eyvo_inventory/core/widgets/searchable_dropdown_modal.dart';
 
 class FormFieldHelper {
   //-------------------- TEXT FIELD --------------------
+
   static Widget buildTextField({
     required String label,
     required TextEditingController controller,
     required String hintText,
     TextInputType keyboardType = TextInputType.text,
     bool isRequired = false,
+    bool readOnly = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,30 +35,67 @@ class FormFieldHelper {
         const SizedBox(height: 8),
         Stack(
           children: [
-            TextField(
-              controller: controller,
-              keyboardType: keyboardType,
-              decoration: InputDecoration(
-                hintText: hintText,
-                filled: true,
-                fillColor: ColorManager.white,
-                hintStyle: getMediumStyle(
-                  color: ColorManager.lightGrey,
+            FocusScope(
+              canRequestFocus: !readOnly,
+              child: TextField(
+                controller: controller,
+                keyboardType: keyboardType,
+                readOnly: readOnly,
+                style: TextStyle(
+                  color: ColorManager.black,
                   fontSize: FontSize.s14,
                 ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: ColorManager.lightGrey),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: ColorManager.blue, width: 2),
+                decoration: InputDecoration(
+                  hintText: hintText,
+                  filled: true,
+                  fillColor: readOnly
+                      ? ColorManager.readOnlyColor
+                      : ColorManager.white,
+                  hintStyle: getMediumStyle(
+                    color: ColorManager.lightGrey,
+                    fontSize: FontSize.s14,
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+
+                  //Show icon only in read-only mode
+                  suffixIcon: readOnly
+                      ? Icon(
+                          Icons.lock_outline,
+                          color: ColorManager.lightGrey3,
+                          size: 20,
+                        )
+                      : null,
+
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: readOnly
+                          ? ColorManager.lightGrey
+                          : ColorManager.darkGrey,
+                      width: 1.0,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color:
+                          readOnly ? ColorManager.lightGrey : ColorManager.blue,
+                      width: readOnly ? 1.0 : 2.0,
+                    ),
+                  ),
+                  disabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: ColorManager.lightGrey,
+                      width: 1.0,
+                    ),
+                  ),
                 ),
               ),
             ),
-            // Red triangle on top-right if required
+
+            // Red triangle indicator (if required)
             if (isRequired)
               Positioned(
                 right: 0,
@@ -72,56 +112,13 @@ class FormFieldHelper {
   }
 
   //-------------------- MULTILINE TEXT FIELD --------------------
-  // static Widget buildMultilineTextField({
-  //   required String label,
-  //   required TextEditingController controller,
-  //   String? hintText,
-  //   int maxLines = 4,
-  // }) {
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: [
-  //       Text(
-  //         label,
-  //         style: getSemiBoldStyle(
-  //           color: ColorManager.black,
-  //           fontSize: FontSize.s14,
-  //         ),
-  //       ),
-  //       const SizedBox(height: 8),
-  //       TextField(
-  //         controller: controller,
-  //         maxLines: maxLines,
-  //         decoration: InputDecoration(
-  //           filled: true,
-  //           fillColor: ColorManager.white,
-  //           hintText: hintText,
-  //           hintStyle: getMediumStyle(
-  //             color: ColorManager.lightGrey,
-  //             fontSize: FontSize.s14,
-  //           ),
-  //           contentPadding:
-  //               const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-  //           enabledBorder: OutlineInputBorder(
-  //             borderRadius: BorderRadius.circular(8),
-  //             borderSide: BorderSide(color: ColorManager.lightGrey),
-  //           ),
-  //           focusedBorder: OutlineInputBorder(
-  //             borderRadius: BorderRadius.circular(8),
-  //             borderSide: BorderSide(color: ColorManager.blue, width: 2),
-  //           ),
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
-
   static Widget buildMultilineTextField({
     required String label,
     required TextEditingController controller,
     String? hintText,
     int maxLines = 4,
     bool isRequired = false,
+    bool readOnly = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,46 +133,71 @@ class FormFieldHelper {
                 fontSize: FontSize.s14,
               ),
             ),
-            // if (isRequired) ...[
-            //   const SizedBox(width: 4),
-            //   Text(
-            //     "*",
-            //     style: TextStyle(
-            //       color: ColorManager.red2,
-            //       fontSize: 16,
-            //       fontWeight: FontWeight.bold,
-            //     ),
-            //   ),
-            // ],
           ],
         ),
         const SizedBox(height: 8),
         Stack(
           alignment: Alignment.topRight,
           children: [
-            TextField(
-              controller: controller,
-              maxLines: maxLines,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: ColorManager.white,
-                hintText: hintText,
-                hintStyle: getMediumStyle(
-                  color: ColorManager.lightGrey,
+            FocusScope(
+              canRequestFocus: !readOnly,
+              child: TextField(
+                controller: controller,
+                maxLines: maxLines,
+                readOnly: readOnly,
+                style: TextStyle(
                   fontSize: FontSize.s14,
+                  color: ColorManager.black,
                 ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: ColorManager.lightGrey),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: ColorManager.blue, width: 2),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: readOnly
+                      ? ColorManager.readOnlyColor
+                      : ColorManager.white,
+                  hintText: hintText,
+                  hintStyle: getMediumStyle(
+                    color: ColorManager.lightGrey,
+                    fontSize: FontSize.s14,
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: ColorManager.darkGrey,
+                      width: 1.0,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color:
+                          readOnly ? ColorManager.darkGrey : ColorManager.blue,
+                      width: readOnly ? 1.0 : 2.0,
+                    ),
+                  ),
+                  disabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: ColorManager.darkGrey,
+                      width: 1.0,
+                    ),
+                  ),
                 ),
               ),
             ),
+
+            // Lock icon when readonly
+            if (readOnly)
+              Positioned(
+                right: 8,
+                top: 8,
+                child: Icon(
+                  Icons.lock_outline,
+                  size: 20,
+                  color: ColorManager.lightGrey3,
+                ),
+              ),
 
             // Red triangle indicator (if required)
             if (isRequired)
@@ -274,11 +296,181 @@ class FormFieldHelper {
     );
   }
 
+//----------------------------------DROPDOWN FIELD with IDs---------------------------------------------
+
+  static Widget buildDropdownFieldWithIds({
+    required BuildContext context,
+    required String label,
+    required String? value, // String ID
+    required List<DropdownItem> items,
+    required ValueChanged<String?> onChanged, // String ID
+    bool isRequired = false,
+    String? apiDisplayValue,
+    bool readOnly = false,
+  }) {
+    // Determine display value for the given ID
+    String? displayValue;
+
+    if (value != null) {
+      try {
+        final foundItem = items.firstWhere(
+          (item) => item.id == value,
+          orElse: () => DropdownItem(id: '', value: ''),
+        );
+        displayValue =
+            foundItem.id.isNotEmpty ? foundItem.value : apiDisplayValue;
+      } catch (e) {
+        displayValue = apiDisplayValue;
+      }
+    } else {
+      displayValue = apiDisplayValue;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: getSemiBoldStyle(
+            color: ColorManager.black,
+            fontSize: FontSize.s14,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Stack(
+          children: [
+            GestureDetector(
+              onTap: readOnly
+                  ? null
+                  : () async {
+                      List<String> displayItems =
+                          items.map((item) => item.value).toList();
+
+                      if (apiDisplayValue != null &&
+                          !displayItems.contains(apiDisplayValue)) {
+                        displayItems.add(apiDisplayValue!);
+                      }
+
+                      final selectedDisplayValue =
+                          await showModalBottomSheet<String>(
+                        context: context,
+                        isScrollControlled: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(16)),
+                        ),
+                        builder: (_) => SearchableDropdownModal(
+                          items: displayItems,
+                          selectedValue: displayValue,
+                        ),
+                      );
+
+                      if (selectedDisplayValue != null) {
+                        String selectedId;
+                        if (selectedDisplayValue == apiDisplayValue) {
+                          selectedId = value ?? '';
+                        } else {
+                          selectedId = items
+                              .firstWhere(
+                                  (item) => item.value == selectedDisplayValue)
+                              .id;
+                        }
+                        onChanged(selectedId);
+                      }
+                    },
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                decoration: BoxDecoration(
+                  color: readOnly
+                      ? ColorManager.readOnlyColor
+                      : ColorManager.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: ColorManager.darkGrey,
+                    width: 1.0,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        displayValue ?? "Select $label",
+                        style: TextStyle(
+                          fontSize: FontSize.s14,
+                          color: displayValue == null
+                              ? ColorManager.grey
+                              : ColorManager.black,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    // Row(
+                    //   mainAxisSize: MainAxisSize.min,
+                    //   children: [
+                    //     if (readOnly) ...[
+                    //       Icon(
+                    //         Icons.arrow_drop_down,
+                    //         color: ColorManager.lightGrey3,
+                    //       ),
+                    //       Icon(
+                    //         Icons.lock_outline,
+                    //         size: 20,
+                    //         color: ColorManager.lightGrey3,
+                    //       ),
+                    //     ] else
+                    //       Icon(
+                    //         Icons.arrow_drop_down,
+                    //         color: ColorManager.darkGrey,
+                    //       ),
+                    //   ],
+                    // )
+
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (readOnly)
+                          Icon(
+                            Icons.lock_outline,
+                            size: 20,
+                            color: ColorManager.lightGrey3,
+                          )
+                        else
+                          Icon(
+                            Icons.arrow_drop_down,
+                            color: ColorManager.darkGrey,
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Red triangle (if required)
+            if (isRequired)
+              Positioned(
+                right: 0,
+                top: 0,
+                child: CustomPaint(
+                  size: const Size(12, 12),
+                  painter: _RedTrianglePainter(),
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
   //-------------------- DATE PICKER FIELD --------------------
   static Widget buildDatePickerField({
     required BuildContext context,
     required String label,
     required TextEditingController controller,
+    bool isRequired = false,
+    bool readOnly = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -291,64 +483,120 @@ class FormFieldHelper {
           ),
         ),
         const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          readOnly: true,
-          decoration: InputDecoration(
-            hintText: "Select date",
-            suffixIcon: const Icon(Icons.calendar_month),
-            hintStyle: getMediumStyle(
-              color: ColorManager.lightGrey,
-              fontSize: FontSize.s14,
-            ),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: ColorManager.lightGrey),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: ColorManager.blue, width: 2),
-            ),
-          ),
-          onTap: () async {
-            final pickedDate = await showDatePicker(
-              context: context,
-              initialDate: DateTime.now(),
-              firstDate: DateTime(2020),
-              lastDate: DateTime(2100),
-              builder: (context, child) {
-                return Theme(
-                  data: Theme.of(context).copyWith(
-                    colorScheme: ColorScheme.light(
-                      primary: ColorManager.darkBlue,
-                      onPrimary: ColorManager.white,
-                      onSurface: ColorManager.darkGrey,
-                      surface: ColorManager.white,
-                      background: ColorManager.white,
-                    ),
-                    dialogBackgroundColor: ColorManager.white,
-                    textTheme: Theme.of(context).textTheme.copyWith(
-                          titleLarge: getMediumStyle(
-                            color: ColorManager.darkBlue,
-                            fontSize: FontSize.s18,
-                          ),
-                          bodyLarge: getMediumStyle(
-                            color: ColorManager.darkGrey,
-                            fontSize: FontSize.s14,
+        Stack(
+          children: [
+            FocusScope(
+              canRequestFocus: !readOnly,
+              child: TextField(
+                controller: controller,
+                readOnly: true,
+                onTap: readOnly
+                    ? null
+                    : () async {
+                        final pickedDate = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2020),
+                          lastDate: DateTime(2100),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                colorScheme: ColorScheme.light(
+                                  primary: ColorManager.darkBlue,
+                                  onPrimary: ColorManager.white,
+                                  onSurface: ColorManager.darkGrey,
+                                ),
+                                dialogBackgroundColor: ColorManager.white,
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (pickedDate != null) {
+                          controller.text =
+                              "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+                        }
+                      },
+                style: TextStyle(
+                  fontSize: FontSize.s14,
+                  color: ColorManager.black,
+                ),
+                decoration: InputDecoration(
+                  hintText: "Select date",
+                  suffixIcon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Icon(
+                          Icons.calendar_month,
+                          size: readOnly ? 20 : 25,
+                          color: readOnly
+                              ? ColorManager.lightGrey3
+                              : ColorManager.darkGrey,
+                        ),
+                      ),
+                      if (readOnly)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Icon(
+                            Icons.lock_outline,
+                            size: 20,
+                            color: ColorManager.lightGrey3,
                           ),
                         ),
+                    ],
                   ),
-                  child: child!,
-                );
-              },
-            );
-            if (pickedDate != null) {
-              controller.text =
-                  "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
-            }
-          },
+                  filled: true,
+                  fillColor: readOnly
+                      ? ColorManager.readOnlyColor
+                      : ColorManager.white,
+                  hintStyle: getMediumStyle(
+                    color: ColorManager.lightGrey,
+                    fontSize: FontSize.s14,
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: readOnly
+                          ? ColorManager.darkGrey
+                          : ColorManager.darkGrey,
+                      width: 1.0,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color:
+                          readOnly ? ColorManager.darkGrey : ColorManager.blue,
+                      width: readOnly ? 1.0 : 2.0,
+                    ),
+                  ),
+                  disabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: ColorManager.darkGrey,
+                      width: 1.0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Red triangle indicator (if required)
+            if (isRequired)
+              Positioned(
+                right: 0,
+                top: 0,
+                child: CustomPaint(
+                  size: const Size(12, 12),
+                  painter: _RedTrianglePainter(),
+                ),
+              ),
+          ],
         ),
       ],
     );

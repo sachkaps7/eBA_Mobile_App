@@ -10,14 +10,15 @@ import 'package:eyvo_inventory/core/resources/font_manager.dart';
 import 'package:eyvo_inventory/core/resources/styles_manager.dart';
 import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
 
-class CreateOrderHeaderView extends StatefulWidget {
-  const CreateOrderHeaderView({Key? key}) : super(key: key);
+class CreateRequestHeaderView extends StatefulWidget {
+  const CreateRequestHeaderView({Key? key}) : super(key: key);
 
   @override
-  State<CreateOrderHeaderView> createState() => _CreateOrderHeaderViewState();
+  State<CreateRequestHeaderView> createState() =>
+      _CreateRequestHeaderViewState();
 }
 
-class _CreateOrderHeaderViewState extends State<CreateOrderHeaderView> {
+class _CreateRequestHeaderViewState extends State<CreateRequestHeaderView> {
   // Text Controllers
   final TextEditingController _refNoController = TextEditingController();
   final TextEditingController _deliverToController = TextEditingController();
@@ -46,7 +47,8 @@ class _CreateOrderHeaderViewState extends State<CreateOrderHeaderView> {
   String? _selectedSupplierContactId;
   String? _selectedContractNumberId;
   String? _selectDepartmentCodeId;
-// Dropdown Value
+  String? _selectRequestBudgetId;
+  // Dropdown Selections
   String? _selectedSupplierCodeValue;
   String? _selectedDeliveryCodeValue;
   String? _selectedBudgetValue;
@@ -60,6 +62,7 @@ class _CreateOrderHeaderViewState extends State<CreateOrderHeaderView> {
   String? _selectedSupplierContactValue;
   String? _selectedContractNumberValue;
   String? _selectDepartmentCodeValue;
+  String? _selectRequestBudgetValue;
 
   CreateHeaderResponse? apiResponse;
   bool isLoading = true;
@@ -84,8 +87,8 @@ class _CreateOrderHeaderViewState extends State<CreateOrderHeaderView> {
   bool _showSupplierContact = true;
   bool _showContractNumber = true;
   bool _showSupplier = true;
-  bool _showRequestDescription = false;
-  bool _showRequestBudget = false;
+  bool _showRequestDescription = true;
+  bool _showRequestBudget = true;
 
   // Dropdown Data
   List<DropdownItem> getBudget() {
@@ -127,37 +130,27 @@ class _CreateOrderHeaderViewState extends State<CreateOrderHeaderView> {
             "ID": 66,
             "value": "HW",
             "controlType": "dropdown",
-            "required": true,
+            "required": false,
             "readWrite": true,
             "visible": true
         },
         {
             "fieldID": "ExpCode2_ID",
             "labelName": "Restaurant",
-            "ID": 2,
-            "value": "AV Infra",
+            "ID": 9,
+            "value": "Finance",
             "controlType": "dropdown",
-            "required": true,
+            "required": false,
             "readWrite": true,
             "visible": true
         },
         {
             "fieldID": "ExpCode3_ID",
             "labelName": "Department Code",
-            "ID": 7,
-            "value": "0430-RM",
+            "ID": 8,
+            "value": "0430-SD",
             "controlType": "dropdown",
-            "required": true,
-            "readWrite": true,
-            "visible": true
-        },
-        {
-            "fieldID": "InvoicePtID",
-            "labelName": "Invoice Code",
-            "ID": 5,
-            "value": "MFAX",
-            "controlType": "dropdown",
-            "required": true,
+            "required": false,
             "readWrite": true,
             "visible": true
         },
@@ -167,7 +160,7 @@ class _CreateOrderHeaderViewState extends State<CreateOrderHeaderView> {
             "ID": 5,
             "value": "PO",
             "controlType": "dropdown",
-            "required": true,
+            "required": false,
             "readWrite": true,
             "visible": true
         },
@@ -175,19 +168,19 @@ class _CreateOrderHeaderViewState extends State<CreateOrderHeaderView> {
             "fieldID": "ReferenceNo",
             "labelName": "Ref Num",
             "ID": 0,
-            "value": "Reference Number",
+            "value": "001782",
             "controlType": "textbox",
-            "required": true,
+            "required": false,
             "readWrite": true,
             "visible": true
         },
         {
             "fieldID": "DeliveryID",
             "labelName": "Delivery Code",
-            "ID": 24,
-            "value": "ACE-SF",
+            "ID": 7,
+            "value": "DC-IT",
             "controlType": "dropdown",
-            "required": true,
+            "required": false,
             "readWrite": true,
             "visible": true
         },
@@ -195,19 +188,19 @@ class _CreateOrderHeaderViewState extends State<CreateOrderHeaderView> {
             "fieldID": "Instructions",
             "labelName": "Instructions",
             "ID": 0,
-            "value": "Instructions testing new mobile API",
+            "value": "Send to 2nd floor, for Servio in receiving",
             "controlType": "textbox",
-            "required": true,
+            "required": false,
             "readWrite": true,
             "visible": true
         },
         {
             "fieldID": "CategoryID",
             "labelName": "Category Code",
-            "ID": 28,
-            "value": "AVEquip",
+            "ID": 8,
+            "value": "Development",
             "controlType": "dropdown",
-            "required": true,
+            "required": false,
             "readWrite": true,
             "visible": true
         },
@@ -225,9 +218,9 @@ class _CreateOrderHeaderViewState extends State<CreateOrderHeaderView> {
             "fieldID": "FOB",
             "labelName": "Incoterms",
             "ID": 0,
-            "value": "DDP",
+            "value": "001782",
             "controlType": "textbox",
-            "required": true,
+            "required": false,
             "readWrite": true,
             "visible": true
         },
@@ -235,29 +228,19 @@ class _CreateOrderHeaderViewState extends State<CreateOrderHeaderView> {
             "fieldID": "Ship_Via",
             "labelName": "Ship Via",
             "ID": 0,
-            "value": "FedEx 2 Day",
+            "value": "001782",
             "controlType": "textbox",
-            "required": true,
+            "required": false,
             "readWrite": true,
             "visible": true
         },
         {
-            "fieldID": "Justification",
-            "labelName": "Justification",
+            "fieldID": "Request_Description",
+            "labelName": "Request Description",
             "ID": 0,
-            "value": "Justification testing new mobile API",
+            "value": "001782001782001782001782",
             "controlType": "textbox",
-            "required": true,
-            "readWrite": true,
-            "visible": true
-        },
-        {
-            "fieldID": "Order_Budget_Header",
-            "labelName": "Budget",
-            "ID": "In Budget",
-            "value": "In Budget",
-            "controlType": "dropdown",
-            "required": true,
+            "required": false,
             "readWrite": true,
             "visible": true
         },
@@ -265,54 +248,24 @@ class _CreateOrderHeaderViewState extends State<CreateOrderHeaderView> {
             "fieldID": "FAO",
             "labelName": "Delivery To",
             "ID": 0,
-            "value": "Jeff Smith",
+            "value": "David Smith",
             "controlType": "textbox",
-            "required": true,
+            "required": false,
             "readWrite": true,
             "visible": true
         },
         {
-            "fieldID": "Payment_Terms",
-            "labelName": "Payment Terms",
-            "ID": 0,
-            "value": "90 Days",
+            "fieldID": "Request_Budget_header",
+            "labelName": "Budget",
+            "ID": "Out of Budget",
+            "value": "Out of Budget",
             "controlType": "textbox",
-            "required": true,
-            "readWrite": true,
-            "visible": true
-        },
-        {
-            "fieldID": "Supp_Cont_ID",
-            "labelName": "Supplier Contact",
-            "ID": 132,
-            "value": "Ray Anderson",
-            "controlType": "dropdown",
-            "required": true,
-            "readWrite": true,
-            "visible": true
-        },
-        {
-            "fieldID": "ContractID",
-            "labelName": "Contract Number",
-            "ID": 35,
-            "value": "Test",
-            "controlType": "dropdown",
-            "required": true,
-            "readWrite": true,
-            "visible": true
-        },
-        {
-            "fieldID": "SupplierID",
-            "labelName": "Supplier",
-            "ID": 236,
-            "value": "MFAX2",
-            "controlType": "dropdown",
             "required": true,
             "readWrite": true,
             "visible": true
         }
     ],
-    "totalrecords": 19
+    "totalrecords": 14
 }''';
 
   @override
@@ -467,8 +420,9 @@ class _CreateOrderHeaderViewState extends State<CreateOrderHeaderView> {
 
           case "Request_Budget_header":
             _showRequestBudget = field.visible;
-            if (field.visible) {
-              _requestBudgetController.text = field.value;
+            if (field.visible && field.value.isNotEmpty) {
+              _selectRequestBudgetId = field.id.toString();
+              _selectRequestBudgetValue = field.value;
             }
             break;
         }
@@ -532,7 +486,7 @@ class _CreateOrderHeaderViewState extends State<CreateOrderHeaderView> {
         backgroundColor: ColorManager.primary,
         appBar: buildCommonAppBar(
           context: context,
-          title: "Order Header",
+          title: "Request Header",
         ),
         body: const Center(child: CircularProgressIndicator()),
       );
@@ -542,7 +496,7 @@ class _CreateOrderHeaderViewState extends State<CreateOrderHeaderView> {
       backgroundColor: ColorManager.primary,
       appBar: buildCommonAppBar(
         context: context,
-        title: "Order Header",
+        title: "Request Header",
       ),
       body: ScrollbarTheme(
         data: ScrollbarThemeData(
@@ -584,11 +538,11 @@ class _CreateOrderHeaderViewState extends State<CreateOrderHeaderView> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildConstantField("Order No", "ORD-1234"),
+                          _buildConstantField("Request No", "ORD-1234"),
                           const SizedBox(height: 8),
-                          _buildConstantField("Order Date", "13/10/2025"),
+                          _buildConstantField("Request Date", "13/10/2025"),
                           const SizedBox(height: 8),
-                          _buildConstantField("Order Status", "Pending"),
+                          _buildConstantField("Request Status", "DORMANT"),
                         ],
                       ),
                     ),
@@ -597,14 +551,11 @@ class _CreateOrderHeaderViewState extends State<CreateOrderHeaderView> {
 
                     //-------------------- DYNAMIC FIELDS BASED ON VISIBILITY --------------------
 
-                    // Ref No Text Field
-
                     FormFieldHelper.buildTextField(
                       label: "Ref No",
                       controller: _refNoController,
                       hintText: "Enter reference number",
                       isRequired: true,
-                      
                     ),
                     const SizedBox(height: 10),
 
@@ -904,7 +855,33 @@ class _CreateOrderHeaderViewState extends State<CreateOrderHeaderView> {
                       ),
                       const SizedBox(height: 10),
                     ],
-
+                    // Request Description Dropdown
+                    if (_showRequestDescription) ...[
+                      FormFieldHelper.buildTextField(
+                        label: "Request Description",
+                        controller: _paymentTermsController,
+                        hintText: "Enter payment terms",
+                        isRequired: true,
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                    // Request Description Dropdown
+                    if (_showRequestBudget) ...[
+                      FormFieldHelper.buildDropdownFieldWithIds(
+                        context: context,
+                        label: "Request Budget",
+                        value: _selectRequestBudgetId,
+                        apiDisplayValue: _selectRequestBudgetValue,
+                        items: getSupplierCodes(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectRequestBudgetId = value;
+                          });
+                        },
+                        isRequired: false,
+                      ),
+                      const SizedBox(height: 10),
+                    ],
                     const SizedBox(height: 30),
 
                     //-------------------- SAVE BUTTON --------------------

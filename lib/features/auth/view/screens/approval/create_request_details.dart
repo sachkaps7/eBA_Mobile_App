@@ -5,6 +5,8 @@ import 'package:eyvo_inventory/core/widgets/button.dart';
 import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
 import 'package:eyvo_inventory/features/auth/view/screens/approval/create_order_item_view.dart';
 import 'package:eyvo_inventory/features/auth/view/screens/approval/create_order_header_view.dart';
+import 'package:eyvo_inventory/features/auth/view/screens/approval/create_request_header_view.dart';
+import 'package:eyvo_inventory/features/auth/view/screens/approval/create_request_item_view.dart';
 import 'package:eyvo_inventory/features/auth/view/screens/approval/file_upload.dart';
 import 'package:eyvo_inventory/features/auth/view/screens/approval/note_view.dart';
 import 'package:flutter/material.dart';
@@ -16,14 +18,15 @@ import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
 import 'package:eyvo_inventory/core/resources/assets_manager.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class CreateOrderDetailsPage extends StatefulWidget {
-  const CreateOrderDetailsPage({Key? key}) : super(key: key);
+class CreateRequestDetailsPage extends StatefulWidget {
+  const CreateRequestDetailsPage({Key? key}) : super(key: key);
 
   @override
-  State<CreateOrderDetailsPage> createState() => _CreateOrderDetailsPageState();
+  State<CreateRequestDetailsPage> createState() =>
+      _CreateOrderDetailsPageState();
 }
 
-class _CreateOrderDetailsPageState extends State<CreateOrderDetailsPage> {
+class _CreateOrderDetailsPageState extends State<CreateRequestDetailsPage> {
   String? expandedSection;
   bool isLoading = false, isError = false;
   String errorText = AppStrings.somethingWentWrong;
@@ -39,7 +42,7 @@ class _CreateOrderDetailsPageState extends State<CreateOrderDetailsPage> {
     return Scaffold(
       appBar: buildCommonAppBar(
         context: context,
-        title: "Create Order",
+        title: "Create Request",
       ),
       backgroundColor: ColorManager.primary,
       body: isLoading
@@ -71,19 +74,16 @@ class _CreateOrderDetailsPageState extends State<CreateOrderDetailsPage> {
                                   Icons.description_outlined,
                                   [
                                     ApprovalDetailsHelper.buildMiniCard({
-                                      'Order Number': '1234',
-                                      'Order Date': '23/6/2025',
-                                      'Order Status': 'pending',
+                                      'Request Number': '1234',
+                                      'Request Date': '23/6/2025',
+                                      'Request Status': 'pending',
                                       'Supplier Name': 'Tanuja',
-                                      'Order Total': '',
-                                      'Rule Approval': 'Pending',
-                                      'Cost Center Approver': 'Pending',
-                                      'Group Approver': 'Pending',
+                                      'Request Total': '0.00',
                                     }),
-                                    buildAddCard("Add Order Details", () {
+                                    buildAddCard("Add Request Details", () {
                                       navigateToScreen(
                                         context,
-                                        CreateOrderHeaderView(),
+                                        CreateRequestHeaderView(),
                                       );
                                     }),
                                   ],
@@ -106,7 +106,7 @@ class _CreateOrderDetailsPageState extends State<CreateOrderDetailsPage> {
                                     buildAddCard("Add Line Item", () {
                                       navigateToScreen(
                                         context,
-                                        const CreateOrderLineView(),
+                                        const CreateRequestLineView(),
                                       );
                                     }),
                                   ],
@@ -122,24 +122,24 @@ class _CreateOrderDetailsPageState extends State<CreateOrderDetailsPage> {
                                 ),
 
                                 //-------------------- Rules Section --------------------
-                                ApprovalDetailsHelper.buildSection(
-                                  "Rules",
-                                  Icons.rule,
-                                  [
-                                    buildAddCard("Add Rule", () {
-                                      print("Add Rule tapped");
-                                    }),
-                                  ],
-                                  isExpanded: expandedSection == "Rules",
-                                  toggleSection: () {
-                                    setState(() {
-                                      expandedSection =
-                                          expandedSection == "Rules"
-                                              ? null
-                                              : "Rules";
-                                    });
-                                  },
-                                ),
+                                // ApprovalDetailsHelper.buildSection(
+                                //   "Rules",
+                                //   Icons.rule,
+                                //   [
+                                //     buildAddCard("Add Rule", () {
+                                //       print("Add Rule tapped");
+                                //     }),
+                                //   ],
+                                //   isExpanded: expandedSection == "Rules",
+                                //   toggleSection: () {
+                                //     setState(() {
+                                //       expandedSection =
+                                //           expandedSection == "Rules"
+                                //               ? null
+                                //               : "Rules";
+                                //     });
+                                //   },
+                                // ),
 
                                 //-------------------- Cost Center Split Section --------------------
                                 ApprovalDetailsHelper.buildSection(
@@ -162,25 +162,25 @@ class _CreateOrderDetailsPageState extends State<CreateOrderDetailsPage> {
                                 ),
 
                                 //-------------------- Cost Center Approvers Section --------------------
-                                ApprovalDetailsHelper.buildSection(
-                                  "Cost Center Approvers",
-                                  FontAwesomeIcons.userCheck,
-                                  [
-                                    buildAddCard("Add Cost Approvers", () {
-                                      print("Add Cost Center Approvers tapped");
-                                    }),
-                                  ],
-                                  isExpanded: expandedSection ==
-                                      "Cost Center Approvers",
-                                  toggleSection: () {
-                                    setState(() {
-                                      expandedSection = expandedSection ==
-                                              "Cost Center Approvers"
-                                          ? null
-                                          : "Cost Center Approvers";
-                                    });
-                                  },
-                                ),
+                                // ApprovalDetailsHelper.buildSection(
+                                //   "Cost Center Approvers",
+                                //   FontAwesomeIcons.userCheck,
+                                //   [
+                                //     buildAddCard("Add Cost Approvers", () {
+                                //       print("Add Cost Center Approvers tapped");
+                                //     }),
+                                //   ],
+                                //   isExpanded: expandedSection ==
+                                //       "Cost Center Approvers",
+                                //   toggleSection: () {
+                                //     setState(() {
+                                //       expandedSection = expandedSection ==
+                                //               "Cost Center Approvers"
+                                //           ? null
+                                //           : "Cost Center Approvers";
+                                //     });
+                                //   },
+                                // ),
 
                                 //-------------------- Attachments Section --------------------
                                 ApprovalDetailsHelper.buildSection(
@@ -279,7 +279,7 @@ class _CreateOrderDetailsPageState extends State<CreateOrderDetailsPage> {
                       padding: const EdgeInsets.all(16),
                       width: double.infinity,
                       child: CustomButton(
-                        buttonText: 'Create Order',
+                        buttonText: 'Submit To Buyer',
                         onTap: () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(

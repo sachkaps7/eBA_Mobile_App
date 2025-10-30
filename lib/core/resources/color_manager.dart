@@ -36,6 +36,7 @@ class ColorManager {
   static Color lightGrey2 = HexColor.fromHex("#212121");
   static Color lightGrey3 = HexColor.fromHex("#afafaf");
   static Color lightGrey4 = HexColor.fromHex("#e1e1e1");
+  static Color readOnlyColor = HexColor.fromHex("#eaeaea");
   static Color darkRed = HexColor.fromHex("#b71b1c");
   static Color lightRed = HexColor.fromHex("#fff1f3");
   static Color lightRed2 = HexColor.fromHex("#ffcdd2");

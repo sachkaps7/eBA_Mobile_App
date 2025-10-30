@@ -209,7 +209,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                             padding: const EdgeInsets.only(bottom: 20),
                             child: Column(
                               children: [
-                                //------------------------------------ order header--------------------------
+//------------------------------------ order header--------------------------
                                 ApprovalDetailsHelper.buildSectionForDetails(
                                   "Details",
                                   Icons.description_outlined,
@@ -303,11 +303,11 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                           ...orderDetails!.line.map((lineItem) {
                                             return ApprovalDetailsHelper
                                                 .buildMiniCardWithEditIcon({
-                                              'Item Code': lineItem.itemCode,
+                                              'Item No': lineItem.itemOrder,
                                               'Description': lineItem
                                                           .description.length >
-                                                      100
-                                                  ? '${lineItem.description.substring(0, 100)}...'
+                                                      50
+                                                  ? '${lineItem.description.substring(0, 50)}...'
                                                   : lineItem.description,
                                               'Quantity':
                                                   '${getFormattedPriceString(lineItem.quantity)}',
@@ -375,12 +375,12 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                                   dialogTitle:
                                                       'Order Total Summary',
                                                   netTotalLabel:
-                                                      'Total Net Amount',
+                                                      'Order Net Total',
                                                   shippingChargesLabel:
                                                       'Shipping Charges',
-                                                  salesTaxLabel: 'Total Tax',
+                                                  salesTaxLabel: 'Sales Tax',
                                                   grossTotalLabel:
-                                                      'Order Gross Amount',
+                                                      'Order Gross Total',
                                                   currencyLabel:
                                                       'Order Currency'),
                                         ],
@@ -396,7 +396,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                   },
                                 ),
 
-                                //--------------------------- Rule------------------------------------------------
+//--------------------------- Rule------------------------------------------------
                                 ApprovalDetailsHelper.buildSection(
                                   "Rules",
                                   Icons.rule,

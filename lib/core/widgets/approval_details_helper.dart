@@ -212,7 +212,15 @@ class ApprovalDetailsHelper {
                         ),
                       ),
                     ),
-                    const Text(":", style: TextStyle(fontSize: FontSize.s16)),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 8), // Add horizontal spacing
+                      child: Text(":",
+                          style: TextStyle(
+                            fontSize: FontSize.s16,
+                            fontWeight: FontWeight.bold,
+                          )),
+                    ),
                     Expanded(
                       child: Text(
                         entries[0].value.toString(),
@@ -241,8 +249,13 @@ class ApprovalDetailsHelper {
                             ),
                           ),
                         ),
-                        const Text(":",
-                            style: TextStyle(fontSize: FontSize.s16)),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8),
+                          child: Text(":",
+                              style: TextStyle(
+                                  fontSize: FontSize.s16,
+                                  fontWeight: FontWeight.bold)),
+                        ),
                         Expanded(
                           child: Text(
                             e.value.toString(),
@@ -294,7 +307,14 @@ class ApprovalDetailsHelper {
                       ),
                     ),
                   ),
-                  const Text(":", style: TextStyle(fontSize: FontSize.s16)),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(":",
+                        style: TextStyle(
+                          fontSize: FontSize.s16,
+                          fontWeight: FontWeight.bold,
+                        )),
+                  ),
                   Expanded(
                     child: Text(
                       entries[0].value.toString(),
@@ -332,7 +352,15 @@ class ApprovalDetailsHelper {
                           ),
                         ),
                       ),
-                      const Text(":", style: TextStyle(fontSize: FontSize.s16)),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8), // Add horizontal spacing
+                        child: Text(":",
+                            style: TextStyle(
+                              fontSize: FontSize.s16,
+                              fontWeight: FontWeight.bold,
+                            )),
+                      ),
                       Expanded(
                         child: Text(
                           e.value.toString(),
@@ -446,6 +474,7 @@ class ApprovalDetailsHelper {
         lineItems.isNotEmpty ? lineItems.first.supplierCcyCode : '';
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+
     Widget buildRow(String label, String value,
         {bool isBold = false, Color? color}) {
       return Padding(
@@ -453,8 +482,9 @@ class ApprovalDetailsHelper {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              width: 180,
+            // Label part
+            Expanded(
+              flex: 4,
               child: Text(
                 label,
                 style: TextStyle(
@@ -462,6 +492,7 @@ class ApprovalDetailsHelper {
                   fontSize: FontSize.s16,
                   color: color ?? ColorManager.darkGrey,
                 ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             const Text(
@@ -471,7 +502,9 @@ class ApprovalDetailsHelper {
                 fontWeight: FontWeight.bold,
               ),
             ),
+            // Value part
             Expanded(
+              flex: 3,
               child: Text(
                 value,
                 style: TextStyle(
@@ -479,6 +512,8 @@ class ApprovalDetailsHelper {
                   fontSize: FontSize.s16,
                   color: color ?? ColorManager.darkGrey,
                 ),
+                softWrap: false,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

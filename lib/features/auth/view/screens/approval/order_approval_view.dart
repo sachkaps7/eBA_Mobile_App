@@ -116,7 +116,7 @@ class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
         elevation: 1,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
-          AppStrings.requestApproval,
+          AppStrings.orderApproval,
           style: getBoldStyle(
             color: ColorManager.white,
             fontSize: FontSize.s20,
@@ -138,7 +138,7 @@ class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
                 fetchOrderApprovalList();
               });
             },
-            icon: const Icon(Icons.refresh, color: Colors.white),
+            icon: Icon(Icons.refresh, color: ColorManager.white),
           ),
         ],
       ),
@@ -148,7 +148,7 @@ class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
             padding: const EdgeInsets.all(12.0),
             child: CustomSearchField(
               controller: _searchController,
-              placeholderText: 'Search by order number,status or net total',
+              placeholderText: 'Search by order number or net total',
             ),
           ),
 
@@ -159,16 +159,26 @@ class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
           // Error
           else if (isError)
             Expanded(
-              child: Center(
+              child: Container(
+                width: double.infinity,
+                color: ColorManager.white,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Image.asset(
                       ImageAssets.noRecordFoundIcon,
                       width: displayWidth(context) * 0.5,
                     ),
                     const SizedBox(height: 10),
-                    Text(errorText),
+                    Text(
+                      errorText,
+                      style: getRegularStyle(
+                        color: ColorManager.black,
+                        fontSize: FontSize.s17,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ],
                 ),
               ),
@@ -177,9 +187,12 @@ class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
           // No Data
           else if (orderApprovalList.isEmpty)
             Expanded(
-              child: Center(
+              child: Container(
+                width: double.infinity,
+                color: ColorManager.white,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Image.asset(
                       ImageAssets.noRecordFoundIcon,
@@ -192,6 +205,7 @@ class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
                         color: ColorManager.black,
                         fontSize: FontSize.s17,
                       ),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),

@@ -1,6 +1,6 @@
-import 'package:eyvo_inventory/app/app_prefs.dart';
-import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
-import 'package:eyvo_inventory/main.dart';
+import 'package:eyvo_v3/app/app_prefs.dart';
+import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
+import 'package:eyvo_v3/main.dart';
 import 'package:flutter/material.dart';
 import 'package:aad_oauth/aad_oauth.dart';
 import 'package:aad_oauth/model/config.dart';

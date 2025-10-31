@@ -2,34 +2,34 @@
 
 import 'dart:convert';
 import 'package:barcode_scan2/barcode_scan2.dart';
-import 'package:eyvo_inventory/CommonCode/global_utils.dart';
-import 'package:eyvo_inventory/api/api_service/api_service.dart';
-import 'package:eyvo_inventory/api/response_models/load_login_response.dart';
-import 'package:eyvo_inventory/api/response_models/login_response.dart';
-import 'package:eyvo_inventory/app/app_prefs.dart';
-import 'package:eyvo_inventory/app/sizes_helper.dart';
-import 'package:eyvo_inventory/core/resources/assets_manager.dart';
-import 'package:eyvo_inventory/core/resources/color_manager.dart';
-import 'package:eyvo_inventory/core/resources/font_manager.dart';
-import 'package:eyvo_inventory/core/resources/routes_manager.dart';
-import 'package:eyvo_inventory/core/resources/strings_manager.dart';
-import 'package:eyvo_inventory/core/resources/styles_manager.dart';
-import 'package:eyvo_inventory/core/utils.dart';
-import 'package:eyvo_inventory/core/widgets/alert.dart';
-import 'package:eyvo_inventory/core/widgets/button.dart';
-import 'package:eyvo_inventory/core/widgets/checkbox_list_tile.dart';
-import 'package:eyvo_inventory/core/widgets/custom_field.dart';
-import 'package:eyvo_inventory/core/widgets/dashed_line_text.dart';
-import 'package:eyvo_inventory/core/widgets/header_logo.dart';
-import 'package:eyvo_inventory/core/widgets/or_divider.dart';
-import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
-import 'package:eyvo_inventory/core/widgets/text_error.dart';
-import 'package:eyvo_inventory/features/auth/view/screens/dashboard/dashbord.dart';
-import 'package:eyvo_inventory/presentation/forgot_password/forgot_password.dart';
-import 'package:eyvo_inventory/presentation/forgot_user_id/forgot_user_id.dart';
-import 'package:eyvo_inventory/presentation/home/home.dart';
-import 'package:eyvo_inventory/services/azure_auth_service.dart';
-import 'package:eyvo_inventory/services/biometric_auth_service.dart';
+import 'package:eyvo_v3/CommonCode/global_utils.dart';
+import 'package:eyvo_v3/api/api_service/api_service.dart';
+import 'package:eyvo_v3/api/response_models/load_login_response.dart';
+import 'package:eyvo_v3/api/response_models/login_response.dart';
+import 'package:eyvo_v3/app/app_prefs.dart';
+import 'package:eyvo_v3/app/sizes_helper.dart';
+import 'package:eyvo_v3/core/resources/assets_manager.dart';
+import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/font_manager.dart';
+import 'package:eyvo_v3/core/resources/routes_manager.dart';
+import 'package:eyvo_v3/core/resources/strings_manager.dart';
+import 'package:eyvo_v3/core/resources/styles_manager.dart';
+import 'package:eyvo_v3/core/utils.dart';
+import 'package:eyvo_v3/core/widgets/alert.dart';
+import 'package:eyvo_v3/core/widgets/button.dart';
+import 'package:eyvo_v3/core/widgets/checkbox_list_tile.dart';
+import 'package:eyvo_v3/core/widgets/custom_field.dart';
+import 'package:eyvo_v3/core/widgets/dashed_line_text.dart';
+import 'package:eyvo_v3/core/widgets/header_logo.dart';
+import 'package:eyvo_v3/core/widgets/or_divider.dart';
+import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
+import 'package:eyvo_v3/core/widgets/text_error.dart';
+import 'package:eyvo_v3/features/auth/view/screens/dashboard/dashbord.dart';
+import 'package:eyvo_v3/presentation/forgot_password/forgot_password.dart';
+import 'package:eyvo_v3/presentation/forgot_user_id/forgot_user_id.dart';
+import 'package:eyvo_v3/presentation/home/home.dart';
+import 'package:eyvo_v3/services/azure_auth_service.dart';
+import 'package:eyvo_v3/services/biometric_auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -592,7 +592,7 @@ class _LoginViewPageState extends State<LoginViewPage> {
                                   final success =
                                       await BiometricAuth().authenticate();
                                   if (context.mounted && success == true) {
-                                    navigateToScreen(context,  HomeView());
+                                    navigateToScreen(context, HomeView());
                                   } else {
                                     setState(() {
                                       isAuthenticating = false;

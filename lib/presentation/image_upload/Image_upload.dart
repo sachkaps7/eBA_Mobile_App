@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:eyvo_inventory/core/resources/assets_manager.dart';
-import 'package:eyvo_inventory/core/utils.dart';
-import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
-import 'package:eyvo_inventory/log_data.dart/logger_data.dart';
-import 'package:eyvo_inventory/services/image_upload_helper.dart';
+import 'package:eyvo_v3/core/resources/assets_manager.dart';
+import 'package:eyvo_v3/core/utils.dart';
+import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
+import 'package:eyvo_v3/log_data.dart/logger_data.dart';
+import 'package:eyvo_v3/services/image_upload_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:eyvo_inventory/core/resources/color_manager.dart';
-import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
+import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
 
 class ImageUploadView extends StatefulWidget {
   const ImageUploadView({super.key});

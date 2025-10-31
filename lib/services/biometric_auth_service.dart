@@ -1,5 +1,5 @@
-import 'package:eyvo_inventory/app/app_prefs.dart';
-import 'package:eyvo_inventory/log_data.dart/logger_data.dart';
+import 'package:eyvo_v3/app/app_prefs.dart';
+import 'package:eyvo_v3/log_data.dart/logger_data.dart';
 import 'package:local_auth/local_auth.dart';
 
 class BiometricAuth {

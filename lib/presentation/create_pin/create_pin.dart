@@ -1,14 +1,14 @@
-import 'package:eyvo_inventory/app/app_prefs.dart';
-import 'package:eyvo_inventory/app/sizes_helper.dart';
-import 'package:eyvo_inventory/core/resources/assets_manager.dart';
-import 'package:eyvo_inventory/core/resources/color_manager.dart';
-import 'package:eyvo_inventory/core/resources/routes_manager.dart';
-import 'package:eyvo_inventory/core/resources/strings_manager.dart';
-import 'package:eyvo_inventory/core/utils.dart';
-import 'package:eyvo_inventory/core/widgets/button.dart';
-import 'package:eyvo_inventory/core/widgets/custom_field.dart';
-import 'package:eyvo_inventory/core/widgets/title_header.dart';
-import 'package:eyvo_inventory/presentation/enter_pin/enter_pin.dart';
+import 'package:eyvo_v3/app/app_prefs.dart';
+import 'package:eyvo_v3/app/sizes_helper.dart';
+import 'package:eyvo_v3/core/resources/assets_manager.dart';
+import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/routes_manager.dart';
+import 'package:eyvo_v3/core/resources/strings_manager.dart';
+import 'package:eyvo_v3/core/utils.dart';
+import 'package:eyvo_v3/core/widgets/button.dart';
+import 'package:eyvo_v3/core/widgets/custom_field.dart';
+import 'package:eyvo_v3/core/widgets/title_header.dart';
+import 'package:eyvo_v3/presentation/enter_pin/enter_pin.dart';
 import 'package:flutter/material.dart';
 
 class CreatePINView extends StatefulWidget {

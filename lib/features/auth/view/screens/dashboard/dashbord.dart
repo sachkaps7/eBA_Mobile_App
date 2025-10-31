@@ -1,23 +1,23 @@
-import 'package:eyvo_inventory/api/api_service/api_service.dart';
-import 'package:eyvo_inventory/api/response_models/switchboard_response.dart';
-import 'package:eyvo_inventory/app/app_prefs.dart';
-import 'package:eyvo_inventory/app/sizes_helper.dart';
-import 'package:eyvo_inventory/core/resources/assets_manager.dart';
-import 'package:eyvo_inventory/core/resources/color_manager.dart';
-import 'package:eyvo_inventory/core/resources/font_manager.dart';
-import 'package:eyvo_inventory/core/resources/routes_manager.dart';
-import 'package:eyvo_inventory/core/resources/strings_manager.dart';
-import 'package:eyvo_inventory/core/resources/styles_manager.dart';
-import 'package:eyvo_inventory/core/utils.dart';
-import 'package:eyvo_inventory/core/widgets/custom_card_item.dart';
-import 'package:eyvo_inventory/core/widgets/custom_list_tile.dart';
-import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
-import 'package:eyvo_inventory/core/widgets/setting_page.dart';
-import 'package:eyvo_inventory/features/auth/view/screens/approval/approval_view.dart';
-import 'package:eyvo_inventory/features/auth/view/screens/approval/create_order_view.dart';
-import 'package:eyvo_inventory/features/auth/view/screens/approval/create_request_view.dart';
-import 'package:eyvo_inventory/presentation/change_password/change_password.dart';
-import 'package:eyvo_inventory/presentation/home/home.dart';
+import 'package:eyvo_v3/api/api_service/api_service.dart';
+import 'package:eyvo_v3/api/response_models/switchboard_response.dart';
+import 'package:eyvo_v3/app/app_prefs.dart';
+import 'package:eyvo_v3/app/sizes_helper.dart';
+import 'package:eyvo_v3/core/resources/assets_manager.dart';
+import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/font_manager.dart';
+import 'package:eyvo_v3/core/resources/routes_manager.dart';
+import 'package:eyvo_v3/core/resources/strings_manager.dart';
+import 'package:eyvo_v3/core/resources/styles_manager.dart';
+import 'package:eyvo_v3/core/utils.dart';
+import 'package:eyvo_v3/core/widgets/custom_card_item.dart';
+import 'package:eyvo_v3/core/widgets/custom_list_tile.dart';
+import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
+import 'package:eyvo_v3/core/widgets/setting_page.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/approval_view.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/create_order_view.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/create_request_view.dart';
+import 'package:eyvo_v3/presentation/change_password/change_password.dart';
+import 'package:eyvo_v3/presentation/home/home.dart';
 import 'package:flutter/material.dart';
 
 class HomeView extends StatefulWidget {
@@ -307,47 +307,6 @@ class _HomeViewState extends State<HomeView> {
                         cornerRadius: 12,
                         onTap: () {
                           navigateToScreen(context, const InverntoryView());
-                        },
-                      ),
-                    );
-                  }
-
-                  // Approval-related cards
-
-                  //request card
-                  if (shouldShowApproval) {
-                    dashboardCards.add(
-                      CustomItemCardDashboard(
-                        imageString: ImageAssets.requestMenu,
-                        title: 'Request',
-                        backgroundColor: ColorManager.white,
-                        cornerRadius: 12,
-                        onTap: () {
-                          navigateToScreen(context, const CreateRequestPage());
-                        },
-                      ),
-                    );
-                    //Order card
-                    dashboardCards.add(
-                      CustomItemCardDashboard(
-                        imageString: ImageAssets.orderMenu,
-                        title: 'Order',
-                        backgroundColor: ColorManager.white,
-                        cornerRadius: 12,
-                        onTap: () {
-                          navigateToScreen(context, const CreateOrderPage());
-                        },
-                      ),
-                    );
-                    // main approval card
-                    dashboardCards.add(
-                      CustomItemCardDashboard(
-                        imageString: ImageAssets.approval,
-                        title: '${AppStrings.approval}\n',
-                        backgroundColor: ColorManager.white,
-                        cornerRadius: 12,
-                        onTap: () {
-                          navigateToScreen(context, const ApprovalView());
                         },
                       ),
                     );

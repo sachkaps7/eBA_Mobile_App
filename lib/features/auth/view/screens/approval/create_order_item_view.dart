@@ -1,13 +1,13 @@
-import 'package:eyvo_inventory/api/response_models/order_header_response.dart';
-import 'package:eyvo_inventory/core/widgets/button.dart';
-import 'package:eyvo_inventory/core/widgets/form_field_helper.dart';
-import 'package:eyvo_inventory/core/widgets/searchable_dropdown_modal.dart';
-import 'package:eyvo_inventory/log_data.dart/logger_data.dart';
+import 'package:eyvo_v3/api/response_models/order_header_response.dart';
+import 'package:eyvo_v3/core/widgets/button.dart';
+import 'package:eyvo_v3/core/widgets/form_field_helper.dart';
+import 'package:eyvo_v3/core/widgets/searchable_dropdown_modal.dart';
+import 'package:eyvo_v3/log_data.dart/logger_data.dart';
 import 'package:flutter/material.dart';
-import 'package:eyvo_inventory/core/resources/color_manager.dart';
-import 'package:eyvo_inventory/core/resources/font_manager.dart';
-import 'package:eyvo_inventory/core/resources/styles_manager.dart';
-import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
+import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/font_manager.dart';
+import 'package:eyvo_v3/core/resources/styles_manager.dart';
+import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
 
 class CreateOrderLineView extends StatefulWidget {
   const CreateOrderLineView({Key? key}) : super(key: key);

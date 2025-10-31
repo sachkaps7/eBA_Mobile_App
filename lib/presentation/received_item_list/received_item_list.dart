@@ -1,27 +1,27 @@
 // ignore_for_file: unrelated_type_equality_checks
 
-import 'package:eyvo_inventory/api/api_service/api_service.dart';
-import 'package:eyvo_inventory/api/api_service/bloc.dart';
-import 'package:eyvo_inventory/api/response_models/received_items_response.dart';
-import 'package:eyvo_inventory/api/response_models/update_good_receive_response.dart';
-import 'package:eyvo_inventory/app/app_prefs.dart';
-import 'package:eyvo_inventory/app/sizes_helper.dart';
-import 'package:eyvo_inventory/core/resources/assets_manager.dart';
-import 'package:eyvo_inventory/core/resources/color_manager.dart';
-import 'package:eyvo_inventory/core/resources/constants.dart';
-import 'package:eyvo_inventory/core/resources/font_manager.dart';
-import 'package:eyvo_inventory/core/resources/routes_manager.dart';
-import 'package:eyvo_inventory/core/resources/strings_manager.dart';
-import 'package:eyvo_inventory/core/resources/styles_manager.dart';
-import 'package:eyvo_inventory/core/utils.dart';
-import 'package:eyvo_inventory/core/widgets/alert.dart';
-import 'package:eyvo_inventory/core/widgets/button.dart';
-import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
-import 'package:eyvo_inventory/core/widgets/custom_checkbox.dart';
-import 'package:eyvo_inventory/core/widgets/custom_list_tile.dart';
-import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
-import 'package:eyvo_inventory/log_data.dart/logger_data.dart';
-import 'package:eyvo_inventory/presentation/pdf_view/pdf_view.dart';
+import 'package:eyvo_v3/api/api_service/api_service.dart';
+import 'package:eyvo_v3/api/api_service/bloc.dart';
+import 'package:eyvo_v3/api/response_models/received_items_response.dart';
+import 'package:eyvo_v3/api/response_models/update_good_receive_response.dart';
+import 'package:eyvo_v3/app/app_prefs.dart';
+import 'package:eyvo_v3/app/sizes_helper.dart';
+import 'package:eyvo_v3/core/resources/assets_manager.dart';
+import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
+import 'package:eyvo_v3/core/resources/font_manager.dart';
+import 'package:eyvo_v3/core/resources/routes_manager.dart';
+import 'package:eyvo_v3/core/resources/strings_manager.dart';
+import 'package:eyvo_v3/core/resources/styles_manager.dart';
+import 'package:eyvo_v3/core/utils.dart';
+import 'package:eyvo_v3/core/widgets/alert.dart';
+import 'package:eyvo_v3/core/widgets/button.dart';
+import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
+import 'package:eyvo_v3/core/widgets/custom_checkbox.dart';
+import 'package:eyvo_v3/core/widgets/custom_list_tile.dart';
+import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
+import 'package:eyvo_v3/log_data.dart/logger_data.dart';
+import 'package:eyvo_v3/presentation/pdf_view/pdf_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -1182,8 +1182,7 @@ class _QuantityEditPopupState extends State<QuantityEditPopup> {
                             padding: EdgeInsets.only(right: screenWidth * 0.01),
                             child: _buildDropdownWithInputDecoration(
                               label: 'Reject Reason :',
-                              value: widget
-                                  .selectedRejectReason, 
+                              value: widget.selectedRejectReason,
                               items: [
                                 'Broken',
                                 'Not Required',
@@ -1191,8 +1190,7 @@ class _QuantityEditPopupState extends State<QuantityEditPopup> {
                                 'Unavailable',
                                 'Wrong Specification'
                               ],
-                              onChanged: widget
-                                  .onRejectReasonChanged, 
+                              onChanged: widget.onRejectReasonChanged,
                               screenWidth: screenWidth,
                               screenHeight: screenHeight,
                               fixedWidth: screenWidth * 0.38,
@@ -1254,7 +1252,7 @@ class _QuantityEditPopupState extends State<QuantityEditPopup> {
                             LengthLimitingTextInputFormatter(maxChars),
                           ],
                           onChanged: (_) {
-                            setState(() {}); 
+                            setState(() {});
                           },
                           decoration: InputDecoration(
                             contentPadding:

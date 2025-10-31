@@ -1,16 +1,16 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
-import 'package:eyvo_inventory/api/api_service/api_service.dart';
-import 'package:eyvo_inventory/core/resources/assets_manager.dart';
-import 'package:eyvo_inventory/core/resources/color_manager.dart';
-import 'package:eyvo_inventory/core/resources/constants.dart';
-import 'package:eyvo_inventory/core/resources/font_manager.dart';
-import 'package:eyvo_inventory/core/resources/styles_manager.dart';
-import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
-import 'package:eyvo_inventory/core/widgets/form_field_helper.dart';
-import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
-import 'package:eyvo_inventory/services/image_upload_helper.dart';
+import 'package:eyvo_v3/api/api_service/api_service.dart';
+import 'package:eyvo_v3/core/resources/assets_manager.dart';
+import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
+import 'package:eyvo_v3/core/resources/font_manager.dart';
+import 'package:eyvo_v3/core/resources/styles_manager.dart';
+import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
+import 'package:eyvo_v3/core/widgets/form_field_helper.dart';
+import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
+import 'package:eyvo_v3/services/image_upload_helper.dart';
 import 'package:flutter/material.dart';
 
 enum UploadType { file, url }

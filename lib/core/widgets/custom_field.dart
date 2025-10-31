@@ -1,11 +1,11 @@
-import 'package:eyvo_inventory/app/sizes_helper.dart';
-import 'package:eyvo_inventory/core/resources/assets_manager.dart';
-import 'package:eyvo_inventory/core/resources/color_manager.dart';
-import 'package:eyvo_inventory/core/resources/constants.dart';
-import 'package:eyvo_inventory/core/resources/font_manager.dart';
-import 'package:eyvo_inventory/core/resources/styles_manager.dart';
-import 'package:eyvo_inventory/core/resources/values_manager.dart';
-import 'package:eyvo_inventory/core/widgets/button.dart';
+import 'package:eyvo_v3/app/sizes_helper.dart';
+import 'package:eyvo_v3/core/resources/assets_manager.dart';
+import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
+import 'package:eyvo_v3/core/resources/font_manager.dart';
+import 'package:eyvo_v3/core/resources/styles_manager.dart';
+import 'package:eyvo_v3/core/resources/values_manager.dart';
+import 'package:eyvo_v3/core/widgets/button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -14,8 +14,8 @@ class CustomSearchField extends StatefulWidget {
   final String placeholderText;
   final TextInputType inputType;
   final bool autoFocus;
-  final bool readOnly; 
-  final VoidCallback? onTap; 
+  final bool readOnly;
+  final VoidCallback? onTap;
 
   const CustomSearchField({
     super.key,
@@ -23,8 +23,8 @@ class CustomSearchField extends StatefulWidget {
     required this.placeholderText,
     this.inputType = TextInputType.number,
     this.autoFocus = false,
-    this.readOnly = false, 
-    this.onTap, 
+    this.readOnly = false,
+    this.onTap,
   });
 
   @override

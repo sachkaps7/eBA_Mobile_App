@@ -1,9 +1,9 @@
-import 'package:eyvo_inventory/app/sizes_helper.dart';
-import 'package:eyvo_inventory/core/resources/assets_manager.dart';
-import 'package:eyvo_inventory/core/resources/color_manager.dart';
-import 'package:eyvo_inventory/core/resources/font_manager.dart';
-import 'package:eyvo_inventory/core/resources/styles_manager.dart';
-import 'package:eyvo_inventory/core/utils.dart';
+import 'package:eyvo_v3/app/sizes_helper.dart';
+import 'package:eyvo_v3/core/resources/assets_manager.dart';
+import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/font_manager.dart';
+import 'package:eyvo_v3/core/resources/styles_manager.dart';
+import 'package:eyvo_v3/core/utils.dart';
 import 'package:flutter/material.dart';
 
 class CustomItemCard extends StatelessWidget {
@@ -291,7 +291,6 @@ class CommonCardWidget extends StatelessWidget {
     );
   }
 }
-
 
 class GenericCardWidget extends StatelessWidget {
   final String? titleKey;

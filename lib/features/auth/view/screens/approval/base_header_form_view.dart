@@ -1,16 +1,16 @@
-import 'package:eyvo_inventory/api/api_service/api_service.dart';
-import 'package:eyvo_inventory/api/response_models/order_header_response.dart';
-import 'package:eyvo_inventory/app/app_prefs.dart';
-import 'package:eyvo_inventory/core/resources/strings_manager.dart';
-import 'package:eyvo_inventory/core/widgets/button.dart';
-import 'package:eyvo_inventory/core/widgets/form_field_helper.dart';
-import 'package:eyvo_inventory/core/widgets/searchable_dropdown_modal.dart';
-import 'package:eyvo_inventory/log_data.dart/logger_data.dart';
+import 'package:eyvo_v3/api/api_service/api_service.dart';
+import 'package:eyvo_v3/api/response_models/order_header_response.dart';
+import 'package:eyvo_v3/app/app_prefs.dart';
+import 'package:eyvo_v3/core/resources/strings_manager.dart';
+import 'package:eyvo_v3/core/widgets/button.dart';
+import 'package:eyvo_v3/core/widgets/form_field_helper.dart';
+import 'package:eyvo_v3/core/widgets/searchable_dropdown_modal.dart';
+import 'package:eyvo_v3/log_data.dart/logger_data.dart';
 import 'package:flutter/material.dart';
-import 'package:eyvo_inventory/core/resources/color_manager.dart';
-import 'package:eyvo_inventory/core/resources/font_manager.dart';
-import 'package:eyvo_inventory/core/resources/styles_manager.dart';
-import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
+import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/font_manager.dart';
+import 'package:eyvo_v3/core/resources/styles_manager.dart';
+import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
 
 class BaseHeaderView extends StatefulWidget {
   final int id;
@@ -40,11 +40,14 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
   final TextEditingController _deliverIncoterms = TextEditingController();
   final TextEditingController _instructionsController = TextEditingController();
   final TextEditingController _shipViaController = TextEditingController();
-  final TextEditingController _justificationController = TextEditingController();
+  final TextEditingController _justificationController =
+      TextEditingController();
   final TextEditingController _paymentTermsController = TextEditingController();
-  final TextEditingController _requestDescriptionController = TextEditingController();
-  final TextEditingController _requestBudgetController = TextEditingController();
-  
+  final TextEditingController _requestDescriptionController =
+      TextEditingController();
+  final TextEditingController _requestBudgetController =
+      TextEditingController();
+
   final ApiService apiService = ApiService();
   bool isError = false;
   String errorText = AppStrings.somethingWentWrong;
@@ -70,7 +73,7 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
   String? _selectedSupplierContactId;
   String? _selectedContractNumberId;
   String? _selectDepartmentCodeId;
-  
+
   // Dropdown Value
   String? _selectedSupplierCodeValue;
   String? _selectedDeliveryCodeValue;
@@ -372,7 +375,8 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
           thumbColor: WidgetStateProperty.all(ColorManager.blue),
           radius: const Radius.circular(8),
           thickness: WidgetStateProperty.all(6),
-          trackColor: WidgetStateProperty.all(ColorManager.lightGrey.withOpacity(0.3)),
+          trackColor:
+              WidgetStateProperty.all(ColorManager.lightGrey.withOpacity(0.3)),
           trackBorderColor: WidgetStateProperty.all(ColorManager.grey),
           minThumbLength: 50,
           crossAxisMargin: 2,
@@ -460,7 +464,8 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
     }
 
     // Text Fields
-    addFieldIfVisible("ReferenceNo",
+    addFieldIfVisible(
+      "ReferenceNo",
       FormFieldHelper.buildTextField(
         label: fieldLabels["ReferenceNo"] ?? "",
         controller: _refNoController,
@@ -470,7 +475,8 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       ),
     );
 
-    addFieldIfVisible("FAO",
+    addFieldIfVisible(
+      "FAO",
       FormFieldHelper.buildTextField(
         label: fieldLabels["FAO"] ?? "",
         controller: _deliverToController,
@@ -480,7 +486,8 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       ),
     );
 
-    addFieldIfVisible("FOB",
+    addFieldIfVisible(
+      "FOB",
       FormFieldHelper.buildTextField(
         label: fieldLabels["FOB"] ?? "",
         controller: _deliverIncoterms,
@@ -490,7 +497,8 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       ),
     );
 
-    addFieldIfVisible("Instructions",
+    addFieldIfVisible(
+      "Instructions",
       FormFieldHelper.buildTextField(
         label: fieldLabels["Instructions"] ?? "",
         controller: _instructionsController,
@@ -500,7 +508,8 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       ),
     );
 
-    addFieldIfVisible("Ship_Via",
+    addFieldIfVisible(
+      "Ship_Via",
       FormFieldHelper.buildTextField(
         label: fieldLabels["Ship_Via"] ?? "Ship Via",
         controller: _shipViaController,
@@ -510,7 +519,8 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       ),
     );
 
-    addFieldIfVisible("Justification",
+    addFieldIfVisible(
+      "Justification",
       FormFieldHelper.buildTextField(
         label: fieldLabels["Justification"] ?? "Justification",
         controller: _justificationController,
@@ -520,7 +530,8 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       ),
     );
 
-    addFieldIfVisible("Payment_Terms",
+    addFieldIfVisible(
+      "Payment_Terms",
       FormFieldHelper.buildTextField(
         label: fieldLabels["Payment_Terms"] ?? "",
         controller: _paymentTermsController,
@@ -531,7 +542,8 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
     );
 
     // Dropdown Fields
-    addFieldIfVisible("SupplierID",
+    addFieldIfVisible(
+      "SupplierID",
       FormFieldHelper.buildDropdownFieldWithIds(
         context: context,
         label: fieldLabels["SupplierID"] ?? "",
@@ -548,7 +560,8 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       ),
     );
 
-    addFieldIfVisible("DeliveryID",
+    addFieldIfVisible(
+      "DeliveryID",
       FormFieldHelper.buildDropdownFieldWithIds(
         context: context,
         label: fieldLabels["DeliveryID"] ?? "",
@@ -565,7 +578,8 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       ),
     );
 
-    addFieldIfVisible("CategoryID",
+    addFieldIfVisible(
+      "CategoryID",
       FormFieldHelper.buildDropdownFieldWithIds(
         context: context,
         label: fieldLabels["CategoryID"] ?? "",
@@ -582,7 +596,8 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       ),
     );
 
-    addFieldIfVisible("OrderTypeID",
+    addFieldIfVisible(
+      "OrderTypeID",
       FormFieldHelper.buildDropdownFieldWithIds(
         context: context,
         label: fieldLabels["OrderTypeID"] ?? "",
@@ -599,7 +614,8 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       ),
     );
 
-    addFieldIfVisible("InvoicePtID",
+    addFieldIfVisible(
+      "InvoicePtID",
       FormFieldHelper.buildDropdownFieldWithIds(
         context: context,
         label: fieldLabels["InvoicePtID"] ?? "",
@@ -616,7 +632,8 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       ),
     );
 
-    addFieldIfVisible("ExpCode1_ID",
+    addFieldIfVisible(
+      "ExpCode1_ID",
       FormFieldHelper.buildDropdownFieldWithIds(
         context: context,
         label: fieldLabels["ExpCode1_ID"] ?? "",
@@ -633,7 +650,8 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       ),
     );
 
-    addFieldIfVisible("ExpCode2_ID",
+    addFieldIfVisible(
+      "ExpCode2_ID",
       FormFieldHelper.buildDropdownFieldWithIds(
         context: context,
         label: fieldLabels["ExpCode2_ID"] ?? "",
@@ -650,7 +668,8 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       ),
     );
 
-    addFieldIfVisible("Supp_Cont_ID",
+    addFieldIfVisible(
+      "Supp_Cont_ID",
       FormFieldHelper.buildDropdownFieldWithIds(
         context: context,
         label: fieldLabels["Supp_Cont_ID"] ?? "",
@@ -667,7 +686,8 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       ),
     );
 
-    addFieldIfVisible("Order_Budget_Header",
+    addFieldIfVisible(
+      "Order_Budget_Header",
       FormFieldHelper.buildDropdownFieldWithIds(
         context: context,
         label: fieldLabels["Order_Budget_Header"] ?? "",
@@ -684,7 +704,8 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       ),
     );
 
-    addFieldIfVisible("Cust_ID",
+    addFieldIfVisible(
+      "Cust_ID",
       FormFieldHelper.buildDropdownFieldWithIds(
         context: context,
         label: fieldLabels["Cust_ID"] ?? "Customer",
@@ -701,7 +722,8 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       ),
     );
 
-    addFieldIfVisible("ContractID",
+    addFieldIfVisible(
+      "ContractID",
       FormFieldHelper.buildDropdownFieldWithIds(
         context: context,
         label: fieldLabels["ContractID"] ?? "",
@@ -718,7 +740,8 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       ),
     );
 
-    addFieldIfVisible("ExpCode3_ID",
+    addFieldIfVisible(
+      "ExpCode3_ID",
       FormFieldHelper.buildDropdownFieldWithIds(
         context: context,
         label: fieldLabels["ExpCode3_ID"] ?? "",

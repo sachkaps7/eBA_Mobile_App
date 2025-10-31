@@ -1,4 +1,4 @@
-import 'package:eyvo_inventory/core/resources/assets_manager.dart';
+import 'package:eyvo_v3/core/resources/assets_manager.dart';
 import 'package:flutter/material.dart';
 
 class HeaderLogo extends StatelessWidget {

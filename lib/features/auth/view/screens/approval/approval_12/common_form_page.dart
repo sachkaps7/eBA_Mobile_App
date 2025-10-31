@@ -1,6 +1,6 @@
-import 'package:eyvo_inventory/core/resources/color_manager.dart';
-import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
-import 'package:eyvo_inventory/features/auth/view/screens/approval/approval_12/form_field_custom.dart';
+import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/approval_12/form_field_custom.dart';
 import 'package:flutter/material.dart';
 
 class CommonFormPage extends StatefulWidget {

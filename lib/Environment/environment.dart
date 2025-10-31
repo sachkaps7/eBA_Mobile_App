@@ -1,7 +1,7 @@
-import 'package:eyvo_inventory/Environment/base_configuration.dart';
-import 'package:eyvo_inventory/Environment/development_config.dart';
-import 'package:eyvo_inventory/Environment/production_config.dart';
-import 'package:eyvo_inventory/Environment/staging_config.dart';
+import 'package:eyvo_v3/Environment/base_configuration.dart';
+import 'package:eyvo_v3/Environment/development_config.dart';
+import 'package:eyvo_v3/Environment/production_config.dart';
+import 'package:eyvo_v3/Environment/staging_config.dart';
 
 String baseUrl = "";
 String domain = "";

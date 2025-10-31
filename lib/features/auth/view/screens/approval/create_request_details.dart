@@ -1,21 +1,21 @@
-import 'package:eyvo_inventory/core/resources/strings_manager.dart';
-import 'package:eyvo_inventory/core/utils.dart';
-import 'package:eyvo_inventory/core/widgets/approval_details_helper.dart';
-import 'package:eyvo_inventory/core/widgets/button.dart';
-import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
-import 'package:eyvo_inventory/features/auth/view/screens/approval/create_order_item_view.dart';
-import 'package:eyvo_inventory/features/auth/view/screens/approval/create_order_header_view.dart';
-import 'package:eyvo_inventory/features/auth/view/screens/approval/create_request_header_view.dart';
-import 'package:eyvo_inventory/features/auth/view/screens/approval/create_request_item_view.dart';
-import 'package:eyvo_inventory/features/auth/view/screens/approval/file_upload.dart';
-import 'package:eyvo_inventory/features/auth/view/screens/approval/note_view.dart';
+import 'package:eyvo_v3/core/resources/strings_manager.dart';
+import 'package:eyvo_v3/core/utils.dart';
+import 'package:eyvo_v3/core/widgets/approval_details_helper.dart';
+import 'package:eyvo_v3/core/widgets/button.dart';
+import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/create_order_item_view.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/create_order_header_view.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/create_request_header_view.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/create_request_item_view.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/file_upload.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/note_view.dart';
 import 'package:flutter/material.dart';
-import 'package:eyvo_inventory/core/resources/color_manager.dart';
-import 'package:eyvo_inventory/core/resources/font_manager.dart';
-import 'package:eyvo_inventory/core/resources/styles_manager.dart';
-import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
+import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/font_manager.dart';
+import 'package:eyvo_v3/core/resources/styles_manager.dart';
+import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
 
-import 'package:eyvo_inventory/core/resources/assets_manager.dart';
+import 'package:eyvo_v3/core/resources/assets_manager.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class CreateRequestDetailsPage extends StatefulWidget {

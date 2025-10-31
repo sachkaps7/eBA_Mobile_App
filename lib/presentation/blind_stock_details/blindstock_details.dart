@@ -1,20 +1,20 @@
 import 'dart:developer';
 
-import 'package:eyvo_inventory/api/api_service/api_service.dart';
-import 'package:eyvo_inventory/api/response_models/item_details_response.dart';
-import 'package:eyvo_inventory/api/response_models/update_blind_stock.dart';
-import 'package:eyvo_inventory/app/app_prefs.dart';
-import 'package:eyvo_inventory/app/sizes_helper.dart';
-import 'package:eyvo_inventory/core/resources/assets_manager.dart';
-import 'package:eyvo_inventory/core/resources/color_manager.dart';
-import 'package:eyvo_inventory/core/resources/constants.dart';
-import 'package:eyvo_inventory/core/resources/font_manager.dart';
-import 'package:eyvo_inventory/core/resources/strings_manager.dart';
-import 'package:eyvo_inventory/core/resources/styles_manager.dart';
-import 'package:eyvo_inventory/core/utils.dart';
-import 'package:eyvo_inventory/core/widgets/button.dart';
-import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
-import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
+import 'package:eyvo_v3/api/api_service/api_service.dart';
+import 'package:eyvo_v3/api/response_models/item_details_response.dart';
+import 'package:eyvo_v3/api/response_models/update_blind_stock.dart';
+import 'package:eyvo_v3/app/app_prefs.dart';
+import 'package:eyvo_v3/app/sizes_helper.dart';
+import 'package:eyvo_v3/core/resources/assets_manager.dart';
+import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
+import 'package:eyvo_v3/core/resources/font_manager.dart';
+import 'package:eyvo_v3/core/resources/strings_manager.dart';
+import 'package:eyvo_v3/core/resources/styles_manager.dart';
+import 'package:eyvo_v3/core/utils.dart';
+import 'package:eyvo_v3/core/widgets/button.dart';
+import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
+import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -375,31 +375,30 @@ class _BlindStockDetailsViewState extends State<BlindStockDetailsView> {
                                               thickness: 0.4,
                                               color: ColorManager.lightBlue2,
                                             ),
-                                            const SizedBox(height: 6),
-                                            RichText(
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                              text: TextSpan(
-                                                text: "Current Stock: ",
-                                                style: getBoldStyle(
-                                                  color: ColorManager.green,
-                                                  fontSize: FontSize.s18,
-                                                ),
-                                                children: [
-                                                  TextSpan(
-                                                    text: getFormattedPriceStringPrice(
-                                                        items[0]
-                                                            .stockCount), 
-                                                    style: getBoldStyle(
-                                                      color: ColorManager.green,
-                                                      fontSize: FontSize.s18,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
+                                            //   const SizedBox(height: 6),
+                                            // RichText(
+//   overflow: TextOverflow.ellipsis,
+//   maxLines: 1,
+//   text: TextSpan(
+//     text: "Current Stock: ",
+//     style: getBoldStyle(
+//       color: ColorManager.green,
+//       fontSize: FontSize.s18,
+//     ),
+//     children: [
+//       TextSpan(
+//         text: getFormattedPriceStringPrice(
+//             items[0].stockCount),
+//         style: getBoldStyle(
+//           color: ColorManager.green,
+//           fontSize: FontSize.s18,
+//         ),
+//       ),
+//     ],
+//   ),
+// ),
 
-                                            const SizedBox(height: 22),
+                                            const SizedBox(height: 20),
                                             // Physical Quantity Block
                                             SizedBox(
                                               width: (screenWidth) - 45,

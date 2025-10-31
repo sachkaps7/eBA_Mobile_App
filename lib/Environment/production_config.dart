@@ -1,4 +1,4 @@
-import 'package:eyvo_inventory/Environment/base_configuration.dart';
+import 'package:eyvo_v3/Environment/base_configuration.dart';
 
 class ProductionConfiguration implements BaseConfig {
   @override

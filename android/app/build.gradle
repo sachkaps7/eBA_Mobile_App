@@ -110,7 +110,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.URBN_Inventory.eyvo_inventory"
+    namespace = "com.eyvo.eyvo3"
     compileSdk = 34
     ndkVersion = '29.0.13599879 rc2'
 
@@ -123,7 +123,7 @@ android {
         jvmToolchain(17)
     } 
     defaultConfig {
-        applicationId = "com.URBN_Inventory.eyvo_inventory"
+        applicationId = "com.eyvo.eyvo3"
         minSdk = 21
         targetSdk = 35
         versionCode = flutterVersionCode.toInteger()

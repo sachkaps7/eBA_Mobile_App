@@ -4,17 +4,17 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:dotted_border/dotted_border.dart';
-import 'package:eyvo_inventory/api/api_service/api_service.dart';
-import 'package:eyvo_inventory/api/response_models/imageUpload_response.dart';
-import 'package:eyvo_inventory/core/resources/assets_manager.dart';
-import 'package:eyvo_inventory/core/resources/color_manager.dart';
-import 'package:eyvo_inventory/core/resources/constants.dart';
-import 'package:eyvo_inventory/core/resources/font_manager.dart';
-import 'package:eyvo_inventory/core/resources/strings_manager.dart';
-import 'package:eyvo_inventory/core/utils.dart';
-import 'package:eyvo_inventory/core/widgets/progress_indicator.dart';
-import 'package:eyvo_inventory/log_data.dart/logger_data.dart';
-import 'package:eyvo_inventory/services/image_upload_helper.dart';
+import 'package:eyvo_v3/api/api_service/api_service.dart';
+import 'package:eyvo_v3/api/response_models/imageUpload_response.dart';
+import 'package:eyvo_v3/core/resources/assets_manager.dart';
+import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
+import 'package:eyvo_v3/core/resources/font_manager.dart';
+import 'package:eyvo_v3/core/resources/strings_manager.dart';
+import 'package:eyvo_v3/core/utils.dart';
+import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
+import 'package:eyvo_v3/log_data.dart/logger_data.dart';
+import 'package:eyvo_v3/services/image_upload_helper.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
@@ -24,7 +24,7 @@ class ImagePreviewBox extends StatelessWidget {
   final Uint8List? imageBytes;
   final VoidCallback? onTapUpload;
   final VoidCallback? onTapDelete;
-  final bool isUploading; 
+  final bool isUploading;
 
   const ImagePreviewBox({
     Key? key,
@@ -263,7 +263,7 @@ class CustomActionIconButton extends StatelessWidget {
 
 /// -------------------- UPLOAD IMAGE DIALOG --------------------
 class ImageUploadPopup extends StatefulWidget {
-  final ValueChanged<bool>? onUploadingChanged; 
+  final ValueChanged<bool>? onUploadingChanged;
 
   const ImageUploadPopup({Key? key, this.onUploadingChanged}) : super(key: key);
 

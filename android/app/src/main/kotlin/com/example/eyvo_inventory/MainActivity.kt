@@ -1,5 +1,4 @@
-package com.URBN_Inventory.eyvo_inventory
-
+package com.eyvo.eyvo3
 import io.flutter.embedding.android.FlutterFragmentActivity
 
 class MainActivity: FlutterFragmentActivity() {

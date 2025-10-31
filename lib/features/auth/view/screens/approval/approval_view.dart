@@ -1,13 +1,13 @@
-import 'package:eyvo_inventory/app/app_prefs.dart';
-import 'package:eyvo_inventory/core/resources/assets_manager.dart';
-import 'package:eyvo_inventory/core/resources/color_manager.dart';
-import 'package:eyvo_inventory/core/resources/font_manager.dart';
-import 'package:eyvo_inventory/core/resources/routes_manager.dart';
-import 'package:eyvo_inventory/core/utils.dart';
-import 'package:eyvo_inventory/features/auth/view/screens/approval/order_approval_view.dart';
-import 'package:eyvo_inventory/features/auth/view/screens/approval/order_details_view.dart';
-import 'package:eyvo_inventory/features/auth/view/screens/approval/request_approval_view.dart';
-import 'package:eyvo_inventory/log_data.dart/logger_data.dart';
+import 'package:eyvo_v3/app/app_prefs.dart';
+import 'package:eyvo_v3/core/resources/assets_manager.dart';
+import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/font_manager.dart';
+import 'package:eyvo_v3/core/resources/routes_manager.dart';
+import 'package:eyvo_v3/core/utils.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/order_approval_view.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/order_details_view.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/request_approval_view.dart';
+import 'package:eyvo_v3/log_data.dart/logger_data.dart';
 import 'package:flutter/material.dart';
 
 class ApprovalView extends StatefulWidget {

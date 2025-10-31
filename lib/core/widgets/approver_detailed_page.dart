@@ -1,7 +1,7 @@
-import 'package:eyvo_inventory/core/resources/font_manager.dart';
-import 'package:eyvo_inventory/core/widgets/common_app_bar.dart';
+import 'package:eyvo_v3/core/resources/font_manager.dart';
+import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:eyvo_inventory/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/color_manager.dart';
 
 class GenericDetailPage extends StatefulWidget {
   final String title;

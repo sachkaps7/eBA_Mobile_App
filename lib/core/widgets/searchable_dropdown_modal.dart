@@ -1,5 +1,5 @@
-import 'package:eyvo_inventory/core/resources/color_manager.dart';
-import 'package:eyvo_inventory/core/resources/font_manager.dart';
+import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/font_manager.dart';
 import 'package:flutter/material.dart';
 
 class SearchableDropdownModal extends StatefulWidget {

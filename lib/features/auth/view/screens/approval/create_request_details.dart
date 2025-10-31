@@ -83,7 +83,8 @@ class _CreateOrderDetailsPageState extends State<CreateRequestDetailsPage> {
                                     buildAddCard("Add Request Details", () {
                                       navigateToScreen(
                                         context,
-                                        CreateRequestHeaderView(),
+                                        CreateRequestHeaderView(
+                                            requestId: 2753),
                                       );
                                     }),
                                   ],

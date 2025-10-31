@@ -74,6 +74,10 @@ class Datum {
         visible: json["visible"] ?? false,
       );
 
+  get readonly => null;
+
+  get label => null;
+
   Map<String, dynamic> toJson() => {
         "fieldID": fieldId,
         "labelName": labelName,

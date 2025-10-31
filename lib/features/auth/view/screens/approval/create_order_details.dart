@@ -83,7 +83,7 @@ class _CreateOrderDetailsPageState extends State<CreateOrderDetailsPage> {
                                     buildAddCard("Add Order Details", () {
                                       navigateToScreen(
                                         context,
-                                        CreateOrderHeaderView(),
+                                        const CreateOrderHeaderView(orderId: 1434),
                                       );
                                     }),
                                   ],

@@ -92,8 +92,8 @@ class CustomSearchField extends StatefulWidget {
   final String placeholderText;
   final TextInputType inputType;
   final bool autoFocus;
-  final bool readOnly; // 👈 new
-  final VoidCallback? onTap; // 👈 new
+  final bool readOnly; 
+  final VoidCallback? onTap; 
 
   const CustomSearchField({
     super.key,
@@ -101,8 +101,8 @@ class CustomSearchField extends StatefulWidget {
     required this.placeholderText,
     this.inputType = TextInputType.number,
     this.autoFocus = false,
-    this.readOnly = false, // 👈 default false
-    this.onTap, // 👈 optional
+    this.readOnly = false, 
+    this.onTap, 
   });
 
   @override

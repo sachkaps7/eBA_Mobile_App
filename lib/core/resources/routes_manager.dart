@@ -1,4 +1,5 @@
 import 'package:eyvo_v3/core/widgets/approver_detailed_page.dart';
+import 'package:eyvo_v3/core/widgets/generic_detail_api_page.dart';
 import 'package:eyvo_v3/core/widgets/thankYouPage.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/approval_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/order_approval_view.dart';
@@ -8,6 +9,7 @@ import 'package:eyvo_v3/features/auth/view/screens/approval/request_approval_vie
 import 'package:eyvo_v3/features/auth/view/screens/approval/show_group_approver_list.dart';
 import 'package:eyvo_v3/features/auth/view/screens/dashboard/dashbord.dart';
 import 'package:eyvo_v3/features/auth/view/screens/company_code/company_code.dart';
+import 'package:eyvo_v3/features/logout/logout_page.dart';
 import 'package:eyvo_v3/log_data.dart/logger_data.dart';
 import 'package:eyvo_v3/presentation/change_password/change_password.dart';
 import 'package:eyvo_v3/presentation/create_pin/create_pin.dart';
@@ -69,8 +71,10 @@ class Routes {
   static const String orderApproverPage = "/orderApproverPage";
   static const String orderDetailsView = "/orderDetailsView";
   static const String genericDetailRoute = "/genericDetailPage";
+  // static const String genericDetailAPIRoute = "/genericDetailAPIPage";
   static const String thankYouRoute = "/thankYou";
   static const String showGroupApprovalListRoute = "/showGroupApprovalList";
+  static const String logOutRoute = "/logOutPage";
 }
 
 class RouteGenerator {
@@ -144,6 +148,7 @@ class RouteGenerator {
             data: args['data'],
           ),
         );
+
       case Routes.thankYouRoute:
         final args = routeSettings.arguments as Map<String, dynamic>;
 
@@ -200,6 +205,18 @@ class RouteGenerator {
                   itemId: 0,
                   grNo: "",
                 ));
+      case Routes.logOutRoute:
+        return MaterialPageRoute(builder: (_) => LogOutPage());
+      // case Routes.genericDetailAPIRoute:
+      //   final args = routeSettings.arguments as Map<String, dynamic>;
+      //   return MaterialPageRoute(
+      //     builder: (_) => GenericDetailAPIPage(
+      //       title: args['title'] ?? '',
+      //       id: args['id'],
+      //       type: args['type'],
+      //       lineId: args['lineId'],
+      //     ),
+      //   );
       default:
         return unDefinedRoute();
     }

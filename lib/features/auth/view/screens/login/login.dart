@@ -24,6 +24,7 @@ import 'package:eyvo_v3/core/widgets/header_logo.dart';
 import 'package:eyvo_v3/core/widgets/or_divider.dart';
 import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
 import 'package:eyvo_v3/core/widgets/text_error.dart';
+import 'package:eyvo_v3/features/auth/view/screens/company_code/company_code.dart';
 import 'package:eyvo_v3/features/auth/view/screens/dashboard/dashbord.dart';
 import 'package:eyvo_v3/presentation/forgot_password/forgot_password.dart';
 import 'package:eyvo_v3/presentation/forgot_user_id/forgot_user_id.dart';
@@ -32,7 +33,9 @@ import 'package:eyvo_v3/services/azure_auth_service.dart';
 import 'package:eyvo_v3/services/biometric_auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginViewPage extends StatefulWidget {
   const LoginViewPage({super.key});
@@ -68,6 +71,9 @@ class _LoginViewPageState extends State<LoginViewPage> {
   bool biometricEnabled = false;
   bool authFailed = false;
   bool isAuthenticating = false;
+  bool showErrorScreen = false;
+  bool isError = false;
+
   @override
   void initState() {
     super.initState();
@@ -100,14 +106,52 @@ class _LoginViewPageState extends State<LoginViewPage> {
     // setState(() {});
   }
 
+  // void fetchLoginDetails() async {
+  //   Map<String, dynamic> data = {
+  //     'uid': SharedPrefs().uID,
+  //   };
+  //   final jsonResponse =
+  //       await apiService.postRequest(context, ApiService.loadLogin, data);
+  //   if (jsonResponse != null) {
+  //     final response = LoadLoginResponse.fromJson(jsonResponse);
+  //     if (response.code == '200') {
+  //       setState(() {
+  //         SharedPrefs().tanentId = response.data.tenantId;
+  //         SharedPrefs().clientId = response.data.clientId;
+  //         SharedPrefs().redirectURI = response.data.redirectUri;
+  //         isLoginWithScan = response.data.isLoginWithScan;
+  //         isLoginazureAd = response.data.isLoginazureAd;
+  //         SharedPrefs().isLoginazureAd = response.data.isLoginazureAd;
+  //         isLoginOptionsLoaded = true;
+  //       });
+  //     } else {
+  //       setState(() {
+  //         isLoginWithScan = false;
+  //         isLoginazureAd = false;
+  //         isLoginOptionsLoaded = true;
+  //       });
+  //     }
+  //   } else {
+  //     setState(() {
+  //       isLoginOptionsLoaded = true;
+  //     });
+  //   }
+  // }
   void fetchLoginDetails() async {
     Map<String, dynamic> data = {
       'uid': SharedPrefs().uID,
     };
+
+    setState(() {
+      isLoginOptionsLoaded = false;
+    });
+
     final jsonResponse =
         await apiService.postRequest(context, ApiService.loadLogin, data);
+
     if (jsonResponse != null) {
       final response = LoadLoginResponse.fromJson(jsonResponse);
+
       if (response.code == '200') {
         setState(() {
           SharedPrefs().tanentId = response.data.tenantId;
@@ -116,6 +160,18 @@ class _LoginViewPageState extends State<LoginViewPage> {
           isLoginWithScan = response.data.isLoginWithScan;
           isLoginazureAd = response.data.isLoginazureAd;
           SharedPrefs().isLoginazureAd = response.data.isLoginazureAd;
+          isLoginOptionsLoaded = true;
+        });
+      } else if (response.code == '401') {
+        // Clean HTML tags and make email clickable via Linkify
+        String cleanedMessage = response.message
+            .join(', ')
+            .replaceAll(RegExp(r"<[^>]*>"), '')
+            .replaceAll("mailto:", "");
+
+        setState(() {
+          showErrorScreen = true;
+          errorText = cleanedMessage.trim();
           isLoginOptionsLoaded = true;
         });
       } else {
@@ -129,6 +185,27 @@ class _LoginViewPageState extends State<LoginViewPage> {
       setState(() {
         isLoginOptionsLoaded = true;
       });
+    }
+  }
+
+  Future<void> _onOpenLink(LinkableElement link) async {
+    final url = link.url;
+
+    // Handle email links
+    if (url.startsWith('mailto:')) {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else {
+        // Fallback
+        await launchUrl(Uri.parse('mailto:${url.replaceFirst('mailto:', '')}'));
+      }
+    } else {
+      // Handle normal http/https links
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
     }
   }
 
@@ -575,7 +652,7 @@ class _LoginViewPageState extends State<LoginViewPage> {
                 const SizedBox(height: 20),
                 _buildLoginForm(),
                 const SizedBox(height: 10),
-                if (biometricAvailable && biometricEnabled)
+                if (biometricAvailable && biometricEnabled && !showErrorScreen)
                   Padding(
                     padding: const EdgeInsets.only(left: 30, right: 30),
                     child: isAuthenticating
@@ -643,153 +720,211 @@ class _LoginViewPageState extends State<LoginViewPage> {
     return Padding(
       padding: const EdgeInsets.only(left: 30, right: 30),
       child: SizedBox(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            const SizedBox(height: 40),
-            // Logic to conditionally show/hide the login form based on isLoginazureAd and tap count
-            (isLoginazureAd && tapCount < 5)
-                ? Column(
-                    children: [
-                      const SizedBox(height: 140),
-                      buildCompanyCodeRow(context),
-                      const SizedBox(height: 40),
-                      CustomButton(
-                        buttonText: "Login with URBN SSO",
-                        leading: SizedBox(
-                          width: 30,
-                          height: 30,
-                          child: Image.asset(ImageAssets.ssoIcon),
-                        ),
-                        onTap: loginWithAzureAD,
-                        isDefault: true,
-                      ),
-                    ],
-                  )
-                : Column(
-                    children: [
-                      buildCompanyCodeRow(context),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: displayWidth(context),
-                        child: Row(
-                          children: [
-                            const Spacer(),
-                            CustomTextButton(
-                              buttonText: AppStrings.forgotUserID,
-                              onTap: () {
-                                navigateToScreen(
-                                    context, const ForgotUserIDView());
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      CustomTextField(
-                        iconString: ImageAssets.userIdIcon,
-                        hintText: AppStrings.userID,
-                        controller: usernameController,
-                        isValid: !isUserNameError,
-                        onTextChanged: validateFields,
-                      ),
-                      isUserNameError
-                          ? const ErrorTextViewBox()
-                          : const SizedBox(),
-                      isUserNameError
-                          ? const SizedBox(height: 20)
-                          : const SizedBox(),
+        child: showErrorScreen
+            // === 401 ERROR SCREEN ===
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 40),
 
-                      // Forgot Password button and Password field
-                      SizedBox(
-                        width: displayWidth(context),
-                        child: Row(
-                          children: [
-                            const Spacer(),
-                            CustomTextButton(
-                              buttonText: AppStrings.forgotPassword,
-                              onTap: () {
-                                navigateToScreen(
-                                    context, const ForgotPasswordView());
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      CustomTextField(
-                        iconString: ImageAssets.passwordIcon,
-                        hintText: AppStrings.password,
-                        controller: passwordController,
-                        isObscureText: true,
-                        isValid: !isPasswordError,
-                        onTextChanged: validateFields,
-                      ),
-                      isPasswordError
-                          ? ErrorTextViewBox(titleString: errorText)
-                          : const SizedBox(),
-                      isPasswordError
-                          ? const SizedBox(height: 20)
-                          : const SizedBox(),
-
-                      // Remember me checkbox
-                      CustomCheckboxListTile(
-                        title: Text(
-                          AppStrings.rememberMe,
-                          style: getRegularStyle(
-                              color: ColorManager.lightGrey1,
-                              fontSize: FontSize.s18),
-                        ),
-                        value: checkedValue,
-                        onChanged: (value) {
-                          setState(() {
-                            checkedValue = value!;
-                            SharedPrefs().isRememberMeSelected = checkedValue;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 50),
-
-                      // Sign In Button
-                      isLoading
-                          ? const CustomProgressIndicator()
-                          : CustomButton(
-                              buttonText: AppStrings.signIn,
-                              onTap: () {
-                                isFormValidated = true;
-                                validateFields();
-                                if (!isUserNameError && !isPasswordError) {
-                                  loginUser();
-                                }
-                              },
-                            ),
-                      const SizedBox(height: 30),
-                      // Logic to check if loginWithScan is true
-                      isLoginWithScan
-                          ? const SizedBox(height: 10)
-                          : const SizedBox(),
-                      //const OrDivider(),
-                      isLoginWithScan
-                          ? Column(
-                              children: [
-                                const OrDivider(),
-                                const SizedBox(height: 20),
-                                isLoadingForScan
-                                    ? const CustomProgressIndicator()
-                                    : CustomButton(
-                                        buttonText: AppStrings.loginWithBarcode,
-                                        onTap: () {
-                                          scanBarcode();
-                                        },
-                                        isDefault: true),
-                                const SizedBox(height: 30),
-                              ],
-                            )
-                          : const SizedBox(),
-                    ],
+                  buildCompanyCodeRow(context),
+                  const SizedBox(height: 40), 
+                  Image.asset(
+                    ImageAssets.errorMessageIcon,
+                    width: displayWidth(context) * 0.5,
                   ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 20),
+                    child: Linkify(
+                      onOpen: _onOpenLink,
+                      text: errorText,
+                      textAlign: TextAlign.center,
+                      style: getRegularStyle(
+                        color: ColorManager.lightGrey,
+                        fontSize: FontSize.s17,
+                      ),
+                      linkStyle: const TextStyle(
+                        color: Colors.blue,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
 
-            const SizedBox(height: 20),
-          ],
-        ),
+                  SizedBox(
+                    width: displayWidth(context) * 0.95,
+                    child: CustomButton(
+                      buttonText: "Back",
+                      onTap: () {
+                        Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            Routes.companyCodeRoute,
+                            (Route<dynamic> route) => false);
+                        setState(() {
+                          showErrorScreen = false;
+                          isError = false;
+                          errorText = "";
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                ],
+              )
+
+            // === NORMAL LOGIN FORM ===
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 40),
+                  // Logic to conditionally show/hide the login form based on isLoginazureAd and tap count
+                  (isLoginazureAd && tapCount < 5)
+                      ? Column(
+                          children: [
+                            const SizedBox(height: 140),
+                            buildCompanyCodeRow(context),
+                            const SizedBox(height: 40),
+                            CustomButton(
+                              buttonText: "Login with URBN SSO",
+                              leading: SizedBox(
+                                width: 30,
+                                height: 30,
+                                child: Image.asset(ImageAssets.ssoIcon),
+                              ),
+                              onTap: loginWithAzureAD,
+                              isDefault: true,
+                            ),
+                          ],
+                        )
+                      : Column(
+                          children: [
+                            buildCompanyCodeRow(context),
+                            const SizedBox(height: 20),
+                            SizedBox(
+                              width: displayWidth(context),
+                              child: Row(
+                                children: [
+                                  const Spacer(),
+                                  CustomTextButton(
+                                    buttonText: AppStrings.forgotUserID,
+                                    onTap: () {
+                                      navigateToScreen(
+                                          context, const ForgotUserIDView());
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            CustomTextField(
+                              iconString: ImageAssets.userIdIcon,
+                              hintText: AppStrings.userID,
+                              controller: usernameController,
+                              isValid: !isUserNameError,
+                              onTextChanged: validateFields,
+                            ),
+                            isUserNameError
+                                ? const ErrorTextViewBox()
+                                : const SizedBox(),
+                            isUserNameError
+                                ? const SizedBox(height: 20)
+                                : const SizedBox(),
+
+                            // Forgot Password button and Password field
+                            SizedBox(
+                              width: displayWidth(context),
+                              child: Row(
+                                children: [
+                                  const Spacer(),
+                                  CustomTextButton(
+                                    buttonText: AppStrings.forgotPassword,
+                                    onTap: () {
+                                      navigateToScreen(
+                                          context, const ForgotPasswordView());
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            CustomTextField(
+                              iconString: ImageAssets.passwordIcon,
+                              hintText: AppStrings.password,
+                              controller: passwordController,
+                              isObscureText: true,
+                              isValid: !isPasswordError,
+                              onTextChanged: validateFields,
+                            ),
+                            isPasswordError
+                                ? ErrorTextViewBox(titleString: errorText)
+                                : const SizedBox(),
+                            isPasswordError
+                                ? const SizedBox(height: 20)
+                                : const SizedBox(),
+
+                            // Remember me checkbox
+                            CustomCheckboxListTile(
+                              title: Text(
+                                AppStrings.rememberMe,
+                                style: getRegularStyle(
+                                    color: ColorManager.lightGrey1,
+                                    fontSize: FontSize.s18),
+                              ),
+                              value: checkedValue,
+                              onChanged: (value) {
+                                setState(() {
+                                  checkedValue = value!;
+                                  SharedPrefs().isRememberMeSelected =
+                                      checkedValue;
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 50),
+
+                            // Sign In Button
+                            isLoading
+                                ? const CustomProgressIndicator()
+                                : CustomButton(
+                                    buttonText: AppStrings.signIn,
+                                    onTap: () {
+                                      isFormValidated = true;
+                                      validateFields();
+                                      if (!isUserNameError &&
+                                          !isPasswordError) {
+                                        loginUser();
+                                      }
+                                    },
+                                  ),
+                            const SizedBox(height: 30),
+                            // Logic to check if loginWithScan is true
+                            isLoginWithScan
+                                ? const SizedBox(height: 10)
+                                : const SizedBox(),
+                            //const OrDivider(),
+                            isLoginWithScan
+                                ? Column(
+                                    children: [
+                                      const OrDivider(),
+                                      const SizedBox(height: 20),
+                                      isLoadingForScan
+                                          ? const CustomProgressIndicator()
+                                          : CustomButton(
+                                              buttonText:
+                                                  AppStrings.loginWithBarcode,
+                                              onTap: () {
+                                                scanBarcode();
+                                              },
+                                              isDefault: true),
+                                      const SizedBox(height: 30),
+                                    ],
+                                  )
+                                : const SizedBox(),
+                          ],
+                        ),
+
+                  const SizedBox(height: 20),
+                ],
+              ),
       ),
     );
   }

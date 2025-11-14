@@ -113,24 +113,37 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.eyvo.eyvo3"
+    namespace = "com.URBN_Inventory.eyvo_inventory"
     compileSdk = 34
     ndkVersion = '29.0.13599879 rc2'
 
     compileOptions {
-       sourceCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        
+        // ▼▼▼ ADD THIS FOR CORE LIBRARY DESUGARING ▼▼▼
+        coreLibraryDesugaringEnabled true
     }
 
     kotlin {
         jvmToolchain(17)
     } 
+
+    kotlinOptions {
+        jvmTarget = "17"
+        apiVersion = "2.0"
+        languageVersion = "2.0"
+    }
+
     defaultConfig {
-        applicationId = "com.eyvo.eyvo3"
+        applicationId = "com.URBN_Inventory.eyvo_inventory"
         minSdk = 21
         targetSdk = 35
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
+        multiDexEnabled true
+        
+        // ▼▼▼ ADD THIS FOR CORE LIBRARY DESUGARING ▼▼▼
         multiDexEnabled true
     }
 
@@ -164,4 +177,10 @@ android {
 
 flutter {
     source = "../.."
+}
+
+// ▼▼▼ ADD THESE DEPENDENCIES FOR CORE LIBRARY DESUGARING ▼▼▼
+dependencies {
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
+    implementation 'androidx.multidex:multidex:2.0.1'
 }

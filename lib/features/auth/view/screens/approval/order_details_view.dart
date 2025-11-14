@@ -28,10 +28,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class OrderDetailsView extends StatefulWidget {
   final int orderId;
-  final String orderNumber;
+  final String? orderNumber;
 
-  const OrderDetailsView(
-      {Key? key, required this.orderId, required this.orderNumber})
+  const OrderDetailsView({Key? key, required this.orderId, this.orderNumber})
       : super(key: key);
 
   @override

@@ -25,7 +25,7 @@ class ImageAssets {
   static const String listAllItems = "$imagePath/List-All-Items.png";
   static const String receiveGoods = "$imagePath/Receive-Goods.png";
   static const String blindstocklisting = "$imagePath/blind-stock-listing.png";
-  static const String blindstocklisting = "$imagePath/blind-stock-listing.png";
+
   static const String scanYourItems = "$imagePath/Scan-Your-Item.png";
   static const String selectLocation = "$imagePath/Select-Location-icon.png";
   static const String selectSite = "$imagePath/Select-Site---icon.png";
@@ -43,7 +43,7 @@ class ImageAssets {
   static const String plusIcon = "$imagePath/plus-icon.png";
   static const String tickIcon = "$imagePath/tick-icon.png";
   static const String tickIconRed = "$imagePath/tick-icon_red.png";
-  static const String tickIconRed = "$imagePath/tick-icon_red.png";
+
   static const String printIcon = "$imagePath/print-btn.png";
   static const String noItems = "$imagePath/No-Items-For-Receive.png";
   static const String receiveGoodsImage = "$imagePath/receive-goods-image.png";

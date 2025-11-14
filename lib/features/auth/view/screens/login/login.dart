@@ -27,11 +27,13 @@ import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
 import 'package:eyvo_v3/core/widgets/text_error.dart';
 import 'package:eyvo_v3/features/auth/view/screens/company_code/company_code.dart';
 import 'package:eyvo_v3/features/auth/view/screens/dashboard/dashbord.dart';
+import 'package:eyvo_v3/log_data.dart/logger_data.dart';
 import 'package:eyvo_v3/presentation/forgot_password/forgot_password.dart';
 import 'package:eyvo_v3/presentation/forgot_user_id/forgot_user_id.dart';
 import 'package:eyvo_v3/presentation/home/home.dart';
 import 'package:eyvo_v3/services/azure_auth_service.dart';
 import 'package:eyvo_v3/services/biometric_auth_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
@@ -310,6 +312,8 @@ class _LoginViewPageState extends State<LoginViewPage> {
     }
 
     final fcmToken = SharedPrefs().fcmToken;
+    final devicePlatform = SharedPrefs().devicePlatform;
+    final deviceId = SharedPrefs().deviceId;
 
     if (checkedValue) {
       SharedPrefs().username = username;
@@ -816,9 +820,8 @@ class _LoginViewPageState extends State<LoginViewPage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: 40),
-
                   buildCompanyCodeRow(context),
-                  const SizedBox(height: 40), 
+                  const SizedBox(height: 40),
                   Image.asset(
                     ImageAssets.errorMessageIcon,
                     width: displayWidth(context) * 0.5,
@@ -841,7 +844,6 @@ class _LoginViewPageState extends State<LoginViewPage> {
                     ),
                   ),
                   const SizedBox(height: 40),
-
                   SizedBox(
                     width: displayWidth(context) * 0.95,
                     child: CustomButton(

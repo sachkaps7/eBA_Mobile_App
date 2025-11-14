@@ -21,8 +21,6 @@ const String PREFS_KEY_SELECTED_REGION_ID = "PREFS_KEY_SELECTED_REGION_ID";
 const String PREFS_KEY_SELECTED_LOCATION = "PREFS_KEY_SELECTED_LOCATION";
 const String PREFS_KEY_SELECTED_TRIMMED_LOCATION =
     "PREFS_KEY_SELECTED_TRIMMED_LOCATION";
-const String PREFS_KEY_SELECTED_TRIMMED_LOCATION =
-    "PREFS_KEY_SELECTED_TRIMMED_LOCATION";
 const String PREFS_KEY_SELECTED_LOCATION_ID = "PREFS_KEY_SELECTED_LOCATION_ID";
 const String PREFS_KEY_USER_SESSION = "PREFS_KEY_USER_SESSION";
 const String PREFS_KEY_DECIMAL_PLACES = "PREFS_KEY_DECIMAL_PLACES";
@@ -160,13 +158,6 @@ class SharedPrefs {
 
   set selectedLocation(String value) {
     _sharedPrefs.setString(PREFS_KEY_SELECTED_LOCATION, value);
-  }
-
-  String get selectedTrimmedLocation =>
-      _sharedPrefs.getString(PREFS_KEY_SELECTED_TRIMMED_LOCATION) ?? "";
-
-  set selectedTrimmedLocation(String value) {
-    _sharedPrefs.setString(PREFS_KEY_SELECTED_TRIMMED_LOCATION, value);
   }
 
   String get selectedTrimmedLocation =>

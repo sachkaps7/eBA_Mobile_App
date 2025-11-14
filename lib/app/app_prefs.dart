@@ -10,6 +10,7 @@ const String PREFS_KEY_UID = "PREFS_KEY_UID";
 const String PREFS_KEY_PASSWORD = "PREFS_KEY_PASSWORD";
 const String PREFS_KEY_IS_REMEMBER_ME = "PREFS_KEY_IS_REMEMBER_ME";
 const String PREFS_KEY_TOKEN = "PREFS_KEY_TOKEN";
+const String PREFS_KEY_FCM_TOKEN = "PREFS_KEY_FCM_TOKEN";
 const String PREFS_KEY_REFRESH_TOKEN = "PREFS_KEY_REFRESH_TOKEN";
 const String PREFS_KEY_COMPANYCODE_SCREEN = "PREFS_KEY_COMPANYCODE_SCREEN";
 const String PREFS_KEY_IS_USER_LOGGED_IN = "PREFS_KEY_IS_USER_LOGGED_IN";
@@ -18,6 +19,8 @@ const String PREFS_KEY_EMAIL = "PREFS_KEY_EMAIL";
 const String PREFS_KEY_SELECTED_REGION = "PREFS_KEY_SELECTED_REGION";
 const String PREFS_KEY_SELECTED_REGION_ID = "PREFS_KEY_SELECTED_REGION_ID";
 const String PREFS_KEY_SELECTED_LOCATION = "PREFS_KEY_SELECTED_LOCATION";
+const String PREFS_KEY_SELECTED_TRIMMED_LOCATION =
+    "PREFS_KEY_SELECTED_TRIMMED_LOCATION";
 const String PREFS_KEY_SELECTED_TRIMMED_LOCATION =
     "PREFS_KEY_SELECTED_TRIMMED_LOCATION";
 const String PREFS_KEY_SELECTED_LOCATION_ID = "PREFS_KEY_SELECTED_LOCATION_ID";
@@ -46,6 +49,8 @@ const String REGION = "REGION ";
 const String SELECT_REGIN_TITLE = "SELECT_REGIN_TITLE ";
 const String BLIND_STOCK_EDIT = "BLIND_STOCK_EDIT";
 const String INVENTORY_MANAGER = "INVENTORY_MANAGER";
+const String PREFS_KEY_DEVICE_ID = "PREFS_KEY_DEVICE_ID";
+const String DEVICE_PLATFORM_KEY = "DEVICE_PLATFORM_KEY";
 
 class SharedPrefs {
   late final SharedPreferences _sharedPrefs;
@@ -95,6 +100,12 @@ class SharedPrefs {
 
   set jwtToken(String value) {
     _sharedPrefs.setString(PREFS_KEY_TOKEN, value);
+  }
+
+  String get fcmToken => _sharedPrefs.getString(PREFS_KEY_FCM_TOKEN) ?? "";
+
+  set fcmToken(String value) {
+    _sharedPrefs.setString(PREFS_KEY_FCM_TOKEN, value);
   }
 
   String get refreshToken =>
@@ -149,6 +160,13 @@ class SharedPrefs {
 
   set selectedLocation(String value) {
     _sharedPrefs.setString(PREFS_KEY_SELECTED_LOCATION, value);
+  }
+
+  String get selectedTrimmedLocation =>
+      _sharedPrefs.getString(PREFS_KEY_SELECTED_TRIMMED_LOCATION) ?? "";
+
+  set selectedTrimmedLocation(String value) {
+    _sharedPrefs.setString(PREFS_KEY_SELECTED_TRIMMED_LOCATION, value);
   }
 
   String get selectedTrimmedLocation =>
@@ -290,6 +308,7 @@ class SharedPrefs {
 
   set selectRegionTitle(String value) =>
       _sharedPrefs.setString(SELECT_REGIN_TITLE, value);
+  String get deviceId => _sharedPrefs.getString(PREFS_KEY_DEVICE_ID) ?? "";
 
   bool get blindStockEdit => _sharedPrefs.getBool(BLIND_STOCK_EDIT) ?? false;
 
@@ -299,4 +318,14 @@ class SharedPrefs {
   bool get inventoryManager => _sharedPrefs.getBool(INVENTORY_MANAGER) ?? false;
   set inventoryManager(bool value) =>
       _sharedPrefs.setBool(INVENTORY_MANAGER, value);
+
+  set deviceId(String value) {
+    _sharedPrefs.setString(PREFS_KEY_DEVICE_ID, value);
+  }
+
+  String get devicePlatform =>
+      _sharedPrefs.getString(DEVICE_PLATFORM_KEY) ?? "";
+
+  set devicePlatform(String value) =>
+      _sharedPrefs.setString(DEVICE_PLATFORM_KEY, value);
 }

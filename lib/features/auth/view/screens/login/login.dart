@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
+import 'dart:developer';
 import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:eyvo_v3/CommonCode/global_utils.dart';
 import 'package:eyvo_v3/api/api_service/api_service.dart';
@@ -219,12 +220,96 @@ class _LoginViewPageState extends State<LoginViewPage> {
     }
   }
 
+  // void loginUser() async {
+  //   setState(() {
+  //     isLoading = true;
+  //   });
+  //   final username = usernameController.text.trim();
+  //   final password = passwordController.text.trim();
+  //   String fcmToken = SharedPrefs().fcmToken;
+  //   // log(fcmToken);
+  //   if (checkedValue) {
+  //     SharedPrefs().username = username;
+  //     SharedPrefs().password = password;
+  //   } else {
+  //     SharedPrefs().username = '';
+  //     SharedPrefs().password = '';
+  //   }
+
+  //   Map<String, dynamic> data = {
+  //     'userid': username,
+  //     'password': password,
+  //     'fcmtoken': fcmToken,
+  //     'platform': devicePlatform,
+  //     'device_id': deviceId,
+  //   };
+
+  //   final jsonResponse =
+  //       await apiService.postRequest(context, ApiService.login, data);
+
+  //   if (jsonResponse != null) {
+  //     final response = LoginResponse.fromJson(jsonResponse);
+  //     if (response.code == '200') {
+  //       // Save user data
+  //       SharedPrefs().displayUserName = response.data.username;
+  //       SharedPrefs().uID = response.data.uid;
+  //       SharedPrefs().jwtToken = response.data.jwttoken;
+  //       SharedPrefs().refreshToken = response.data.jwtrefreshtoken;
+  //       SharedPrefs().userSession = response.data.userSession;
+
+  //       // Save credentials for biometric login
+  //       SharedPrefs().username = username;
+  //       SharedPrefs().password = password;
+
+  //       await BiometricAuth().setBiometricAuthId(response.data.username);
+
+  //       // Check if biometrics are available but not enabled
+  //       if (biometricAvailable && !biometricEnabled && !hasSeenPrompt) {
+  //         SharedPrefs().hasSeenBiometricPrompt = true;
+
+  //         showBiometricEnableDialog(context);
+  //       } else {
+  //         navigateToScreen(context, HomeView());
+  //       }
+  //     } else {
+  //       isPasswordError = true;
+  //       errorText = response.message.join(', ');
+  //     }
+  //   }
+
+  //   setState(() {
+  //     isLoading = false;
+  //   });
+  // }
   void loginUser() async {
     setState(() {
       isLoading = true;
     });
+
     final username = usernameController.text.trim();
     final password = passwordController.text.trim();
+
+    // fetch the current FCM token from Firebase
+    String? currentToken = await FirebaseMessaging.instance.getToken();
+
+    //  Get the saved token from SharedPrefs
+    String? savedToken = SharedPrefs().fcmToken;
+
+    // If token is missing or changed, update SharedPrefs
+    if (currentToken != null && currentToken.isNotEmpty) {
+      if (savedToken != currentToken) {
+        LoggerData.dataLog("Token changed or expired. Updating backend");
+        SharedPrefs().fcmToken = currentToken;
+      }
+    } else {
+      LoggerData.dataLog(" FCM token is null, trying to refresh");
+      currentToken = await FirebaseMessaging.instance.getToken();
+      if (currentToken != null) {
+        SharedPrefs().fcmToken = currentToken;
+      }
+    }
+
+    final fcmToken = SharedPrefs().fcmToken;
 
     if (checkedValue) {
       SharedPrefs().username = username;
@@ -234,9 +319,13 @@ class _LoginViewPageState extends State<LoginViewPage> {
       SharedPrefs().password = '';
     }
 
+    // Send login request
     Map<String, dynamic> data = {
       'userid': username,
       'password': password,
+      'fcmtoken': fcmToken,
+      'platform': devicePlatform,
+      'device_id': deviceId,
     };
 
     final jsonResponse =

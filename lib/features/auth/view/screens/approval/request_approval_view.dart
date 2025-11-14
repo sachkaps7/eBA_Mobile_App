@@ -166,16 +166,35 @@ class _RequestApprovalPageState extends State<RequestApprovalPage> {
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 2, vertical: 0),
-                                child: CommonCardWidget(
-                                  subtitles: [
-                                    {'Request No': request.requestNumber},
-                                    {'Request Status': request.requestStatus},
-                                    {'Entry Date': request.entryDate},
-                                    {
-                                      'Request Net Total': request.requestValue
-                                          .toStringAsFixed(2)
-                                    },
-                                  ],
+                                child:
+                                    // CommonCardWidget(
+                                    //   subtitles: [
+                                    //     {'Request No': request.requestNumber},
+                                    //     {'Request Status': request.requestStatus},
+                                    //     {'Entry Date': request.entryDate},
+                                    //     {
+                                    //       'Request Net Total': request.requestValue
+                                    //           .toStringAsFixed(2)
+                                    //     },
+                                    //   ],
+                                    //   onTap: () {
+                                    //     navigateToScreen(
+                                    //       context,
+                                    //       RequestDetailsView(
+                                    //           requestId: request.requestId,
+                                    //           requestNumber: request.requestNumber),
+                                    //     );
+                                    //   },
+                                    // ),
+
+                                    GenericCardWidget(
+                                  titleKey: 'Request #${request.requestNumber}',
+                                  statusKey: request.requestStatus,
+                                  dateKey: request.entryDate,
+                                  valueKey: getFormattedPriceString(
+                                      request.requestValue),
+                                  valueNameKey: 'Requests Value',
+                                  itemCountKey: request.itemCount.toString(),
                                   onTap: () {
                                     navigateToScreen(
                                       context,

@@ -284,125 +284,6 @@ class _HomeViewState extends State<HomeView> {
           ],
         ),
       ),
-      // body: isLoading
-      //     ? const Center(child: CustomProgressIndicator())
-      //     : Padding(
-      //         padding: const EdgeInsets.all(16.0),
-      //         child: Builder(
-      //           builder: (context) {
-      //             List<Widget> dashboardCards = [];
-
-      //             bool shouldShowApproval = isRequestEnabled ||
-      //                 isOrderEnabled ||
-      //                 isExpenseEnabled ||
-      //                 isInvoiceEnabled;
-
-      //             // Inventory Card
-      //             if (isInventoryEnabled) {
-      //               dashboardCards.add(
-      //                 CustomItemCardDashboard(
-      //                   imageString: ImageAssets.inventory,
-      //                   title: AppStrings.inventoryControl,
-      //                   backgroundColor: ColorManager.white,
-      //                   cornerRadius: 12,
-      //                   onTap: () {
-      //                     navigateToScreen(context, const InverntoryView());
-      //                   },
-      //                 ),
-      //               );
-      //             }
-
-      //             // Approval-related cards
-
-      //             //request card
-      //             if (shouldShowApproval) {
-      //               dashboardCards.add(
-      //                 CustomItemCardDashboard(
-      //                   imageString: ImageAssets.requestMenu,
-      //                   title: 'Request',
-      //                   backgroundColor: ColorManager.white,
-      //                   cornerRadius: 12,
-      //                   onTap: () {
-      //                     navigateToScreen(context, const CreateRequestPage());
-      //                   },
-      //                 ),
-      //               );
-      //               //Order card
-      //               dashboardCards.add(
-      //                 CustomItemCardDashboard(
-      //                   imageString: ImageAssets.orderMenu,
-      //                   title: 'Order',
-      //                   backgroundColor: ColorManager.white,
-      //                   cornerRadius: 12,
-      //                   onTap: () {
-      //                     navigateToScreen(context, const CreateOrderPage());
-      //                   },
-      //                 ),
-      //               );
-      //               // main approval card
-      //               dashboardCards.add(
-      //                 CustomItemCardDashboard(
-      //                   imageString: ImageAssets.approval,
-      //                   title: '${AppStrings.approval}\n',
-      //                   backgroundColor: ColorManager.white,
-      //                   cornerRadius: 12,
-      //                   onTap: () {
-      //                     navigateToScreen(context, const ApprovalView());
-      //                   },
-      //                 ),
-      //               );
-      //             }
-
-      //             // Layout Logic
-      //             if (dashboardCards.isEmpty) {
-      //               return Center(
-      //                 child: Text(
-      //                   'No dashboard items available.',
-      //                   style: getMediumStyle(
-      //                     color: ColorManager.white,
-      //                     fontSize: FontSize.s16,
-      //                   ),
-      //                 ),
-      //               );
-      //             }
-
-      //             // If only Inventory card exists → full width
-      //             if (dashboardCards.length == 1 &&
-      //                 isInventoryEnabled &&
-      //                 !shouldShowApproval) {
-      //               return Row(
-      //                 children: [
-      //                   dashboardCards[0],
-      //                 ],
-      //               );
-      //             }
-
-      //             if (dashboardCards.length == 2) {
-      //               return Row(
-      //                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      //                 children: [
-      //                   dashboardCards[0],
-      //                   const SizedBox(width: 10),
-      //                   dashboardCards[1],
-      //                 ],
-      //               );
-      //             }
-
-      //             // If more than 2 cards → wrap into rows automatically
-      //             return Wrap(
-      //               spacing: 10,
-      //               runSpacing: 10,
-      //               children: dashboardCards
-      //                   .map((card) => SizedBox(
-      //                         width: (displayWidth(context) - 42) /
-      //                             2, // two per row
-      //                         child: card,
-      //                       ))
-      //                   .toList(),
-      //             );
-      //           },
-      //         ),
-      //       ),
       body: isLoading
           ? const Center(child: CustomProgressIndicator())
           : Padding(
@@ -411,7 +292,12 @@ class _HomeViewState extends State<HomeView> {
                 builder: (context) {
                   List<Widget> dashboardCards = [];
 
-                  // Only show Inventory Card
+                  bool shouldShowApproval = isRequestEnabled ||
+                      isOrderEnabled ||
+                      isExpenseEnabled ||
+                      isInvoiceEnabled;
+
+                  // Inventory Card
                   if (isInventoryEnabled) {
                     dashboardCards.add(
                       CustomItemCardDashboard(
@@ -421,6 +307,46 @@ class _HomeViewState extends State<HomeView> {
                         cornerRadius: 12,
                         onTap: () {
                           navigateToScreen(context, const InverntoryView());
+                        },
+                      ),
+                    );
+                  }
+
+                  // Approval-related cards
+                  //request card
+                  if (shouldShowApproval) {
+                    dashboardCards.add(
+                      CustomItemCardDashboard(
+                        imageString: ImageAssets.requestMenu,
+                        title: 'Request',
+                        backgroundColor: ColorManager.white,
+                        cornerRadius: 12,
+                        onTap: () {
+                          navigateToScreen(context, const CreateRequestPage());
+                        },
+                      ),
+                    );
+                    //Order card
+                    dashboardCards.add(
+                      CustomItemCardDashboard(
+                        imageString: ImageAssets.orderMenu,
+                        title: 'Order',
+                        backgroundColor: ColorManager.white,
+                        cornerRadius: 12,
+                        onTap: () {
+                          navigateToScreen(context, const CreateOrderPage());
+                        },
+                      ),
+                    );
+                    // main approval card
+                    dashboardCards.add(
+                      CustomItemCardDashboard(
+                        imageString: ImageAssets.approval,
+                        title: '${AppStrings.approval}\n',
+                        backgroundColor: ColorManager.white,
+                        cornerRadius: 12,
+                        onTap: () {
+                          navigateToScreen(context, const ApprovalView());
                         },
                       ),
                     );
@@ -440,14 +366,87 @@ class _HomeViewState extends State<HomeView> {
                   }
 
                   // If only Inventory card exists → full width
-                  return Row(
-                    children: [
-                      Expanded(child: dashboardCards[0]),
-                    ],
+                  if (dashboardCards.length == 1 &&
+                      isInventoryEnabled &&
+                      !shouldShowApproval) {
+                    return Row(
+                      children: [
+                        dashboardCards[0],
+                      ],
+                    );
+                  }
+
+                  if (dashboardCards.length == 2) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        dashboardCards[0],
+                        const SizedBox(width: 10),
+                        dashboardCards[1],
+                      ],
+                    );
+                  }
+
+                  // If more than 2 cards → wrap into rows automatically
+                  return Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: dashboardCards
+                        .map((card) => SizedBox(
+                              width: (displayWidth(context) - 42) /
+                                  2, // two per row
+                              child: card,
+                            ))
+                        .toList(),
                   );
                 },
               ),
             ),
+      // body: isLoading
+      //     ? const Center(child: CustomProgressIndicator())
+      //     : Padding(
+      //         padding: const EdgeInsets.all(16.0),
+      //         child: Builder(
+      //           builder: (context) {
+      //             List<Widget> dashboardCards = [];
+
+      //             // Only show Inventory Card
+      //             if (isInventoryEnabled) {
+      //               dashboardCards.add(
+      //                 CustomItemCardDashboard(
+      //                   imageString: ImageAssets.inventory,
+      //                   title: AppStrings.inventoryControl,
+      //                   backgroundColor: ColorManager.white,
+      //                   cornerRadius: 12,
+      //                   onTap: () {
+      //                     navigateToScreen(context, const InverntoryView());
+      //                   },
+      //                 ),
+      //               );
+      //             }
+
+      //             // Layout Logic
+      //             if (dashboardCards.isEmpty) {
+      //               return Center(
+      //                 child: Text(
+      //                   'No dashboard items available.',
+      //                   style: getMediumStyle(
+      //                     color: ColorManager.white,
+      //                     fontSize: FontSize.s16,
+      //                   ),
+      //                 ),
+      //               );
+      //             }
+
+      //             // If only Inventory card exists → full width
+      //             return Row(
+      //               children: [
+      //                 Expanded(child: dashboardCards[0]),
+      //               ],
+      //             );
+      //           },
+      //         ),
+      //       ),
     );
   }
 }

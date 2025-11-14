@@ -786,6 +786,148 @@ class FormFieldHelper {
   }
 }
 
+class _DropdownTableModal extends StatefulWidget {
+  final List<DropdownItem> items;
+  final String? selectedId;
+  final String label;
+
+  const _DropdownTableModal({
+    required this.items,
+    required this.selectedId,
+    required this.label,
+  });
+
+  @override
+  State<_DropdownTableModal> createState() => _DropdownTableModalState();
+}
+
+class _DropdownTableModalState extends State<_DropdownTableModal> {
+  String searchText = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final filteredItems = widget.items.where((item) {
+      return item.value.toLowerCase().contains(searchText.toLowerCase()) ||
+          item.id.toLowerCase().contains(searchText.toLowerCase());
+    }).toList();
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Title
+            Text(
+              'Select ${widget.label}',
+              style: getBoldStyle(
+                color: ColorManager.black,
+                fontSize: FontSize.s18,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Search field
+            TextField(
+              decoration: InputDecoration(
+                hintText: 'Search by ID or Name...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onChanged: (val) => setState(() => searchText = val),
+            ),
+            const SizedBox(height: 12),
+
+            // Header row
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              color: ColorManager.lightGrey2,
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: Text(
+                      'ID',
+                      style: getSemiBoldStyle(
+                        color: ColorManager.black,
+                        fontSize: FontSize.s14,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      'Value',
+                      style: getSemiBoldStyle(
+                        color: ColorManager.black,
+                        fontSize: FontSize.s14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1, color: Colors.grey),
+
+            // List of rows
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.5,
+              child: ListView.builder(
+                itemCount: filteredItems.length,
+                itemBuilder: (context, index) {
+                  final item = filteredItems[index];
+                  final bool isSelected = item.id == widget.selectedId;
+
+                  return InkWell(
+                    onTap: () {
+                      Navigator.pop(context, item.id);
+                    },
+                    child: Container(
+                      color: isSelected
+                          ? ColorManager.lightGrey3
+                          : Colors.transparent,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 4,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 1,
+                            child: Text(
+                              item.id,
+                              style: getRegularStyle(
+                                color: ColorManager.black,
+                                fontSize: FontSize.s14,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 3,
+                            child: Text(
+                              item.value,
+                              style: getRegularStyle(
+                                color: ColorManager.black,
+                                fontSize: FontSize.s14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 // Custom painter for the red triangle
 class _RedTrianglePainter extends CustomPainter {
   @override

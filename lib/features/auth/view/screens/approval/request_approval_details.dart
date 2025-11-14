@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:eyvo_v3/api/api_service/api_service.dart';
+import 'package:eyvo_v3/api/response_models/header_response.dart';
 import 'package:eyvo_v3/api/response_models/request_approval_details_response.dart';
 import 'package:eyvo_v3/app/app_prefs.dart';
 import 'package:eyvo_v3/core/resources/assets_manager.dart';
@@ -13,6 +14,8 @@ import 'package:eyvo_v3/core/widgets/approval_details_helper.dart';
 import 'package:eyvo_v3/core/widgets/button.dart';
 import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
 import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/base_header_form_view.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/base_line_form_view.dart';
 import 'package:flutter/material.dart';
 
 class RequestDetailsView extends StatefulWidget {
@@ -32,7 +35,7 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
   bool isLoading = false;
   bool isError = false;
   String errorText = AppStrings.somethingWentWrong;
-
+  HeaderLineData? requestHeaderList;
   Data? requestDetails;
   String? expandedSection;
 
@@ -74,6 +77,34 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
       isError = true;
       isLoading = false;
     });
+  }
+
+  Future<HeaderLineData?> fetchRequestHeaderApprovalList() async {
+    Map<String, dynamic> requestData = {
+      'uid': SharedPrefs().uID,
+      'Request_ID': widget.requestId, // Use actual requestId
+    };
+
+    final jsonResponse = await apiService.postRequest(
+      context,
+      ApiService.requestApprovalList,
+      requestData,
+    );
+
+    if (jsonResponse != null) {
+      final response = HeaderListResponse.fromJson(jsonResponse);
+
+      if (response.code == 200) {
+        return response.headerlineData; // ✅ return directly
+      } else {
+        showErrorDialog(context, response.message.join(', '), false);
+        return null;
+      }
+    } else {
+      showErrorDialog(
+          context, 'Something went wrong. Please try again.', false);
+      return null;
+    }
   }
 
   Future<void> requestApprovalApprove() async {
@@ -172,44 +203,58 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
                                 'Approver Name':
                                     requestDetails!.header.originatorName,
                               },
+                              // onTap: () {
+                              //   Navigator.pushNamed(
+                              //     context,
+                              //     Routes.genericDetailRoute,
+                              //     arguments: {
+                              //       'title': 'Request Header',
+                              //       'data': {
+                              //         'Request No': requestDetails!
+                              //                 .header.requestNumber ??
+                              //             '',
+                              //         'Entry Date':
+                              //             requestDetails!.header.entryDate ??
+                              //                 '',
+                              //         'Request Status': requestDetails!
+                              //                 .header.requestStatus ??
+                              //             '',
+                              //         'Ref Num':
+                              //             requestDetails!.header.referenceNo ??
+                              //                 '',
+                              //         'Instructions':
+                              //             requestDetails!.header.instructions ??
+                              //                 '',
+                              //         'Delivery To':
+                              //             requestDetails!.header.fao ?? '',
+                              //         'Document Type':
+                              //             requestDetails!.header.orderTypeId ??
+                              //                 '',
+                              //         'Delivery Code':
+                              //             requestDetails!.header.deliveryCode ??
+                              //                 '',
+                              //         requestDetails!.header.expName1:
+                              //             requestDetails!.header.expCode1 ?? '',
+                              //         'Incoterms':
+                              //             requestDetails!.header.fob ?? '',
+                              //       },
+                              //     },
+                              //   );
+                              // },
+
                               onTap: () {
-                                Navigator.pushNamed(
+                                navigateToScreen(
                                   context,
-                                  Routes.genericDetailRoute,
-                                  arguments: {
-                                    'title': 'Request Header',
-                                    'data': {
-                                      'Request No': requestDetails!
-                                              .header.requestNumber ??
-                                          '',
-                                      'Entry Date':
-                                          requestDetails!.header.entryDate ??
-                                              '',
-                                      'Request Status': requestDetails!
-                                              .header.requestStatus ??
-                                          '',
-                                      'Ref Num':
-                                          requestDetails!.header.referenceNo ??
-                                              '',
-                                      'Instructions':
-                                          requestDetails!.header.instructions ??
-                                              '',
-                                      'Delivery To':
-                                          requestDetails!.header.fao ?? '',
-                                      'Document Type':
-                                          requestDetails!.header.orderTypeId ??
-                                              '',
-                                      'Delivery Code':
-                                          requestDetails!.header.deliveryCode ??
-                                              '',
-                                      requestDetails!.header.expName1:
-                                          requestDetails!.header.expCode1 ?? '',
-                                      'Incoterms':
-                                          requestDetails!.header.fob ?? '',
-                                    },
-                                  },
+                                  BaseHeaderView(
+                                    id: widget.requestId,
+                                    headerType: HeaderType.request,
+                                    appBarTitle: "Request Header",
+                                    buttonshow: false,
+                                    constantFieldshow: false,
+                                  ),
                                 );
                               },
+
                               isExpanded: expandedSection == "Details",
                               toggleSection: () => setState(() {
                                 expandedSection = expandedSection == "Details"
@@ -232,7 +277,8 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
                                       ...requestDetails!.line!.map((lineItem) {
                                         return ApprovalDetailsHelper
                                             .buildMiniCardWithEditIcon({
-                                          'Item': lineItem.itemCode,
+                                          'Item No.': lineItem.itemOrder,
+                                          // 'Item': lineItem.itemCode,
                                           'Description': lineItem.description,
                                           'Quantity': lineItem.quantity,
                                           'Unit Price':
@@ -240,38 +286,61 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
                                           'Net Price':
                                               '${getFormattedPriceString(lineItem.netPrice)} (${lineItem.supplierCcyCode})',
                                         }, () {
-                                          Navigator.pushNamed(
+                                          //     Navigator.pushNamed(
+                                          //       context,
+                                          //       Routes.genericDetailRoute,
+                                          //       arguments: {
+                                          //         'title': 'Request Line',
+                                          //         'data': {
+                                          //           //  'Item Order': lineItem.itemOrder,
+                                          //           'Item Code': lineItem.itemCode,
+                                          //           'Item Description': lineItem
+                                          //                       .description
+                                          //                       .length >
+                                          //                   100
+                                          //               ? '${lineItem.description.substring(0, 100)}...'
+                                          //               : lineItem.description,
+                                          //           'Item Due Date':
+                                          //               lineItem.dueDate,
+                                          //           'Quantity': lineItem.quantity,
+                                          //           'Unit': lineItem.unit,
+                                          //           'Pack Size': lineItem.packSize,
+                                          //           'Unit Price':
+                                          //               '${getFormattedPriceString(lineItem.price)} (${lineItem.supplierCcyCode})',
+                                          //           'Discount': lineItem
+                                          //                       .discountType ==
+                                          //                   1
+                                          //               ? '${lineItem.discount}(value)'
+                                          //               : '${lineItem.discount}(%)',
+                                          //           'Tax':
+                                          //               '${lineItem.tax.toStringAsFixed(3)}%',
+                                          //           'Tax Value': lineItem.taxValue
+                                          //               .toStringAsFixed(3),
+                                          //         },
+                                          //       },
+                                          //     );
+                                          //   });
+                                          // }).toList(),
+
+                                          // Navigator.pushNamed(
+                                          //   context,
+                                          //   Routes.genericDetailAPIRoute,
+                                          //   arguments: {
+                                          //     'title': 'Request Header',
+                                          //     'type': 'header',
+                                          //     'id': widget.requestId,
+                                          //     'lineId': lineItem.requestLineId
+                                          //   },
+                                          // );
+                                          navigateToScreen(
                                             context,
-                                            Routes.genericDetailRoute,
-                                            arguments: {
-                                              'title': 'Request Line',
-                                              'data': {
-                                                //  'Item Order': lineItem.itemOrder,
-                                                'Item Code': lineItem.itemCode,
-                                                'Item Description': lineItem
-                                                            .description
-                                                            .length >
-                                                        100
-                                                    ? '${lineItem.description.substring(0, 100)}...'
-                                                    : lineItem.description,
-                                                'Item Due Date':
-                                                    lineItem.dueDate,
-                                                'Quantity': lineItem.quantity,
-                                                'Unit': lineItem.unit,
-                                                'Pack Size': lineItem.packSize,
-                                                'Unit Price':
-                                                    '${getFormattedPriceString(lineItem.price)} (${lineItem.supplierCcyCode})',
-                                                'Discount': lineItem
-                                                            .discountType ==
-                                                        1
-                                                    ? '${lineItem.discount}(value)'
-                                                    : '${lineItem.discount}(%)',
-                                                'Tax':
-                                                    '${lineItem.tax.toStringAsFixed(3)}%',
-                                                'Tax Value': lineItem.taxValue
-                                                    .toStringAsFixed(3),
-                                              },
-                                            },
+                                            BaseLineView(
+                                              id: widget.requestId,
+                                              lineId: lineItem.requestLineId,
+                                              lineType: LineType.request,
+                                              appBarTitle: "Request Line",
+                                              buttonshow: false,
+                                            ),
                                           );
                                         });
                                       }).toList(),

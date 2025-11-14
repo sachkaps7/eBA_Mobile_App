@@ -16,12 +16,16 @@ class BaseHeaderView extends StatefulWidget {
   final int id;
   final HeaderType headerType;
   final String appBarTitle;
+  final bool? buttonshow;
+  final bool? constantFieldshow;
 
   const BaseHeaderView({
     Key? key,
     required this.id,
     required this.headerType,
     required this.appBarTitle,
+    this.buttonshow,
+    this.constantFieldshow,
   }) : super(key: key);
 
   @override
@@ -397,8 +401,9 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Constant Fields
-                    _buildConstantFieldsSection(),
+                    if (widget.constantFieldshow ?? true)
+                      // Constant Fields
+                      _buildConstantFieldsSection(),
                     const SizedBox(height: 16),
 
                     // Dynamic Fields
@@ -407,13 +412,14 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
                     const SizedBox(height: 30),
 
                     // Save Button
-                    SizedBox(
-                      height: 50,
-                      child: CustomButton(
-                        buttonText: 'Save',
-                        onTap: _saveForm,
-                      ),
-                    )
+                    if (widget.buttonshow ?? true)
+                      SizedBox(
+                        height: 50,
+                        child: CustomButton(
+                          buttonText: 'Save',
+                          onTap: _saveForm,
+                        ),
+                      )
                   ],
                 ),
               ),
@@ -647,6 +653,23 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
         },
         isRequired: fieldRequired["ExpCode1_ID"] ?? false,
         readOnly: fieldReadOnly["ExpCode1_ID"] ?? false,
+      ),
+    );
+    addFieldIfVisible(
+      "ExpCode1_ID",
+      FormFieldHelper.buildDropdownFieldWithIds(
+        context: context,
+        label: fieldLabels["ExpCode1_ID"] ?? "",
+        value: _selectedAccountId,
+        apiDisplayValue: _selectedAccountValue,
+        items: getSupplierCodes(),
+        onChanged: (value) {
+          setState(() {
+            _selectedAccountId = value;
+          });
+        },
+        isRequired: fieldRequired["SupplierID"] ?? false,
+        readOnly: false,
       ),
     );
 

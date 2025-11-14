@@ -77,7 +77,7 @@ class _CustomImageActionAlertState extends State<CustomImageActionAlert> {
                                 : ColorManager.lightGrey1,
                             borderColor: widget.isConfirmationAlert
                                 ? ColorManager.darkRed
-                                : ColorManager.lightGrey1,
+                                : ColorManager.green,
                             buttonText: widget.normalActionString,
                             onTap: widget.onNormalActionTap,
                           ),

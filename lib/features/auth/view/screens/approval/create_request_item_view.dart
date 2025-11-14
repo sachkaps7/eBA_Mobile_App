@@ -1,4 +1,7 @@
+import 'package:eyvo_v3/api/api_service/api_service.dart';
 import 'package:eyvo_v3/api/response_models/order_header_response.dart';
+import 'package:eyvo_v3/app/app_prefs.dart';
+import 'package:eyvo_v3/core/resources/strings_manager.dart';
 import 'package:eyvo_v3/core/widgets/button.dart';
 import 'package:eyvo_v3/core/widgets/form_field_helper.dart';
 import 'package:eyvo_v3/core/widgets/searchable_dropdown_modal.dart';
@@ -10,7 +13,9 @@ import 'package:eyvo_v3/core/resources/styles_manager.dart';
 import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
 
 class CreateRequestLineView extends StatefulWidget {
-  const CreateRequestLineView({Key? key}) : super(key: key);
+  final int requestId;
+  const CreateRequestLineView({Key? key, required this.requestId})
+      : super(key: key);
 
   @override
   State<CreateRequestLineView> createState() => _CreateRequestLineViewState();
@@ -19,28 +24,16 @@ class CreateRequestLineView extends StatefulWidget {
 class _CreateRequestLineViewState extends State<CreateRequestLineView> {
   // Controllers
 
+  final ApiService apiService = ApiService();
+  bool isError = false;
+  String errorText = AppStrings.somethingWentWrong;
   CreateHeaderResponse? apiResponse;
   bool isLoading = true;
-
-// Field Visibility Flags
-
-  bool _showExpCode4 = true;
-  bool _showExpCode5Code = true;
-  bool _showExpCode6Code = true;
-  bool _showDueDate = true;
-  bool _showUnit = true;
-  bool _showSuppliersPartNo = true;
-  bool _showItemCode = true;
-  bool _showQuantity = true;
-  bool _showPackSize = true;
-  bool _showPrice = true;
-  bool _showDiscountType = true;
-  bool _showDiscount = true;
-  bool _showSalesTax = true;
-  bool _showOpexCapex = true;
-  bool _showMarkup = true;
-  bool _showExpenseType = true;
-  bool _showSupplier = true;
+  List<Datum>? headerData;
+  Map<String, bool> fieldVisible = {};
+  Map<String, bool> fieldRequired = {};
+  Map<String, bool> fieldReadOnly = {};
+  Map<String, String> fieldLabels = {};
 
 // Dropdown Selected IDs
 
@@ -96,336 +89,192 @@ class _CreateRequestLineViewState extends State<CreateRequestLineView> {
     ];
   }
 
-  final List<String> itemUnits = [
-    "Box",
-    "Piece",
-    "Kg",
-    "Liters",
-  ];
-  final String mockJson = '''{
-    "code": 200,
-    "message": [
-        "success"
-    ],
-    "data": [
+  Future<void> fetchOrderLine() async {
+    setState(() {
+      isLoading = true;
+      isError = false;
+    });
+
+    try {
+      final jsonResponse = await apiService.postRequest(
+        context,
+        ApiService.createOrderHeader,
         {
-            "fieldID": "ExpCode4_ID",
-            "labelName": "GL",
-            "ID": "35",
-            "value": "010",
-            "controlType": "dropdown",
-            "required": false,
-            "readWrite": true,
-            "visible": true
+          'uid': SharedPrefs().uID,
+          'ID': widget.requestId,
+          'LineID': 5408,
+          'group': 'Request',
+          'section': 'Line',
+          'apptype': 'mobile',
         },
-        {
-            "fieldID": "ExpCode5_ID",
-            "labelName": "Property Code",
-            "ID": "23",
-            "value": "5435",
-            "controlType": "dropdown",
-            "required": false,
-            "readWrite": true,
-            "visible": true
-        },
-        {
-            "fieldID": "ExpCode6_ID",
-            "labelName": "Nominal Code",
-            "ID": "8",
-            "value": "62610-016",
-            "controlType": "dropdown",
-            "required": false,
-            "readWrite": true,
-            "visible": true
-        },
-        {
-            "fieldID": "DueDate",
-            "labelName": "Due Date",
-            "ID": "0",
-            "value": "",
-            "controlType": "date",
-            "required": false,
-            "readWrite": true,
-            "visible": true
-        },
-        {
-            "fieldID": "SupplierID",
-            "labelName": "Supplier",
-            "ID": "315",
-            "value": "DLF",
-            "controlType": "dropdown",
-            "required": false,
-            "readWrite": true,
-            "visible": true
-        },
-        {
-            "fieldID": "Unit",
-            "labelName": "Unit",
-            "ID": "9",
-            "value": "Pound",
-            "controlType": "dropdown",
-            "required": false,
-            "readWrite": true,
-            "visible": true
-        },
-        {
-            "fieldID": "SuppliersPartNo",
-            "labelName": "Suppliers Part Number",
-            "ID": "0",
-            "value": "CHIA_25LB",
-            "controlType": "textbox",
-            "required": false,
-            "readWrite": true,
-            "visible": true
-        },
-        {
-            "fieldID": "Expense_Type",
-            "labelName": "Expense Type",
-            "ID": "",
-            "value": "",
-            "controlType": "dropdown",
-            "required": false,
-            "readWrite": true,
-            "visible": true
-        },
-        {
-            "fieldID": "ItemID",
-            "labelName": "Item Code",
-            "ID": "2142",
-            "value": "Chia Seeds Black DLF 1x25lb",
-            "controlType": "dropdown",
-            "required": true,
-            "readWrite": true,
-            "visible": true
-        },
-        {
-            "fieldID": "Quantity",
-            "labelName": "Item Quantity",
-            "ID": "0",
-            "value": "3.125",
-            "controlType": "textbox",
-            "required": true,
-            "readWrite": true,
-            "visible": true
-        },
-        {
-            "fieldID": "PackSize",
-            "labelName": "Item Pack Size",
-            "ID": "0",
-            "value": "25",
-            "controlType": "textbox",
-            "required": true,
-            "readWrite": true,
-            "visible": true
-        },
-        {
-            "fieldID": "Price",
-            "labelName": "Item Price",
-            "ID": "0",
-            "value": "230.784000",
-            "controlType": "textbox",
-            "required": true,
-            "readWrite": true,
-            "visible": true
-        },
-        {
-            "fieldID": "Discount_Type",
-            "labelName": "Discount Type",
-            "ID": "0",
-            "value": "%",
-            "controlType": "dropdown",
-            "required": true,
-            "readWrite": true,
-            "visible": true
-        },
-        {
-            "fieldID": "Discount",
-            "labelName": "Item Discount",
-            "ID": "0",
-            "value": "0.0000000",
-            "controlType": "textbox",
-            "required": true,
-            "readWrite": true,
-            "visible": true
-        },
-        {
-            "fieldID": "Tax",
-            "labelName": "Sales Tax %",
-            "ID": "0",
-            "value": "0.0000000",
-            "controlType": "textbox",
-            "required": true,
-            "readWrite": true,
-            "visible": true
-        },
-        {
-            "fieldID": "Opex_Capex",
-            "labelName": "Opex/Capex",
-            "ID": "Opex",
-            "value": "Opex",
-            "controlType": "dropdown",
-            "required": true,
-            "readWrite": true,
-            "visible": true
-        },
-        {
-            "fieldID": "Markup",
-            "labelName": "Markup",
-            "ID": "0",
-            "value": "0.000000",
-            "controlType": "textbox",
-            "required": true,
-            "readWrite": true,
-            "visible": false
-        }
-    ],
-    "totalrecords": 17
-}''';
+      );
+
+      if (jsonResponse == null) {
+        setState(() {
+          isError = true;
+          errorText = "No response from server";
+          isLoading = false;
+        });
+        return;
+      }
+
+      final resp = CreateHeaderResponse.fromJson(jsonResponse);
+
+      if (resp.code == 200 && resp.data != null) {
+        setState(() {
+          apiResponse = resp;
+          headerData = resp.data;
+          isLoading = false;
+
+          // Reset old data
+          fieldVisible.clear();
+          fieldRequired.clear();
+          fieldReadOnly.clear();
+
+          // Parse each field dynamically
+          for (var field in resp.data!) {
+            // Store field-level properties
+            fieldVisible[field.fieldId] = field.visible;
+            fieldRequired[field.fieldId] = field.required;
+            fieldReadOnly[field.fieldId] = !field.readWrite;
+            fieldLabels[field.fieldId] = field.labelName;
+
+            // Assign values and handle visibility
+
+            switch (field.fieldId) {
+              case "ExpCode4_ID":
+                if (field.visible && field.value.isNotEmpty) {
+                  _selectedExpCode4Id = field.id.toString();
+                  _selectedExpCode4Value = field.value;
+                }
+                break;
+
+              case "ExpCode5_ID":
+                if (field.visible && field.value.isNotEmpty) {
+                  _selectedExpCode5Id = field.id.toString();
+                  _selectedExpCode5Value = field.value;
+                }
+                break;
+
+              case "ExpCode6_ID":
+                if (field.visible && field.value.isNotEmpty) {
+                  _selectedExpCode6CodeId = field.id.toString();
+                  _selectedExpCode6CodeValue = field.value;
+                }
+                break;
+
+              case "DueDate":
+                if (field.visible && field.value.isNotEmpty) {
+                  _dueDateController.text = field.value;
+                }
+                break;
+
+              case "Unit":
+                if (field.visible && field.value.isNotEmpty) {
+                  _selectedUnitId = field.id.toString();
+                  _selectedUnitValue = field.value;
+                }
+                break;
+
+              case "SuppliersPartNo":
+                if (field.visible) {
+                  _suppliersPartNoController.text = field.value;
+                }
+                break;
+
+              case "ItemID":
+                if (field.visible && field.value.isNotEmpty) {
+                  _selectedItemCodeId = field.id.toString();
+                  _selectedItemCodeValue = field.value;
+                }
+                break;
+
+              case "Quantity":
+                if (field.visible) {
+                  _quantityController.text = field.value;
+                }
+                break;
+
+              case "PackSize":
+                if (field.visible) {
+                  _packSizeController.text = field.value;
+                }
+                break;
+
+              case "Price":
+                if (field.visible) {
+                  _priceController.text = field.value;
+                }
+                break;
+
+              case "Discount_Type":
+                if (field.visible && field.value.isNotEmpty) {
+                  _selectedDiscountTypeId = field.id.toString();
+                  _selectedDiscountTypeValue = field.value;
+                }
+                break;
+
+              case "Discount":
+                if (field.visible) {
+                  _discountController.text = field.value;
+                }
+                break;
+
+              case "Tax":
+                if (field.visible) {
+                  _salesTaxController.text = field.value;
+                }
+                break;
+
+              case "Opex_Capex":
+                if (field.visible && field.value.isNotEmpty) {
+                  _selectedOpexCapexId = field.id.toString();
+                  _selectedOpexCapexValue = field.value;
+                }
+                break;
+
+              case "Markup":
+                if (field.visible) {
+                  _markupController.text = field.value;
+                }
+                break;
+
+              case "Expense_Type":
+                if (field.visible && field.value.isNotEmpty) {
+                  _selectedExpenseTypeId = field.id.toString();
+                  _selectedExpenseTypeValue = field.value;
+                }
+                break;
+
+              case "SupplierID":
+                if (field.visible && field.value.isNotEmpty) {
+                  _selectedSupplierId = field.id.toString();
+                  _selectedSupplierValue = field.value;
+                }
+                break;
+            }
+          }
+        });
+      } else {
+        setState(() {
+          isError = true;
+          errorText = resp.message?.join(', ') ?? "Failed to fetch data";
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        isError = true;
+        errorText = "Something went wrong: $e";
+        isLoading = false;
+      });
+    }
+  }
+//{fieldID: SupplierID, labelName: Supplier, ID: 268, value: NordicaHK, controlType: dropdown, required: false, readWrite: true, visible: true},
   @override
   void initState() {
     super.initState();
-    loadMockData();
-  }
-
-  void loadMockData() {
-    final decoded = CreateHeaderResponseFromJson(mockJson);
-    setState(() {
-      apiResponse = decoded;
-      isLoading = false;
-
-      // Set field visibility and initial values based on API response
-      for (var field in decoded.data) {
-        switch (field.fieldId) {
-          case "ExpCode4_ID":
-            _showExpCode4 = field.visible;
-            if (field.visible && field.value.isNotEmpty) {
-              _selectedExpCode4Id = field.id.toString();
-              _selectedExpCode4Value = field.value;
-            }
-            break;
-
-          case "ExpCode5_ID":
-            _showExpCode5Code = field.visible;
-            if (field.visible && field.value.isNotEmpty) {
-              _selectedExpCode5Id = field.id.toString();
-              _selectedExpCode5Value = field.value;
-            }
-            break;
-
-          case "ExpCode6_ID":
-            _showExpCode6Code = field.visible;
-            if (field.visible && field.value.isNotEmpty) {
-              _selectedExpCode6CodeId = field.id.toString();
-              _selectedExpCode6CodeValue = field.value;
-            }
-            break;
-
-          case "DueDate":
-            _showDueDate = field.visible;
-            if (field.visible && field.value.isNotEmpty) {
-              _dueDateController.text = field.value;
-            }
-            break;
-
-          case "Unit":
-            _showUnit = field.visible;
-            if (field.visible && field.value.isNotEmpty) {
-              _selectedUnitId = field.id.toString();
-              _selectedUnitValue = field.value;
-            }
-            break;
-
-          case "SuppliersPartNo":
-            _showSuppliersPartNo = field.visible;
-            if (field.visible) {
-              _suppliersPartNoController.text = field.value;
-            }
-            break;
-
-          case "ItemID":
-            _showItemCode = field.visible;
-            if (field.visible && field.value.isNotEmpty) {
-              _selectedItemCodeId = field.id.toString();
-              _selectedItemCodeValue = field.value;
-            }
-            break;
-
-          case "Quantity":
-            _showQuantity = field.visible;
-            if (field.visible) {
-              _quantityController.text = field.value;
-            }
-            break;
-
-          case "PackSize":
-            _showPackSize = field.visible;
-            if (field.visible) {
-              _packSizeController.text = field.value;
-            }
-            break;
-
-          case "Price":
-            _showPrice = field.visible;
-            if (field.visible) {
-              _priceController.text = field.value;
-            }
-            break;
-
-          case "Discount_Type":
-            _showDiscountType = field.visible;
-            if (field.visible && field.value.isNotEmpty) {
-              _selectedDiscountTypeId = field.id.toString();
-              _selectedDiscountTypeValue = field.value;
-            }
-            break;
-
-          case "Discount":
-            _showDiscount = field.visible;
-            if (field.visible) {
-              _discountController.text = field.value;
-            }
-            break;
-
-          case "Tax":
-            _showSalesTax = field.visible;
-            if (field.visible) {
-              _salesTaxController.text = field.value;
-            }
-            break;
-
-          case "Opex_Capex":
-            _showOpexCapex = field.visible;
-            if (field.visible && field.value.isNotEmpty) {
-              _selectedOpexCapexId = field.id.toString();
-              _selectedOpexCapexValue = field.value;
-            }
-            break;
-
-          case "Markup":
-            _showMarkup = field.visible;
-            if (field.visible) {
-              _markupController.text = field.value;
-            }
-            break;
-
-          case "Expense_Type":
-            _showExpenseType = field.visible;
-            if (field.visible && field.value.isNotEmpty) {
-              _selectedExpenseTypeId = field.id.toString();
-              _selectedExpenseTypeValue = field.value;
-            }
-            break;
-
-          case "SupplierID":
-            _showSupplier = field.visible;
-            if (field.visible && field.value.isNotEmpty) {
-              _selectedSupplierId = field.id.toString();
-              _selectedSupplierValue = field.value;
-            }
-            break;
-        }
-      }
-    });
+    fetchOrderLine();
   }
 
   @override
@@ -516,10 +365,10 @@ class _CreateRequestLineViewState extends State<CreateRequestLineView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     //-------------------- DROPDOWN: Catalog Items --------------------
-                    if (_showItemCode) ...[
+                    if (fieldVisible["ItemID"] ?? false) ...[
                       FormFieldHelper.buildDropdownFieldWithIds(
                         context: context,
-                        label: "Catalog Item",
+                        label: fieldLabels["ItemID"] ?? "",
                         value: _selectedItemCodeId,
                         apiDisplayValue: _selectedItemCodeValue,
                         items: catalogItems(),
@@ -542,226 +391,224 @@ class _CreateRequestLineViewState extends State<CreateRequestLineView> {
                       isRequired: true,
                     ),
                     const SizedBox(height: 10),
-                    //-------------------- TEXT FIELD: Supplier Part No --------------------
-                    if (_showSuppliersPartNo) ...[
+
+//-------------------- TEXT FIELD: Supplier Part No --------------------
+                    if (fieldVisible["SuppliersPartNo"] ?? false) ...[
                       FormFieldHelper.buildTextField(
-                        label: "Supplier Part No",
+                        label: fieldLabels["SuppliersPartNo"] ?? "",
                         controller: _suppliersPartNoController,
-                        hintText: "Enter supplier part number",
-                        isRequired: true,
+                        hintText:
+                            'Enter ${fieldLabels["SuppliersPartNo"] ?? ""}',
+                        isRequired: fieldRequired["SuppliersPartNo"] ?? false,
+                        readOnly: fieldReadOnly["SuppliersPartNo"] ?? false,
                       ),
                       const SizedBox(height: 10),
                     ],
 
-                    //-------------------- DATE PICKER: Item Due Date --------------------
-                    if (_showDueDate) ...[
+//-------------------- DATE PICKER: Due Date --------------------
+                    if (fieldVisible["DueDate"] ?? false) ...[
                       FormFieldHelper.buildDatePickerField(
                         context: context,
-                        label: "Item Due Date",
+                        label: fieldLabels["DueDate"] ?? "",
                         controller: _dueDateController,
-                        isRequired: true,
-                        readOnly: true,
+                        isRequired: fieldRequired["DueDate"] ?? false,
+                        readOnly: fieldReadOnly["DueDate"] ?? false,
                       ),
                       const SizedBox(height: 10),
                     ],
-                    //-------------------- TEXT FIELD: Item Quantity --------------------
-                    if (_showQuantity) ...[
+
+//-------------------- TEXT FIELD: Quantity --------------------
+                    if (fieldVisible["Quantity"] ?? false) ...[
                       FormFieldHelper.buildTextField(
-                        label: "Item Quantity",
+                        label: fieldLabels["Quantity"] ?? "",
                         controller: _quantityController,
-                        hintText: "Enter item quantity",
+                        hintText: 'Enter ${fieldLabels["Quantity"] ?? ""}',
                         keyboardType: TextInputType.number,
-                        isRequired: true,
-                        readOnly: true,
+                        isRequired: fieldRequired["Quantity"] ?? false,
+                        readOnly: fieldReadOnly["Quantity"] ?? false,
                       ),
                       const SizedBox(height: 10),
                     ],
-                    //-------------------- DROPDOWN: Item Unit --------------------
-                    if (_showQuantity) ...[
+           //-------------------- DROPDOWN: Catalog Items --------------------
+                    if (fieldVisible["SupplierID"] ?? false) ...[
                       FormFieldHelper.buildDropdownFieldWithIds(
                         context: context,
-                        label: "Item Unit",
-                        value: _selectedUnitId,
+                        label: fieldLabels["SupplierID"] ?? "",
+                        value: _selectedSupplierId,
+                        apiDisplayValue: _selectedSupplierValue,
                         items: catalogItems(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedSupplierId = value;
+                          });
+                        },
+                        isRequired: true,
+                        readOnly: true,
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+//-------------------- DROPDOWN: Unit --------------------
+                    if (fieldVisible["Unit"] ?? false) ...[
+                      FormFieldHelper.buildDropdownFieldWithIds(
+                        context: context,
+                        label: fieldLabels["Unit"] ?? "",
+                        value: _selectedUnitId,
                         apiDisplayValue: _selectedUnitValue,
+                        items: catalogItems(),
                         onChanged: (value) {
                           setState(() {
                             _selectedUnitId = value;
                           });
                         },
-                        isRequired: true,
-                        readOnly: true,
+                        isRequired: fieldRequired["Unit"] ?? false,
+                        readOnly: fieldReadOnly["Unit"] ?? false,
                       ),
                       const SizedBox(height: 10),
                     ],
 
-                    //-------------------- TEXT FIELD: Item Pack Size --------------------
-                    if (_showPackSize) ...[
+//-------------------- TEXT FIELD: Pack Size --------------------
+                    if (fieldVisible["PackSize"] ?? false) ...[
                       FormFieldHelper.buildTextField(
-                        label: "Item Pack Size",
-                        controller: _itemPackSizeController,
-                        hintText: "Enter item pack size",
-                        isRequired: true,
-                        readOnly: true,
+                        label: fieldLabels["PackSize"] ?? "",
+                        controller: _packSizeController,
+                        hintText: 'Enter ${fieldLabels["PackSize"] ?? ""}',
+                        isRequired: fieldRequired["PackSize"] ?? false,
+                        readOnly: fieldReadOnly["PackSize"] ?? false,
                       ),
                       const SizedBox(height: 10),
                     ],
 
-                    //-------------------- TEXT FIELD: Price (USD) --------------------
-                    if (_showPrice) ...[
+//-------------------- TEXT FIELD: Price --------------------
+                    if (fieldVisible["Price"] ?? false) ...[
                       FormFieldHelper.buildTextField(
-                        label: "Price (USD)",
+                        label: fieldLabels["Price"] ?? "",
                         controller: _priceController,
-                        hintText: "Enter price in USD",
+                        hintText: 'Enter ${fieldLabels["Price"] ?? ""}',
                         keyboardType: TextInputType.number,
-                        isRequired: true,
-                        readOnly: true,
+                        isRequired: fieldRequired["Price"] ?? false,
+                        readOnly: fieldReadOnly["Price"] ?? false,
                       ),
                       const SizedBox(height: 10),
                     ],
 
-                    //-------------------- TEXT FIELD: Sales Tax % --------------------
-                    if (_showSalesTax) ...[
+//-------------------- TEXT FIELD: Sales Tax --------------------
+                    if (fieldVisible["Tax"] ?? false) ...[
                       FormFieldHelper.buildTextField(
-                        label: "Sales Tax %",
+                        label: fieldLabels["Tax"] ?? "",
                         controller: _salesTaxController,
-                        hintText: "Enter sales tax percentage",
+                        hintText:
+                            'Enter ${fieldLabels["Tax"] ?? ""} percentage',
                         keyboardType: TextInputType.number,
-                        isRequired: true,
+                        isRequired: fieldRequired["Tax"] ?? false,
+                        readOnly: fieldReadOnly["Tax"] ?? false,
                       ),
                       const SizedBox(height: 10),
-
-                      // const SizedBox(height: 30),
                     ],
 
-//-------------------------------ExpCode4_ID-------------------------------
-                    if (_showExpCode4) ...[
+//-------------------- DROPDOWN: ExpCode4_ID (GL) --------------------
+                    if (fieldVisible["ExpCode4_ID"] ?? false) ...[
                       FormFieldHelper.buildDropdownFieldWithIds(
                         context: context,
-                        label: 'GL',
+                        label: fieldLabels["ExpCode4_ID"] ?? "",
                         value: _selectedExpCode4Id,
-                        items: catalogItems(),
                         apiDisplayValue: _selectedExpCode4Value,
+                        items: catalogItems(),
                         onChanged: (value) {
                           setState(() {
                             _selectedExpCode4Value = value;
                           });
                         },
-                        isRequired: true,
+                        isRequired: fieldRequired["ExpCode4_ID"] ?? false,
+                        readOnly: fieldReadOnly["ExpCode4_ID"] ?? false,
                       ),
                       const SizedBox(height: 10),
                     ],
 
-//----------------------------------ExpCode5_ID---------------------------------
-                    if (_showExpCode5Code) ...[
+//-------------------- DROPDOWN: ExpCode5_ID (Property Code) --------------------
+                    if (fieldVisible["ExpCode5_ID"] ?? false) ...[
                       FormFieldHelper.buildDropdownFieldWithIds(
                         context: context,
-                        label: 'Property Code',
+                        label: fieldLabels["ExpCode5_ID"] ?? "",
                         value: _selectedExpCode5Id,
-                        items: catalogItems(),
                         apiDisplayValue: _selectedExpCode5Value,
+                        items: catalogItems(),
                         onChanged: (value) {
                           setState(() {
                             _selectedExpCode5Value = value;
                           });
                         },
-                        isRequired: true,
+                        isRequired: fieldRequired["ExpCode5_ID"] ?? false,
+                        readOnly: fieldReadOnly["ExpCode5_ID"] ?? false,
                       ),
                       const SizedBox(height: 10),
                     ],
 
-//-----------------------------------ExpCode6_ID--------------------------
-                    if (_showExpCode6Code) ...[
+//-------------------- DROPDOWN: ExpCode6_ID (Nominal Code) --------------------
+                    if (fieldVisible["ExpCode6_ID"] ?? false) ...[
                       FormFieldHelper.buildDropdownFieldWithIds(
                         context: context,
-                        label: 'Nominal Code',
+                        label: fieldLabels["ExpCode6_ID"] ?? "Nominal Code",
                         value: _selectedExpCode6CodeId,
-                        items: catalogItems(),
                         apiDisplayValue: _selectedExpCode6CodeValue,
+                        items: catalogItems(),
                         onChanged: (value) {
                           setState(() {
                             _selectedExpCode6CodeValue = value;
                           });
                         },
-                        isRequired: true,
+                        isRequired: fieldRequired["ExpCode6_ID"] ?? false,
+                        readOnly: fieldReadOnly["ExpCode6_ID"] ?? false,
                       ),
                       const SizedBox(height: 10),
                     ],
 
-// ---------------------------------Unit--------------------
-                    if (_showUnit) ...[
+//-------------------- DROPDOWN: Opex/Capex --------------------
+                    if (fieldVisible["Opex_Capex"] ?? false) ...[
                       FormFieldHelper.buildDropdownFieldWithIds(
                         context: context,
-                        label: 'Unit',
-                        value: _selectedUnitId,
-                        items: catalogItems(),
-                        apiDisplayValue: _selectedUnitValue,
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedUnitValue = value;
-                          });
-                        },
-                        isRequired: true,
-                      ),
-                      const SizedBox(height: 10),
-                    ],
-
-//-------------------------------Supplier’s Part Number---------------------------
-                    if (_showSuppliersPartNo) ...[
-                      FormFieldHelper.buildTextField(
-                        label: 'Supplier’s Part Number',
-                        isRequired: true,
-                        controller: _suppliersPartNoController,
-                        keyboardType: TextInputType.text,
-                        hintText: 'Enter Supplier’s Part Number',
-                      ),
-                      const SizedBox(height: 10),
-                    ],
-
-// ----------------------------Opex/Capex------------------------------
-                    if (_showOpexCapex) ...[
-                      FormFieldHelper.buildDropdownFieldWithIds(
-                        context: context,
-                        label: 'Opex/Capex',
+                        label: fieldLabels["Opex_Capex"] ?? "",
                         value: _selectedOpexCapexId,
-                        items: catalogItems(),
                         apiDisplayValue: _selectedOpexCapexValue,
+                        items: catalogItems(),
                         onChanged: (value) {
                           setState(() {
                             _selectedOpexCapexValue = value;
                           });
                         },
-                        isRequired: true,
+                        isRequired: fieldRequired["Opex_Capex"] ?? false,
+                        readOnly: fieldReadOnly["Opex_Capex"] ?? false,
                       ),
                       const SizedBox(height: 10),
                     ],
 
-//------------------------------------Markup---------------------------
-                    if (_showMarkup) ...[
+//-------------------- TEXT FIELD: Markup --------------------
+                    if (fieldVisible["Markup"] ?? false) ...[
                       FormFieldHelper.buildTextField(
-                        label: 'Markup',
-                        isRequired: true,
+                        label: fieldLabels["Markup"] ?? "",
                         controller: _markupController,
                         keyboardType: TextInputType.number,
-                        hintText: 'Enter Markup',
+                        hintText: 'Enter ${fieldLabels["Markup"] ?? ""}',
+                        isRequired: fieldRequired["Markup"] ?? false,
+                        readOnly: fieldReadOnly["Markup"] ?? false,
                       ),
                       const SizedBox(height: 10),
                     ],
 
-//---------------Expense Type---------------------------
-                    if (_showExpenseType) ...[
+//-------------------- DROPDOWN: Expense Type --------------------
+                    if (fieldVisible["Expense_Type"] ?? false) ...[
                       FormFieldHelper.buildDropdownFieldWithIds(
                         context: context,
-                        label: 'Expense Type',
+                        label: fieldLabels["Expense_Type"] ?? "",
                         value: _selectedExpenseTypeId,
-                        items: catalogItems(),
                         apiDisplayValue: _selectedExpenseTypeValue,
+                        items: catalogItems(),
                         onChanged: (value) {
                           setState(() {
                             _selectedExpenseTypeValue = value;
                           });
                         },
-                        isRequired: true,
+                        isRequired: fieldRequired["Expense_Type"] ?? false,
+                        readOnly: fieldReadOnly["Expense_Type"] ?? false,
                       ),
                       const SizedBox(height: 30),
                     ],

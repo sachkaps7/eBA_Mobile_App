@@ -219,16 +219,34 @@ class _OrderApproverPageState extends State<OrderApproverPage> with RouteAware {
                 itemCount: orderApprovalList.length,
                 itemBuilder: (context, index) {
                   final order = orderApprovalList[index];
-                  return CommonCardWidget(
-                    subtitles: [
-                      {'Order No': order.orderNumber},
-                      {'Status': order.orderStatus},
-                      {'Order Date': order.orderDate},
-                      {
-                        'Order Net Total':
-                            '${getFormattedPriceString(order.orderValue)}'
-                      },
-                    ],
+                  // return CommonCardWidget(
+                  //   subtitles: [
+                  //     {'Order No': order.orderNumber},
+                  //     {'Status': order.orderStatus},
+                  //     {'Order Date': order.orderDate},
+                  //     {
+                  //       'Order Net Total':
+                  //           '${getFormattedPriceString(order.orderValue)}'
+                  //     },
+                  //   ],
+                  //   onTap: () {
+                  //     navigateToScreen(
+                  //       context,
+                  //       OrderDetailsView(
+                  //         orderId: order.orderId,
+                  //         orderNumber: order.orderNumber,
+                  //       ),
+                  //     );
+                  //   },
+                  // );
+                  return GenericCardWidget(
+                    titleKey: 'Order #${order.orderNumber}',
+                    statusKey: order.orderStatus,
+                    supplierKey: order.supplierName,
+                    dateKey: order.orderDate,
+                    valueKey: getFormattedPriceString(order.orderValue),
+                    valueNameKey: 'Order Value',
+                    itemCountKey: order.itemCount.toString(),
                     onTap: () {
                       navigateToScreen(
                         context,

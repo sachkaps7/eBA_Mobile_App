@@ -3,6 +3,8 @@ import 'package:eyvo_v3/core/utils.dart';
 import 'package:eyvo_v3/core/widgets/approval_details_helper.dart';
 import 'package:eyvo_v3/core/widgets/button.dart';
 import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/base_header_form_view.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/base_line_form_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/create_order_item_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/create_order_header_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/file_upload.dart';
@@ -81,10 +83,18 @@ class _CreateOrderDetailsPageState extends State<CreateOrderDetailsPage> {
                                       'Group Approver': 'Pending',
                                     }),
                                     buildAddCard("Add Order Details", () {
+                                      // navigateToScreen(
+                                      //   context,
+                                      //   const CreateOrderHeaderView(
+                                      //       orderId: 1434),
+                                      // );
                                       navigateToScreen(
                                         context,
-                                        const CreateOrderHeaderView(
-                                            orderId: 1434),
+                                        const BaseHeaderView(
+                                          id: 1434,
+                                          headerType: HeaderType.order,
+                                          appBarTitle: "Order Header",
+                                        ),
                                       );
                                     }),
                                   ],
@@ -107,7 +117,12 @@ class _CreateOrderDetailsPageState extends State<CreateOrderDetailsPage> {
                                     buildAddCard("Add Line Item", () {
                                       navigateToScreen(
                                         context,
-                                        const CreateOrderLineView(),
+                                        const BaseLineView(
+                                          id: 1434,
+                                          lineId: 3556,
+                                          lineType: LineType.order,
+                                          appBarTitle: "Order Line",
+                                        ),
                                       );
                                     }),
                                   ],

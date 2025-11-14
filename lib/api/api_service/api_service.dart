@@ -42,15 +42,18 @@ class ApiService {
   static const String orderApprovalApproved = "order/approve";
   static const String orderApprovalReject = "order/reject";
   static const String requestApprovalList = "request/approvallist";
-  static const String requestApprovalDetails = "request/Approval";
+  static const String requestApprovalDetails = "request/requestview";
   static const String requestApprovalReject = "request/reject";
   static const String requestApprovalApproved = "request/approve";
+  static const String requestHeader = "request/getheader";
+  static const String requestLineItem = "request/getlineitem";
   static const String blindStockListing = 'Items/blindstocklisting';
   static const String blindStockDetails = 'Items/blindstockdetails';
   static const String updateBlindStock = 'Items/updateblindstock';
   static const String inventoryManagerLocationCheck = 'location/imloctioncheck';
   static const String imageUpload = 'attachdocument/attachdocument';
   static const String createOrderHeader = 'common/getgroupdata';
+  static const String orderList = "Order/listing";
 
   Future<bool> updateToken(BuildContext context) async {
     Map<String, dynamic> data = {

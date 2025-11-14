@@ -11,6 +11,7 @@ import 'package:eyvo_v3/core/resources/routes_manager.dart';
 import 'package:eyvo_v3/core/resources/strings_manager.dart';
 import 'package:eyvo_v3/core/resources/styles_manager.dart';
 import 'package:eyvo_v3/core/utils.dart';
+import 'package:eyvo_v3/core/widgets/alert.dart';
 import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
 import 'package:eyvo_v3/core/widgets/custom_card_item.dart';
 import 'package:eyvo_v3/core/widgets/custom_field.dart';
@@ -80,7 +81,7 @@ class _CreateOrderPageState extends State<CreateOrderPage> with RouteAware {
 
     final jsonResponse = await apiService.postRequest(
       context,
-      ApiService.orderApprovalList,
+      ApiService.orderList,
       requestData,
     );
 
@@ -153,12 +154,33 @@ class _CreateOrderPageState extends State<CreateOrderPage> with RouteAware {
 
             GestureDetector(
               onTap: () {
-                // Navigate to CreateOrderDetailsPage
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CreateOrderDetailsPage(),
-                  ),
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return CustomImageActionAlert(
+                      iconString: '',
+                      imageString: ImageAssets.common,
+                      titleString: "Create Order",
+                      subTitleString: "Are you sure you want create an order?",
+                      destructiveActionString: "Yes",
+                      normalActionString: "No",
+                      onDestructiveActionTap: () {
+                        Navigator.of(context).pop();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const CreateOrderDetailsPage(),
+                          ),
+                        );
+                      },
+                      onNormalActionTap: () {
+                        Navigator.of(context).pop();
+                      },
+                      isConfirmationAlert: true,
+                      isNormalAlert: true,
+                    );
+                  },
                 );
               },
               child: Container(
@@ -278,36 +300,14 @@ class _CreateOrderPageState extends State<CreateOrderPage> with RouteAware {
                 itemCount: orderApprovalList.length,
                 itemBuilder: (context, index) {
                   final order = orderApprovalList[index];
-                  return
-                      // CommonCardWidget(
-                      //   subtitles: [
-                      //     {'Order No': order.orderNumber},
-                      //     {'Status': order.orderStatus},
-                      //     {'Supplier Name': order.supplierName},
-                      //     {'Order Date': order.orderDate},
-                      //     {
-                      //       'Order Net Total':
-                      //           '${getFormattedPriceString(order.orderValue)}'
-                      //     },
-                      //   ],
-                      //   onTap: () {
-                      //     navigateToScreen(
-                      //       context,
-                      //       OrderDetailsView(
-                      //         orderId: order.orderId,
-                      //         orderNumber: order.orderNumber,
-                      //       ),
-                      //     );
-                      //   },
-                      // );
-                      GenericCardWidget(
+                  return GenericCardWidget(
                     titleKey: 'Order #${order.orderNumber}',
                     statusKey: order.orderStatus,
-                    supplierKey: 'Tanuja Patil',
+                    supplierKey: order.supplierName,
                     dateKey: order.orderDate,
                     valueKey: getFormattedPriceString(order.orderValue),
                     valueNameKey: 'Order Value',
-                    itemCountKey: '5',
+                    itemCountKey: order.itemCount.toString(),
                     onTap: () {
                       navigateToScreen(
                         context,

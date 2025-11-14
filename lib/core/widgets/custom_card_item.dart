@@ -5,6 +5,7 @@ import 'package:eyvo_v3/core/resources/font_manager.dart';
 import 'package:eyvo_v3/core/resources/styles_manager.dart';
 import 'package:eyvo_v3/core/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class CustomItemCard extends StatelessWidget {
   final String imageString;
@@ -378,11 +379,12 @@ class GenericCardWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Icon(
-                      Icons.person_2_sharp,
-                      color: ColorManager.lightBlack,
-                      size: 18,
+                      // Icons.person_2_sharp,
+                      FontAwesomeIcons.boxesPacking,
+                      color: ColorManager.grey,
+                      size: 14,
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 8),
                     Flexible(
                       child: Text(
                         supplier,

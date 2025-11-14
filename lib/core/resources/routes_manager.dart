@@ -71,7 +71,7 @@ class Routes {
   static const String orderApproverPage = "/orderApproverPage";
   static const String orderDetailsView = "/orderDetailsView";
   static const String genericDetailRoute = "/genericDetailPage";
-  // static const String genericDetailAPIRoute = "/genericDetailAPIPage";
+  static const String genericDetailAPIRoute = "/genericDetailAPIPage";
   static const String thankYouRoute = "/thankYou";
   static const String showGroupApprovalListRoute = "/showGroupApprovalList";
   static const String logOutRoute = "/logOutPage";
@@ -207,16 +207,16 @@ class RouteGenerator {
                 ));
       case Routes.logOutRoute:
         return MaterialPageRoute(builder: (_) => LogOutPage());
-      // case Routes.genericDetailAPIRoute:
-      //   final args = routeSettings.arguments as Map<String, dynamic>;
-      //   return MaterialPageRoute(
-      //     builder: (_) => GenericDetailAPIPage(
-      //       title: args['title'] ?? '',
-      //       id: args['id'],
-      //       type: args['type'],
-      //       lineId: args['lineId'],
-      //     ),
-      //   );
+      case Routes.genericDetailAPIRoute:
+        final args = routeSettings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => GenericDetailAPIPage(
+            title: args['title'] ?? '',
+            id: args['id'],
+            type: args['type'],
+            lineId: args['lineId'],
+          ),
+        );
       default:
         return unDefinedRoute();
     }

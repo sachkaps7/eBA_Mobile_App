@@ -3,6 +3,8 @@ import 'package:eyvo_v3/core/utils.dart';
 import 'package:eyvo_v3/core/widgets/approval_details_helper.dart';
 import 'package:eyvo_v3/core/widgets/button.dart';
 import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/base_header_form_view.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/base_line_form_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/create_order_item_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/create_order_header_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/create_request_header_view.dart';
@@ -81,10 +83,19 @@ class _CreateOrderDetailsPageState extends State<CreateRequestDetailsPage> {
                                       'Request Total': '0.00',
                                     }),
                                     buildAddCard("Add Request Details", () {
+                                      // navigateToScreen(
+                                      //   context,
+                                      //   CreateRequestHeaderView(
+                                      //       requestId: 2753),
+                                      // );
                                       navigateToScreen(
                                         context,
-                                        CreateRequestHeaderView(
-                                            requestId: 2753),
+                                        const BaseHeaderView(
+                                          id: 2753,
+                                          headerType: HeaderType.request,
+                                          appBarTitle: "Order Header",
+                                          
+                                        ),
                                       );
                                     }),
                                   ],
@@ -107,7 +118,12 @@ class _CreateOrderDetailsPageState extends State<CreateRequestDetailsPage> {
                                     buildAddCard("Add Line Item", () {
                                       navigateToScreen(
                                         context,
-                                        const CreateRequestLineView(),
+                                        const BaseLineView(
+                                          id: 2753,
+                                          lineId: 5408,
+                                          lineType: LineType.request,
+                                          appBarTitle: "Request Line",
+                                        ),
                                       );
                                     }),
                                   ],

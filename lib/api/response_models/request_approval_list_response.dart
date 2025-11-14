@@ -83,6 +83,7 @@ class Datum {
   final bool btnApprove;
   final dynamic rejectReason;
   final int customer;
+  final int itemCount;
 
   Datum({
     required this.requestId,
@@ -131,6 +132,7 @@ class Datum {
     required this.btnApprove,
     this.rejectReason,
     required this.customer,
+    required this.itemCount,
   });
 
   factory Datum.fromJson(Map<String, dynamic> json) => Datum(
@@ -180,6 +182,7 @@ class Datum {
         btnApprove: json["btnApprove"] ?? false,
         rejectReason: json["Reject_Reason"],
         customer: json["Customer"] ?? 0,
+        itemCount: json["ItemCount"] ?? 0,
       );
 
   Map<String, dynamic> toJson() => {
@@ -229,5 +232,6 @@ class Datum {
         "btnApprove": btnApprove,
         "Reject_Reason": rejectReason,
         "Customer": customer,
+        "ItemCount": itemCount,
       };
 }

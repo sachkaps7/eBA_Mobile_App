@@ -11,6 +11,8 @@ import 'package:eyvo_v3/core/widgets/approval_details_helper.dart';
 import 'package:eyvo_v3/core/widgets/approver_detailed_page.dart';
 import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
 import 'package:eyvo_v3/core/widgets/thankYouPage.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/base_header_form_view.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/base_line_form_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/show_group_approver_list.dart';
 import 'package:eyvo_v3/log_data.dart/logger_data.dart';
 import 'package:flutter/material.dart';
@@ -232,52 +234,63 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                         .header.groupApproverStatus,
                                   },
                                   onTap: () {
-                                    Navigator.pushNamed(
+                                    // Navigator.pushNamed(
+                                    //   context,
+                                    //   Routes.genericDetailRoute,
+                                    //   arguments: {
+                                    //     'title': 'Order Header',
+                                    //     'data': {
+                                    //       'Order Number':
+                                    //           orderDetails!.header.orderNumber,
+                                    //       'Order Date':
+                                    //           orderDetails!.header.orderDate,
+                                    //       'Order Status':
+                                    //           orderDetails!.header.orderStatus,
+                                    //       'Order Net Total':
+                                    //           '${getFormattedPriceString(orderDetails!.header.orderValue)} (${orderDetails!.header.currencyCode})',
+                                    //       'Reference No':
+                                    //           orderDetails!.header.referenceNo,
+                                    //       'Supplier Name':
+                                    //           orderDetails!.header.supplierName,
+                                    //       'Delivery To':
+                                    //           orderDetails!.header.fao,
+                                    //       'Delivery Code':
+                                    //           orderDetails!.header.deliveryCode,
+                                    //       'Invoice Code': orderDetails!
+                                    //           .header.invoicePtCode,
+                                    //       'Category Code':
+                                    //           orderDetails!.header.categoryCode,
+                                    //       orderDetails!.header.expName1:
+                                    //           orderDetails!.header.expCode1,
+                                    //       orderDetails!.header.expName2:
+                                    //           orderDetails!.header.expCode2,
+                                    //       orderDetails!.header.expName3:
+                                    //           orderDetails!.header.expCode3,
+                                    //       'Incoterms': orderDetails!.header.fob,
+                                    //       'Budget': orderDetails!
+                                    //           .header.orderBudgetHeader,
+                                    //       // 'Approval Type': orderDetails!
+                                    //       //         .header.approvalType ??
+                                    //       //     '',
+                                    //       'Rule Approver Status':
+                                    //           orderDetails!.header.ruleStatus,
+                                    //       'CC Approver Status': orderDetails!
+                                    //           .header.ccApproverStatus,
+                                    //       'Group Approver Status': orderDetails!
+                                    //           .header.groupApproverStatus,
+                                    //     },
+                                    //   },
+                                    // );
+
+                                    navigateToScreen(
                                       context,
-                                      Routes.genericDetailRoute,
-                                      arguments: {
-                                        'title': 'Order Header',
-                                        'data': {
-                                          'Order Number':
-                                              orderDetails!.header.orderNumber,
-                                          'Order Date':
-                                              orderDetails!.header.orderDate,
-                                          'Order Status':
-                                              orderDetails!.header.orderStatus,
-                                          'Order Net Total':
-                                              '${getFormattedPriceString(orderDetails!.header.orderValue)} (${orderDetails!.header.currencyCode})',
-                                          'Reference No':
-                                              orderDetails!.header.referenceNo,
-                                          'Supplier Name':
-                                              orderDetails!.header.supplierName,
-                                          'Delivery To':
-                                              orderDetails!.header.fao,
-                                          'Delivery Code':
-                                              orderDetails!.header.deliveryCode,
-                                          'Invoice Code': orderDetails!
-                                              .header.invoicePtCode,
-                                          'Category Code':
-                                              orderDetails!.header.categoryCode,
-                                          orderDetails!.header.expName1:
-                                              orderDetails!.header.expCode1,
-                                          orderDetails!.header.expName2:
-                                              orderDetails!.header.expCode2,
-                                          orderDetails!.header.expName3:
-                                              orderDetails!.header.expCode3,
-                                          'Incoterms': orderDetails!.header.fob,
-                                          'Budget': orderDetails!
-                                              .header.orderBudgetHeader,
-                                          // 'Approval Type': orderDetails!
-                                          //         .header.approvalType ??
-                                          //     '',
-                                          'Rule Approver Status':
-                                              orderDetails!.header.ruleStatus,
-                                          'CC Approver Status': orderDetails!
-                                              .header.ccApproverStatus,
-                                          'Group Approver Status': orderDetails!
-                                              .header.groupApproverStatus,
-                                        },
-                                      },
+                                      BaseHeaderView(
+                                        id: widget.orderId,
+                                        headerType: HeaderType.order,
+                                        appBarTitle: "Order Header",
+                                        buttonshow: false,
+                                        constantFieldshow: false,
+                                      ),
                                     );
                                   },
                                   isExpanded: expandedSection == "Details",
@@ -316,54 +329,64 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                               'Net Price':
                                                   '${getFormattedPriceString(lineItem.netPrice)} (${lineItem.supplierCcyCode})',
                                             }, () {
-                                              Navigator.pushNamed(
+                                              // Navigator.pushNamed(
+                                              //   context,
+                                              //   Routes.genericDetailRoute,
+                                              //   arguments: {
+                                              //     'title': 'Order Line',
+                                              //     'data': {
+                                              //       'Item No.':
+                                              //           lineItem.itemOrder,
+                                              //       'Item Code':
+                                              //           lineItem.itemCode,
+                                              //       'Description':
+                                              //           lineItem.description,
+                                              //       'Suppliers Part No':
+                                              //           lineItem
+                                              //               .suppliersPartNo,
+                                              //       'Due Date':
+                                              //           lineItem.dueDate,
+                                              //       'Quantity':
+                                              //           '${getFormattedPriceString(lineItem.quantity)}',
+                                              //       'Unit': lineItem.unit,
+                                              //       'Pack Size': lineItem
+                                              //           .packSize
+                                              //           .toInt()
+                                              //           .toString(),
+                                              //       'Unit Price':
+                                              //           '${getFormattedPriceString(lineItem.price)} (${lineItem.supplierCcyCode})',
+                                              //       'Discount': lineItem
+                                              //                   .discountType ==
+                                              //               1
+                                              //           ? '${lineItem.discount}(value)'
+                                              //           : '${lineItem.discount}(%)',
+                                              //       'Tax':
+                                              //           '${lineItem.tax.toStringAsFixed(3)}%',
+                                              //       'Tax Value': lineItem
+                                              //           .taxValue
+                                              //           .toStringAsFixed(3),
+                                              //       'Net Price':
+                                              //           '${getFormattedPriceString(lineItem.netPrice)} (${lineItem.supplierCcyCode})',
+                                              //       'Gross Price':
+                                              //           '${getFormattedPriceString(lineItem.grossPrice)} (${lineItem.supplierCcyCode})',
+                                              //       lineItem.expName4:
+                                              //           lineItem.expCode4,
+                                              //       lineItem.expName5:
+                                              //           lineItem.expCode5,
+                                              //       lineItem.expName6:
+                                              //           lineItem.expCode6,
+                                              //     },
+                                              //   },
+                                              // );
+                                              navigateToScreen(
                                                 context,
-                                                Routes.genericDetailRoute,
-                                                arguments: {
-                                                  'title': 'Order Line',
-                                                  'data': {
-                                                    'Item No.':
-                                                        lineItem.itemOrder,
-                                                    'Item Code':
-                                                        lineItem.itemCode,
-                                                    'Description':
-                                                        lineItem.description,
-                                                    'Suppliers Part No':
-                                                        lineItem
-                                                            .suppliersPartNo,
-                                                    'Due Date':
-                                                        lineItem.dueDate,
-                                                    'Quantity':
-                                                        '${getFormattedPriceString(lineItem.quantity)}',
-                                                    'Unit': lineItem.unit,
-                                                    'Pack Size': lineItem
-                                                        .packSize
-                                                        .toInt()
-                                                        .toString(),
-                                                    'Unit Price':
-                                                        '${getFormattedPriceString(lineItem.price)} (${lineItem.supplierCcyCode})',
-                                                    'Discount': lineItem
-                                                                .discountType ==
-                                                            1
-                                                        ? '${lineItem.discount}(value)'
-                                                        : '${lineItem.discount}(%)',
-                                                    'Tax':
-                                                        '${lineItem.tax.toStringAsFixed(3)}%',
-                                                    'Tax Value': lineItem
-                                                        .taxValue
-                                                        .toStringAsFixed(3),
-                                                    'Net Price':
-                                                        '${getFormattedPriceString(lineItem.netPrice)} (${lineItem.supplierCcyCode})',
-                                                    'Gross Price':
-                                                        '${getFormattedPriceString(lineItem.grossPrice)} (${lineItem.supplierCcyCode})',
-                                                    lineItem.expName4:
-                                                        lineItem.expCode4,
-                                                    lineItem.expName5:
-                                                        lineItem.expCode5,
-                                                    lineItem.expName6:
-                                                        lineItem.expCode6,
-                                                  },
-                                                },
+                                                BaseLineView(
+                                                  id: widget.orderId,
+                                                  lineId: lineItem.orderLineId,
+                                                  lineType: LineType.order,
+                                                  appBarTitle: "Order Line",
+                                                  buttonshow: false,
+                                                ),
                                               );
                                             });
                                           }).toList(),

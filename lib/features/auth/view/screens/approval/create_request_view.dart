@@ -11,6 +11,7 @@ import 'package:eyvo_v3/core/resources/routes_manager.dart';
 import 'package:eyvo_v3/core/resources/strings_manager.dart';
 import 'package:eyvo_v3/core/resources/styles_manager.dart';
 import 'package:eyvo_v3/core/utils.dart';
+import 'package:eyvo_v3/core/widgets/alert.dart';
 import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
 import 'package:eyvo_v3/core/widgets/custom_card_item.dart';
 import 'package:eyvo_v3/core/widgets/custom_field.dart';
@@ -154,11 +155,34 @@ class _CreateRequestPageState extends State<CreateRequestPage> with RouteAware {
 
             GestureDetector(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CreateRequestDetailsPage(),
-                  ),
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return CustomImageActionAlert(
+                      iconString: '',
+                      imageString: ImageAssets.common,
+                      titleString: "Create Request",
+                      subTitleString:
+                          "Are you sure you want to create a request?",
+                      destructiveActionString: "Yes",
+                      normalActionString: "No",
+                      onDestructiveActionTap: () {
+                        Navigator.of(context).pop();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const CreateRequestDetailsPage(),
+                          ),
+                        );
+                      },
+                      onNormalActionTap: () {
+                        Navigator.of(context).pop();
+                      },
+                      isConfirmationAlert: true,
+                      isNormalAlert: true,
+                    );
+                  },
                 );
               },
               child: Container(
@@ -301,7 +325,7 @@ class _CreateRequestPageState extends State<CreateRequestPage> with RouteAware {
                       //   },
                       // );
                       GenericCardWidget(
-                    titleKey: 'Order #${order.orderNumber}',
+                    titleKey: 'Request #${order.orderNumber}',
                     statusKey: order.orderStatus,
                     supplierKey: 'Tanuja Patil',
                     dateKey: order.orderDate,

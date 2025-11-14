@@ -57,6 +57,7 @@ class OrderApprovalItem {
   final dynamic fob;
   final dynamic orderBudgetHeader;
   final String approvalType;
+  final int itemCount;
 
   OrderApprovalItem({
     required this.orderId,
@@ -79,6 +80,7 @@ class OrderApprovalItem {
     this.fob,
     this.orderBudgetHeader,
     required this.approvalType,
+    required this.itemCount,
   });
 
   factory OrderApprovalItem.fromJson(Map<String, dynamic> json) =>
@@ -103,6 +105,7 @@ class OrderApprovalItem {
         fob: json["FOB"],
         orderBudgetHeader: json["Order_Budget_Header"],
         approvalType: json["ApprovalType"] ?? "",
+        itemCount: json["ItemCount"] ?? 0,
       );
 
   Map<String, dynamic> toJson() => {
@@ -126,5 +129,6 @@ class OrderApprovalItem {
         "FOB": fob,
         "Order_Budget_Header": orderBudgetHeader,
         "ApprovalType": approvalType,
+        "ItemCount": itemCount,
       };
 }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "347016150015",
+    "project_id": "approvalmobiletesting",
+    "storage_bucket": "approvalmobiletesting.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:347016150015:android:5c59c7525d2b1feed305ca",
+        "android_client_info": {
+          "package_name": "com.URBN_Inventory.eyvo_inventory"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMSLqaO3FC4dG4GZHdbkKQ_XV7jiq_hok"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

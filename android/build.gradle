@@ -1,12 +1,13 @@
 buildscript {
-   ext.kotlin_version = '1.9.24' /// Define Kotlin version here
+    ext.kotlin_version = '2.0.21' /// Define Kotlin version here
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-      classpath 'com.android.tools.build:gradle:8.1.1'// upgrade AGP
+      classpath 'com.android.tools.build:gradle:8.2.2'
       classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+      classpath 'com.google.gms:google-services:4.4.0'
     }
 }
 
@@ -15,7 +16,21 @@ allprojects {
         google()
         mavenCentral()
     }
+       
+    // ▼▼▼ ADD THIS SECTION ▼▼▼
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            android {
+                // Apply namespace to all Android library projects
+                if (project.name.contains('flutter_plugin_android_lifecycle')) {
+                    namespace 'io.flutter.plugins.flutter_plugin_android_lifecycle'
+                }
+            }
+        }
+    }
+    // ▲▲▲ END OF ADDITION ▲▲▲
 }
+
 
 rootProject.buildDir = "../build"
 subprojects {

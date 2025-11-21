@@ -1,6 +1,7 @@
 import 'package:eyvo_v3/api/api_service/api_service.dart';
 import 'package:eyvo_v3/api/response_models/order_header_response.dart';
 import 'package:eyvo_v3/app/app_prefs.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/resources/strings_manager.dart';
 import 'package:eyvo_v3/core/widgets/button.dart';
 import 'package:eyvo_v3/core/widgets/form_field_helper.dart';
@@ -101,10 +102,10 @@ class _CreateOrderLineViewState extends State<CreateOrderLineView> {
   // Dropdown data
   List<DropdownItem> catalogItems() {
     return [
-      DropdownItem(id: "1", value: "CAT-001"),
-      DropdownItem(id: "1", value: "CAT-002"),
-      DropdownItem(id: "1", value: "CAT-003"),
-      DropdownItem(id: "1", value: "CAT-004"),
+      DropdownItem(id: "1", value: "CAT-001", code: "ert"),
+      DropdownItem(id: "1", value: "CAT-002", code: "ert"),
+      DropdownItem(id: "1", value: "CAT-003", code: "ert"),
+      DropdownItem(id: "1", value: "CAT-004", code: "ert"),
     ];
   }
 
@@ -120,6 +121,7 @@ class _CreateOrderLineViewState extends State<CreateOrderLineView> {
         ApiService.createOrderHeader,
         {
           'uid': SharedPrefs().uID,
+          'apptype': AppConstants.apptype,
           'ID': widget.orderId,
           'LineID': 3556,
           'group': 'Order',

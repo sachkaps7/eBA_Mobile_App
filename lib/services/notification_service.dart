@@ -310,13 +310,14 @@ class NotificationService {
     final action = data['action'];
     final idStr = data['orderId'] ?? data['requestId'];
     final id = int.tryParse(idStr ?? '');
-    
 
     if (id != null) {
       if (action == 'order') {
         navigatorKey.currentState?.push(
           MaterialPageRoute(
-            builder: (_) => OrderDetailsView(orderId: id,),
+            builder: (_) => OrderDetailsView(
+              orderId: id,
+            ),
           ),
         );
       } else if (action == 'request') {
@@ -369,7 +370,9 @@ class NotificationService {
         if (action == 'order') {
           navigatorKey.currentState?.push(
             MaterialPageRoute(
-              builder: (_) => OrderDetailsView(orderId: id, orderNumber: '',),
+              builder: (_) => OrderDetailsView(
+                orderId: id,
+              ),
             ),
           );
         } else if (action == 'request') {

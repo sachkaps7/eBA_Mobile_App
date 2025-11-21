@@ -11,6 +11,7 @@ import 'package:eyvo_v3/app/app_prefs.dart';
 import 'package:eyvo_v3/app/sizes_helper.dart';
 import 'package:eyvo_v3/core/resources/assets_manager.dart';
 import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/resources/font_manager.dart';
 import 'package:eyvo_v3/core/resources/routes_manager.dart';
 import 'package:eyvo_v3/core/resources/strings_manager.dart';
@@ -111,7 +112,7 @@ class _LoginViewPageState extends State<LoginViewPage> {
 
   // void fetchLoginDetails() async {
   //   Map<String, dynamic> data = {
-  //     'uid': SharedPrefs().uID,
+  //      'uid': SharedPrefs().uID,'apptype': AppConstants.apptype,
   //   };
   //   final jsonResponse =
   //       await apiService.postRequest(context, ApiService.loadLogin, data);
@@ -143,6 +144,7 @@ class _LoginViewPageState extends State<LoginViewPage> {
   void fetchLoginDetails() async {
     Map<String, dynamic> data = {
       'uid': SharedPrefs().uID,
+      'apptype': AppConstants.apptype,
     };
 
     setState(() {
@@ -330,6 +332,7 @@ class _LoginViewPageState extends State<LoginViewPage> {
       'fcmtoken': fcmToken,
       'platform': devicePlatform,
       'device_id': deviceId,
+      'apptype': AppConstants.apptype,
     };
 
     final jsonResponse =

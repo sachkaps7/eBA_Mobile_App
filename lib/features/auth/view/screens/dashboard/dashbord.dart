@@ -4,6 +4,7 @@ import 'package:eyvo_v3/app/app_prefs.dart';
 import 'package:eyvo_v3/app/sizes_helper.dart';
 import 'package:eyvo_v3/core/resources/assets_manager.dart';
 import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/resources/font_manager.dart';
 import 'package:eyvo_v3/core/resources/routes_manager.dart';
 import 'package:eyvo_v3/core/resources/strings_manager.dart';
@@ -78,6 +79,7 @@ class _HomeViewState extends State<HomeView> {
 
     Map<String, dynamic> requestData = {
       'uid': SharedPrefs().uID,
+      'apptype': AppConstants.apptype,
     };
 
     final jsonResponse = await apiService.postRequest(
@@ -322,7 +324,7 @@ class _HomeViewState extends State<HomeView> {
                         backgroundColor: ColorManager.white,
                         cornerRadius: 12,
                         onTap: () {
-                          navigateToScreen(context, const CreateRequestPage());
+                          navigateToScreen(context, const RequestListingPage());
                         },
                       ),
                     );
@@ -334,7 +336,7 @@ class _HomeViewState extends State<HomeView> {
                         backgroundColor: ColorManager.white,
                         cornerRadius: 12,
                         onTap: () {
-                          navigateToScreen(context, const CreateOrderPage());
+                          navigateToScreen(context, const OrderListingPage());
                         },
                       ),
                     );

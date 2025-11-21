@@ -94,6 +94,7 @@ class _CreateOrderDetailsPageState extends State<CreateOrderDetailsPage> {
                                           id: 1434,
                                           headerType: HeaderType.order,
                                           appBarTitle: "Order Header",
+                                          number: 467,
                                         ),
                                       );
                                     }),

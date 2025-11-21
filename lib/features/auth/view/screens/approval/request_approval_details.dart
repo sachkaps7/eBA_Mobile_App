@@ -5,6 +5,7 @@ import 'package:eyvo_v3/api/response_models/request_approval_details_response.da
 import 'package:eyvo_v3/app/app_prefs.dart';
 import 'package:eyvo_v3/core/resources/assets_manager.dart';
 import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/resources/font_manager.dart';
 import 'package:eyvo_v3/core/resources/routes_manager.dart';
 import 'package:eyvo_v3/core/resources/strings_manager.dart';
@@ -20,17 +21,18 @@ import 'package:flutter/material.dart';
 
 class RequestDetailsView extends StatefulWidget {
   final int requestId;
-  final String requestNumber;
 
-  const RequestDetailsView(
-      {Key? key, required this.requestId, required this.requestNumber})
-      : super(key: key);
+  const RequestDetailsView({
+    Key? key,
+    required this.requestId,
+  }) : super(key: key);
 
   @override
   State<RequestDetailsView> createState() => _RequestDetailsViewState();
 }
 
-class _RequestDetailsViewState extends State<RequestDetailsView> {
+class _RequestDetailsViewState extends State<RequestDetailsView>
+    with RouteAware {
   final ApiService apiService = ApiService();
   bool isLoading = false;
   bool isError = false;
@@ -38,12 +40,32 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
   HeaderLineData? requestHeaderList;
   Data? requestDetails;
   String? expandedSection;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    routeObserver.subscribe(
+      this,
+      ModalRoute.of(context)! as PageRoute,
+    );
+  }
+
+  @override
+  void didPopNext() {
+    fetchRequestApprovalDetails();
+  }
 
   @override
   void initState() {
     super.initState();
     expandedSection = "Details"; // default expanded section
     fetchRequestApprovalDetails();
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
   }
 
   Future<void> fetchRequestApprovalDetails() async {
@@ -55,7 +77,11 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
     final jsonResponse = await apiService.postRequest(
       context,
       ApiService.requestApprovalDetails,
-      {'uid': SharedPrefs().uID, 'requestId': widget.requestId},
+      {
+        'uid': SharedPrefs().uID,
+        'apptype': AppConstants.apptype,
+        'requestId': widget.requestId
+      },
     );
 
     if (jsonResponse != null) {
@@ -81,7 +107,7 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
 
   Future<HeaderLineData?> fetchRequestHeaderApprovalList() async {
     Map<String, dynamic> requestData = {
-      'uid': SharedPrefs().uID,
+      'uid': SharedPrefs().uID, 'apptype': AppConstants.apptype,
       'Request_ID': widget.requestId, // Use actual requestId
     };
 
@@ -95,7 +121,7 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
       final response = HeaderListResponse.fromJson(jsonResponse);
 
       if (response.code == 200) {
-        return response.headerlineData; // ✅ return directly
+        return response.headerlineData; //return directly
       } else {
         showErrorDialog(context, response.message.join(', '), false);
         return null;
@@ -113,7 +139,11 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
     final jsonResponse = await apiService.postRequest(
       context,
       ApiService.requestApprovalApproved,
-      {'uid': SharedPrefs().uID, 'requestId': widget.requestId},
+      {
+        'uid': SharedPrefs().uID,
+        'apptype': AppConstants.apptype,
+        'requestId': widget.requestId
+      },
     );
 
     if (jsonResponse != null) {
@@ -145,6 +175,7 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
       ApiService.requestApprovalReject,
       {
         'uid': SharedPrefs().uID,
+        'apptype': AppConstants.apptype,
         'requestId': widget.requestId,
         'reason': reason
       },
@@ -176,7 +207,9 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
     return Scaffold(
       appBar: buildCommonAppBar(
         context: context,
-        title: "Request #${widget.requestNumber}",
+        title: requestDetails == null
+            ? "Request Details"
+            : "Request #${requestDetails!.header.requestNumber}",
       ),
       body: isLoading
           ? const Center(child: CustomProgressIndicator())
@@ -189,7 +222,8 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
                         child: Column(
                           children: [
 // --------------------------------------------------------------- DETAILS ---------------------------------------------------------------
-                            ApprovalDetailsHelper.buildSectionForDetails(
+                            ApprovalDetailsHelper
+                                .buildSectionForDetailsWithEditIcon(
                               "Details",
                               Icons.description_outlined,
                               {
@@ -246,12 +280,17 @@ class _RequestDetailsViewState extends State<RequestDetailsView> {
                                 navigateToScreen(
                                   context,
                                   BaseHeaderView(
-                                    id: widget.requestId,
-                                    headerType: HeaderType.request,
-                                    appBarTitle: "Request Header",
-                                    buttonshow: false,
-                                    constantFieldshow: false,
-                                  ),
+                                      id: widget.requestId,
+                                      headerType: HeaderType.request,
+                                      appBarTitle: "Request Header",
+                                      buttonshow: false,
+                                      constantFieldshow: false,
+                                      number: int.tryParse(requestDetails!
+                                              .header.requestNumber) ??
+                                          0,
+                                      status:
+                                          requestDetails!.header.requestStatus,
+                                      date: requestDetails!.header.entryDate),
                                 );
                               },
 

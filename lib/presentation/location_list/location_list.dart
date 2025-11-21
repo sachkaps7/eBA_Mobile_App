@@ -45,7 +45,7 @@ class _LocationListViewState extends State<LocationListView> {
     });
 
     Map<String, dynamic> data = {
-      //  'uid': SharedPrefs().uID,
+      //   'uid': SharedPrefs().uID,'apptype': AppConstants.apptype,
       'regionid': widget.selectedRegioId
     };
     final jsonResponse =

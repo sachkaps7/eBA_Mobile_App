@@ -113,8 +113,9 @@ class EnumValues<T> {
 class DropdownItem {
   final String id;
   final String value;
+  final String code;
 
-  DropdownItem({required this.id, required this.value});
+  DropdownItem({required this.id, required this.value, required this.code});
 
   @override
   String toString() => value;

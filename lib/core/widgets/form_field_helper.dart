@@ -4,6 +4,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:eyvo_v3/api/response_models/order_header_response.dart';
 import 'package:eyvo_v3/core/resources/assets_manager.dart';
 import 'package:eyvo_v3/core/resources/constants.dart';
+import 'package:eyvo_v3/core/widgets/custom_field.dart';
 import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:eyvo_v3/core/resources/color_manager.dart';
@@ -315,7 +316,7 @@ class FormFieldHelper {
       try {
         final foundItem = items.firstWhere(
           (item) => item.id == value,
-          orElse: () => DropdownItem(id: '', value: ''),
+          orElse: () => DropdownItem(id: '', value: '', code: ''),
         );
         displayValue =
             foundItem.id.isNotEmpty ? foundItem.value : apiDisplayValue;
@@ -464,7 +465,154 @@ class FormFieldHelper {
     );
   }
 
-  //-------------------- DATE PICKER FIELD --------------------
+  static Widget buildDropdownFieldWithIds1({
+    required BuildContext context,
+    required String label,
+    required String? value,
+    required Future<List<DropdownItem>> Function() fetchItems,
+    required ValueChanged<String?> onChanged,
+    bool isRequired = false,
+    String? apiDisplayValue,
+    bool readOnly = false,
+    Function(String?)? onDisplayValueUpdate, // Changed to String?
+    required TextEditingController searchController,
+  }) {
+    String? displayValue = apiDisplayValue;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: getSemiBoldStyle(
+            color: ColorManager.black,
+            fontSize: FontSize.s14,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Stack(
+          children: [
+            GestureDetector(
+              onTap: readOnly
+                  ? null
+                  : () async {
+                      searchController.clear();
+                      final items = await fetchItems();
+
+                      final selectedDisplayValue =
+                          await showModalBottomSheet<String?>(
+                        context: context,
+                        isScrollControlled: true,
+                        builder: (_) => CustomDropdownModal(
+                          items: items,
+                          selectedValue: displayValue,
+                          label: label,
+                          searchController: searchController,
+                          allowDeselection: !isRequired, // Added this parameter
+                          onSearchChanged: () async {
+                            return await fetchItems();
+                          },
+                        ),
+                      );
+
+                      if (selectedDisplayValue != null) {
+                        String selectedId;
+                        String selectedDisplayText;
+
+                        if (selectedDisplayValue == apiDisplayValue) {
+                          selectedId = value ?? '';
+                          selectedDisplayText = selectedDisplayValue;
+                        } else {
+                          // Extract the code from the selected display value (part before " - ")
+                          final selectedCode =
+                              selectedDisplayValue.split(' - ').first;
+
+                          // Find the actual item to get the proper ID
+                          final selectedItem = items.firstWhere(
+                            (item) => item.code == selectedCode,
+                            orElse: () =>
+                                DropdownItem(id: '', value: '', code: ''),
+                          );
+
+                          selectedId = selectedItem.id;
+                          // Show both code and description as display value
+                          selectedDisplayText =
+                              "${selectedItem.code} - ${selectedItem.value}";
+                        }
+
+                        // Update display value to show both code and description
+                        displayValue = selectedDisplayText;
+
+                        // Notify parent if callback provided
+                        onDisplayValueUpdate?.call(selectedDisplayText);
+
+                        onChanged(selectedId);
+                      } else {
+                        // Handle null case (deselection)
+                        displayValue = null;
+                        onDisplayValueUpdate?.call(null);
+                        onChanged(null);
+                      }
+                    },
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                decoration: BoxDecoration(
+                  color: readOnly
+                      ? ColorManager.readOnlyColor
+                      : ColorManager.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: ColorManager.darkGrey,
+                    width: 1.0,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        displayValue ?? "Select $label",
+                        style: TextStyle(
+                          fontSize: FontSize.s14,
+                          color: displayValue == null
+                              ? ColorManager.grey
+                              : ColorManager.black,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (readOnly)
+                          Icon(Icons.lock_outline,
+                              size: 20, color: ColorManager.lightGrey3)
+                        else
+                          Icon(Icons.arrow_drop_down,
+                              color: ColorManager.darkGrey),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (isRequired)
+              Positioned(
+                right: 0,
+                top: 0,
+                child: CustomPaint(
+                  size: const Size(12, 12),
+                  painter: _RedTrianglePainter(),
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+//-------------------------------------------------Date picker ----------------------
   static Widget buildDatePickerField({
     required BuildContext context,
     required String label,
@@ -943,4 +1091,314 @@ class _RedTrianglePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class AsyncDropdownField extends StatefulWidget {
+  final BuildContext context;
+  final String label;
+  final String? value;
+  final Future<List<DropdownItem>> Function({String search}) fetchItems;
+  final ValueChanged<String?> onChanged;
+  final bool isRequired;
+  final String? apiDisplayValue;
+  final bool readOnly;
+
+  const AsyncDropdownField({
+    Key? key,
+    required this.context,
+    required this.label,
+    required this.value,
+    required this.fetchItems,
+    required this.onChanged,
+    this.isRequired = false,
+    this.apiDisplayValue,
+    this.readOnly = false,
+  }) : super(key: key);
+
+  @override
+  _AsyncDropdownFieldState createState() => _AsyncDropdownFieldState();
+}
+
+class _AsyncDropdownFieldState extends State<AsyncDropdownField> {
+  String? _displayValue;
+  late TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _displayValue = widget.apiDisplayValue;
+    _searchController = TextEditingController();
+  }
+
+  Future<List<DropdownItem>> _fetchItemsWithSearch() async {
+    final searchText = _searchController.text;
+    return await widget.fetchItems(search: searchText);
+  }
+
+  @override
+  void didUpdateWidget(AsyncDropdownField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.apiDisplayValue != oldWidget.apiDisplayValue) {
+      _displayValue = widget.apiDisplayValue;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FormFieldHelper.buildDropdownFieldWithIds1(
+      context: widget.context,
+      label: widget.label,
+      value: widget.value,
+      fetchItems: _fetchItemsWithSearch,
+      onChanged: (value) {
+        widget.onChanged(value);
+      },
+      isRequired: widget.isRequired,
+      apiDisplayValue: _displayValue,
+      readOnly: widget.readOnly,
+      onDisplayValueUpdate: (newDisplayValue) {
+        setState(() {
+          _displayValue = newDisplayValue;
+        });
+      },
+      searchController: _searchController,
+    );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+}
+
+class CustomDropdownModal extends StatefulWidget {
+  final List<DropdownItem> items;
+  final String? selectedValue;
+  final String label;
+  final TextEditingController searchController;
+  final Future<List<DropdownItem>> Function()? onSearchChanged;
+  final bool allowDeselection; // Added this parameter
+
+  const CustomDropdownModal({
+    Key? key,
+    required this.items,
+    this.selectedValue,
+    required this.label,
+    required this.searchController,
+    this.onSearchChanged,
+    this.allowDeselection = false, // Default to false
+  }) : super(key: key);
+
+  @override
+  _CustomDropdownModalState createState() => _CustomDropdownModalState();
+}
+
+class _CustomDropdownModalState extends State<CustomDropdownModal> {
+  late List<DropdownItem> _filteredItems;
+  late List<DropdownItem> _originalItems;
+  late TextEditingController _searchController;
+
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _originalItems = widget.items;
+    _filteredItems = widget.items;
+    _searchController = widget.searchController;
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() async {
+    final query = _searchController.text.toLowerCase();
+
+    if (widget.onSearchChanged != null && query.isNotEmpty) {
+      final newItems = await widget.onSearchChanged!();
+      setState(() => _filteredItems = newItems);
+    } else {
+      setState(() {
+        _filteredItems = query.isEmpty
+            ? _originalItems
+            : _originalItems.where((item) {
+                return item.code.toLowerCase().contains(query) ||
+                    item.value.toLowerCase().contains(query);
+              }).toList();
+      });
+    }
+  }
+
+  bool _isItemSelected(DropdownItem item) {
+    if (widget.selectedValue == null) return false;
+    final selectedCode = widget.selectedValue?.split(' - ').first;
+    return item.code == selectedCode;
+  }
+
+  void _handleItemTap(DropdownItem item) {
+    final isSelected = _isItemSelected(item);
+
+    // If item is already selected and deselection is allowed, return null
+    if (isSelected && widget.allowDeselection) {
+      Navigator.of(context).pop(null);
+    } else {
+      // Otherwise return the selected value
+      Navigator.of(context).pop("${item.code} - ${item.value}");
+    }
+  }
+
+  void _clearSelection() {
+    Navigator.of(context).pop(null);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: ColorManager.primary,
+      height: MediaQuery.of(context).size.height,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Select ${widget.label}",
+                style: getBoldStyle(
+                    fontSize: FontSize.s18, color: ColorManager.darkBlue),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Search
+          CustomSearchField(
+            controller: _searchController,
+            placeholderText: "search ${widget.label}",
+            inputType: TextInputType.text,
+            autoFocus: true,
+          ),
+          const SizedBox(height: 16),
+
+          // // Clear selection button (only show when allowDeselection is true and there's a selection)
+          // if (widget.allowDeselection && widget.selectedValue != null)
+          //   Column(
+          //     children: [
+          //       SizedBox(
+          //         width: double.infinity,
+          //         child: TextButton(
+          //           onPressed: _clearSelection,
+          //           style: TextButton.styleFrom(
+          //             backgroundColor: ColorManager.lightGrey,
+          //             padding: const EdgeInsets.symmetric(vertical: 12),
+          //           ),
+          //           child: Text(
+          //             "Clear Selection",
+          //             style: getMediumStyle(
+          //               fontSize: FontSize.s14,
+          //               color: ColorManager.darkBlue,
+          //             ),
+          //           ),
+          //         ),
+          //       ),
+          //       const SizedBox(height: 16),
+          //     ],
+          //   ),
+
+          Row(
+            children: [
+              Text(
+                "Results: ${_filteredItems.length}",
+                style:
+                    TextStyle(fontSize: FontSize.s12, color: ColorManager.grey),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // LIST + SCROLLBAR
+          Expanded(
+            child: ScrollbarTheme(
+              data: ScrollbarThemeData(
+                thumbColor: MaterialStateProperty.all(ColorManager.blue),
+                thickness: MaterialStateProperty.all(4),
+                radius: const Radius.circular(12),
+                minThumbLength: 300,
+              ),
+              child: Scrollbar(
+                controller: _scrollController,
+                thumbVisibility: true,
+                child: _filteredItems.isEmpty
+                    ? Center(
+                        child: Text(
+                          "No results found",
+                          style: getRegularStyle(
+                              fontSize: FontSize.s16, color: ColorManager.grey),
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: _scrollController,
+                        itemCount: _filteredItems.length,
+                        itemBuilder: (context, index) {
+                          final item = _filteredItems[index];
+                          final isSelected = _isItemSelected(item);
+
+                          return Card(
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            color: isSelected
+                                ? ColorManager.highlightColor
+                                : Colors.white,
+                            child: ListTile(
+                              title: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.code,
+                                    style: getSemiBoldStyle(
+                                        fontSize: FontSize.s16,
+                                        color: ColorManager.black),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    item.value,
+                                    style: getRegularStyle(
+                                        fontSize: FontSize.s14,
+                                        color: ColorManager.darkGrey),
+                                  ),
+                                ],
+                              ),
+                              trailing: isSelected
+                                  ? Container(
+                                      width: 24,
+                                      height: 24,
+                                      decoration: BoxDecoration(
+                                          color: ColorManager.darkBlue,
+                                          shape: BoxShape.circle),
+                                      child: const Icon(Icons.check,
+                                          size: 16, color: Colors.white),
+                                    )
+                                  : null,
+                              onTap: () => _handleItemTap(item),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _scrollController.dispose();
+    super.dispose();
+  }
 }

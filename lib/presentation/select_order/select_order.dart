@@ -132,6 +132,7 @@ class _SelectOrderViewState extends State<SelectOrderView> with RouteAware {
 
     Map<String, dynamic> data = {
       'uid': SharedPrefs().uID,
+      'apptype': AppConstants.apptype,
       'search': searchController.text,
       'regionid': SharedPrefs().selectedRegionID,
       'pageno': requestPage,

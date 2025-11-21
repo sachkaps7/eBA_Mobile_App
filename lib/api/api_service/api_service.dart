@@ -5,6 +5,7 @@ import 'package:eyvo_v3/Environment/environment.dart';
 import 'package:eyvo_v3/api/response_models/default_api_response.dart';
 import 'package:eyvo_v3/api/response_models/token_response.dart';
 import 'package:eyvo_v3/app/app_prefs.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/resources/routes_manager.dart';
 import 'package:eyvo_v3/core/resources/strings_manager.dart';
 import 'package:eyvo_v3/core/utils.dart';
@@ -37,7 +38,7 @@ class ApiService {
   static const String itemsInOut = 'Items/inout';
   static const String switchboard = "switchboard/index";
   static const String orderApprovalList = "order/approvallist";
-  static const String orderApprovalDetails = "order/approval";
+  static const String orderApprovalDetails = "Order/orderview";
   static const String groupApproverList = "groupapprover/list";
   static const String orderApprovalApproved = "order/approve";
   static const String orderApprovalReject = "order/reject";
@@ -54,6 +55,10 @@ class ApiService {
   static const String imageUpload = 'attachdocument/attachdocument';
   static const String createOrderHeader = 'common/getgroupdata';
   static const String orderList = "Order/listing";
+  static const String requestList = "request/listing";
+  static const String createrequest = "request/create";
+  static const String dropdownAPI = "common/getmasterdata";
+  static const String createorder = "Order/create";
 
   Future<bool> updateToken(BuildContext context) async {
     Map<String, dynamic> data = {
@@ -163,6 +168,35 @@ class ApiService {
       //debugPrint('Post request error: $e');
     }
     return null;
+  }
+
+// Add this method to your ApiService class
+  Future<Map<String, dynamic>?> getDropdownData({
+    required BuildContext context,
+    required String group,
+    String search = "",
+    String regionId = "",
+    int id = 0,
+  }) async {
+    try {
+      final response = await postRequest(
+        context,
+        ApiService.dropdownAPI,
+        {
+          'ID': id,
+          'group': group,
+          'uid': SharedPrefs().uID,
+          'apptype': AppConstants.apptype,
+          'regionid': regionId,
+          'search': search,
+          'apptype': 'mobile',
+        },
+      );
+      return response;
+    } catch (e) {
+      LoggerData.dataLog('Error fetching dropdown data: $e');
+      return null;
+    }
   }
 
   Future<Map<String, dynamic>?> processResponse(

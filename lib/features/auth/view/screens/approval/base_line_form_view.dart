@@ -113,7 +113,7 @@
 //         context,
 //         ApiService.createOrderHeader,
 //         {
-//           'uid': SharedPrefs().uID,
+//            'uid': SharedPrefs().uID,'apptype': AppConstants.apptype,
 //           'ID': widget.id,
 //           'LineID': widget.lineId,
 //           'group': widget.lineType,
@@ -648,8 +648,10 @@
 //   }
 // }
 import 'package:eyvo_v3/api/api_service/api_service.dart';
+import 'package:eyvo_v3/api/response_models/dropdown_response_model.dart';
 import 'package:eyvo_v3/api/response_models/order_header_response.dart';
 import 'package:eyvo_v3/app/app_prefs.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/resources/strings_manager.dart';
 import 'package:eyvo_v3/core/widgets/button.dart';
 import 'package:eyvo_v3/core/widgets/form_field_helper.dart';
@@ -757,10 +759,10 @@ class _BaseLineViewState extends State<BaseLineView> {
   // Dropdown data - These can be replaced with API calls
   List<DropdownItem> catalogItems() {
     return [
-      DropdownItem(id: "1", value: "CAT-001"),
-      DropdownItem(id: "2", value: "CAT-002"),
-      DropdownItem(id: "3", value: "CAT-003"),
-      DropdownItem(id: "4", value: "CAT-004"),
+      DropdownItem(id: "1", value: "CAT-001", code: "pou"),
+      DropdownItem(id: "2", value: "CAT-002", code: "pou"),
+      DropdownItem(id: "3", value: "CAT-003", code: "pou"),
+      DropdownItem(id: "4", value: "CAT-004", code: "pou"),
     ];
   }
 
@@ -776,6 +778,7 @@ class _BaseLineViewState extends State<BaseLineView> {
         ApiService.createOrderHeader,
         {
           'uid': SharedPrefs().uID,
+          'apptype': AppConstants.apptype,
           'ID': widget.id,
           'LineID': widget.lineId,
           'group': _getGroupName(),
@@ -832,6 +835,98 @@ class _BaseLineViewState extends State<BaseLineView> {
         isLoading = false;
       });
     }
+  }
+
+  // for fetching dropdown data
+  Future<List<DropdownItem>> _fetchDropdownData(String group,
+      {String search = ""}) async {
+    try {
+      final response = await apiService.getDropdownData(
+        context: context,
+        group: group,
+        search: search, // Use the search parameter here
+      );
+
+      if (response != null) {
+        final dropdownResponse = DropdownDataResponse.fromJson(response);
+        if (dropdownResponse.code == 200 && dropdownResponse.data != null) {
+          return dropdownResponse.data!
+              .map((item) => item.toDropdownItem())
+              .toList();
+        }
+      }
+    } catch (e) {
+      print('Error fetching $group dropdown: $e');
+    }
+
+    return [];
+  }
+
+  String _getGroupForField(String fieldId) {
+    switch (fieldId) {
+      case "CategoryID":
+        return "Category";
+      case "SupplierID":
+        return "Supplier";
+      case "DeliveryID":
+        return "Delivery";
+      case "OrderTypeID":
+        return "OrderType";
+      case "InvoicePtID":
+        return "InvoicePt";
+      case "ExpCode1_ID":
+        return "ExpCode1";
+      case "ExpCode2_ID":
+        return "ExpCode2";
+      case "ExpCode3_ID":
+        return "ExpCode3";
+      case "Cust_ID":
+        return "Customer";
+      case "ContractID":
+        return "Contracts";
+      case "Order_Budget_Header":
+        return "Budgets";
+      case "Supp_Cont_ID":
+        return "SuppContacts";
+      default:
+        return "";
+    }
+  }
+
+  Future<List<DropdownItem>> getXXX({String search = ""}) async {
+    return await _fetchDropdownData("XXX", search: search);
+  }
+
+  Future<List<DropdownItem>> getItemCodes({String search = ""}) async {
+    return await _fetchDropdownData("Item", search: search);
+  }
+
+  Future<List<DropdownItem>> getSupplierCodes({String search = ""}) async {
+    return await _fetchDropdownData("Supplier", search: search);
+  }
+
+  Future<List<DropdownItem>> getUnitCodes({String search = ""}) async {
+    return await _fetchDropdownData("Unit", search: search);
+  }
+
+  Future<List<DropdownItem>> getExpCode4List({String search = ""}) async {
+    return await _fetchDropdownData("ExpCode4", search: search);
+  }
+
+  Future<List<DropdownItem>> getExpCode5List({String search = ""}) async {
+    return await _fetchDropdownData("ExpCode5", search: search);
+  }
+
+  Future<List<DropdownItem>> getExpCode6List({String search = ""}) async {
+    return await _fetchDropdownData("ExpCode6", search: search);
+  }
+
+  Future<List<DropdownItem>> getOpexCapexCodes({String search = ""}) async {
+    return await _fetchDropdownData("OpexCapex", search: search);
+  }
+
+  Future<List<DropdownItem>> getExpenseTypeCodes({String search = ""}) async {
+    return await _fetchDropdownData("ExpenseType", search: search);
   }
 
   void _assignFieldValue(Datum field) {
@@ -925,7 +1020,7 @@ class _BaseLineViewState extends State<BaseLineView> {
         case "Markup":
           _markupController.text = field.value;
           break;
-        case "Request_Description":
+        case "Description":
           _Request_DescriptionController.text = field.value;
           break;
       }
@@ -970,7 +1065,7 @@ class _BaseLineViewState extends State<BaseLineView> {
       'Markup': _markupController.text,
       'Expense_Type': _selectedExpenseTypeId,
       'SupplierID': _selectedSupplierId,
-      'Request_Description': _Request_DescriptionController.text,
+      'Description': _Request_DescriptionController.text,
     };
 
     LoggerData.dataLog("${_getLinePrefix()} Line Form Data: $formData");
@@ -1066,15 +1161,19 @@ class _BaseLineViewState extends State<BaseLineView> {
     // Item Code Dropdown
     addFieldIfVisible(
       "ItemID",
-      FormFieldHelper.buildDropdownFieldWithIds(
+      AsyncDropdownField(
         context: context,
         label: fieldLabels["ItemID"] ?? "",
         value: _selectedItemCodeId,
         apiDisplayValue: _selectedItemCodeValue,
-        items: catalogItems(),
+        fetchItems: getItemCodes,
         onChanged: (value) {
           setState(() {
             _selectedItemCodeId = value;
+            // Clear display value when null
+            if (value == null) {
+              _selectedItemCodeValue = null;
+            }
           });
         },
         isRequired: fieldRequired["ItemID"] ?? false,
@@ -1082,19 +1181,18 @@ class _BaseLineViewState extends State<BaseLineView> {
       ),
     );
 
-    // Item Description (Always visible for line items)
+// Item Description (Always visible for line items)
     addFieldIfVisible(
-      "Request_Description",
+      "Description",
       FormFieldHelper.buildMultilineTextField(
           label: "Item Description",
           controller: _Request_DescriptionController,
-          hintText: 'Enter ${fieldLabels["Request_Description"] ?? ""}',
-          isRequired: fieldRequired["Request_Description"] ?? false,
-          readOnly: fieldReadOnly["Request_Description"] ?? false),
+          hintText: 'Enter ${fieldLabels["Description"] ?? ""}',
+          isRequired: fieldRequired["Description"] ?? false,
+          readOnly: fieldReadOnly["Description"] ?? false),
     );
-   // fields.add(const SizedBox(height: 10));
 
-    // Supplier Part No
+// Supplier Part No
     addFieldIfVisible(
       "SuppliersPartNo",
       FormFieldHelper.buildTextField(
@@ -1106,7 +1204,7 @@ class _BaseLineViewState extends State<BaseLineView> {
       ),
     );
 
-    // Due Date
+// Due Date
     addFieldIfVisible(
       "DueDate",
       FormFieldHelper.buildDatePickerField(
@@ -1118,7 +1216,7 @@ class _BaseLineViewState extends State<BaseLineView> {
       ),
     );
 
-    // Quantity
+// Quantity
     addFieldIfVisible(
       "Quantity",
       FormFieldHelper.buildTextField(
@@ -1131,18 +1229,22 @@ class _BaseLineViewState extends State<BaseLineView> {
       ),
     );
 
-    // Supplier Dropdown
+// Supplier Dropdown
     addFieldIfVisible(
       "SupplierID",
-      FormFieldHelper.buildDropdownFieldWithIds(
+      AsyncDropdownField(
         context: context,
         label: fieldLabels["SupplierID"] ?? "",
         value: _selectedSupplierId,
         apiDisplayValue: _selectedSupplierValue,
-        items: catalogItems(),
+        fetchItems: getSupplierCodes,
         onChanged: (value) {
           setState(() {
             _selectedSupplierId = value;
+            // Clear display value when null
+            if (value == null) {
+              _selectedSupplierValue = null;
+            }
           });
         },
         isRequired: fieldRequired["SupplierID"] ?? false,
@@ -1150,18 +1252,22 @@ class _BaseLineViewState extends State<BaseLineView> {
       ),
     );
 
-    // Unit Dropdown
+// Unit Dropdown
     addFieldIfVisible(
       "Unit",
-      FormFieldHelper.buildDropdownFieldWithIds(
+      AsyncDropdownField(
         context: context,
         label: fieldLabels["Unit"] ?? "",
         value: _selectedUnitId,
         apiDisplayValue: _selectedUnitValue,
-        items: catalogItems(),
+        fetchItems: getUnitCodes,
         onChanged: (value) {
           setState(() {
             _selectedUnitId = value;
+            // Clear display value when null
+            if (value == null) {
+              _selectedUnitValue = null;
+            }
           });
         },
         isRequired: fieldRequired["Unit"] ?? false,
@@ -1169,7 +1275,7 @@ class _BaseLineViewState extends State<BaseLineView> {
       ),
     );
 
-    // Pack Size
+// Pack Size
     addFieldIfVisible(
       "PackSize",
       FormFieldHelper.buildTextField(
@@ -1181,7 +1287,7 @@ class _BaseLineViewState extends State<BaseLineView> {
       ),
     );
 
-    // Price
+// Price
     addFieldIfVisible(
       "Price",
       FormFieldHelper.buildTextField(
@@ -1194,7 +1300,7 @@ class _BaseLineViewState extends State<BaseLineView> {
       ),
     );
 
-    // Sales Tax
+// Sales Tax
     addFieldIfVisible(
       "Tax",
       FormFieldHelper.buildTextField(
@@ -1207,18 +1313,22 @@ class _BaseLineViewState extends State<BaseLineView> {
       ),
     );
 
-    // ExpCode4_ID (GL)
+// ExpCode4_ID (GL)
     addFieldIfVisible(
       "ExpCode4_ID",
-      FormFieldHelper.buildDropdownFieldWithIds(
+      AsyncDropdownField(
         context: context,
         label: fieldLabels["ExpCode4_ID"] ?? "",
         value: _selectedExpCode4Id,
         apiDisplayValue: _selectedExpCode4Value,
-        items: catalogItems(),
+        fetchItems: getExpCode4List,
         onChanged: (value) {
           setState(() {
             _selectedExpCode4Id = value;
+            // Clear display value when null
+            if (value == null) {
+              _selectedExpCode4Value = null;
+            }
           });
         },
         isRequired: fieldRequired["ExpCode4_ID"] ?? false,
@@ -1226,18 +1336,22 @@ class _BaseLineViewState extends State<BaseLineView> {
       ),
     );
 
-    // ExpCode5_ID (Property Code)
+// ExpCode5_ID (Property Code)
     addFieldIfVisible(
       "ExpCode5_ID",
-      FormFieldHelper.buildDropdownFieldWithIds(
+      AsyncDropdownField(
         context: context,
         label: fieldLabels["ExpCode5_ID"] ?? "",
         value: _selectedExpCode5Id,
         apiDisplayValue: _selectedExpCode5Value,
-        items: catalogItems(),
+        fetchItems: getExpCode5List,
         onChanged: (value) {
           setState(() {
             _selectedExpCode5Id = value;
+            // Clear display value when null
+            if (value == null) {
+              _selectedExpCode5Value = null;
+            }
           });
         },
         isRequired: fieldRequired["ExpCode5_ID"] ?? false,
@@ -1245,18 +1359,22 @@ class _BaseLineViewState extends State<BaseLineView> {
       ),
     );
 
-    // ExpCode6_ID (Nominal Code)
+// ExpCode6_ID (Nominal Code)
     addFieldIfVisible(
       "ExpCode6_ID",
-      FormFieldHelper.buildDropdownFieldWithIds(
+      AsyncDropdownField(
         context: context,
-        label: fieldLabels["ExpCode6_ID"] ?? "Nominal Code",
+        label: fieldLabels["ExpCode6_ID"] ?? "",
         value: _selectedExpCode6CodeId,
         apiDisplayValue: _selectedExpCode6CodeValue,
-        items: catalogItems(),
+        fetchItems: getExpCode6List,
         onChanged: (value) {
           setState(() {
             _selectedExpCode6CodeId = value;
+            // Clear display value when null
+            if (value == null) {
+              _selectedExpCode6CodeValue = null;
+            }
           });
         },
         isRequired: fieldRequired["ExpCode6_ID"] ?? false,
@@ -1264,18 +1382,22 @@ class _BaseLineViewState extends State<BaseLineView> {
       ),
     );
 
-    // Opex/Capex
+// Opex/Capex
     addFieldIfVisible(
       "Opex_Capex",
-      FormFieldHelper.buildDropdownFieldWithIds(
+      AsyncDropdownField(
         context: context,
         label: fieldLabels["Opex_Capex"] ?? "",
         value: _selectedOpexCapexId,
         apiDisplayValue: _selectedOpexCapexValue,
-        items: catalogItems(),
+        fetchItems: getOpexCapexCodes,
         onChanged: (value) {
           setState(() {
             _selectedOpexCapexId = value;
+            // Clear display value when null
+            if (value == null) {
+              _selectedOpexCapexValue = null;
+            }
           });
         },
         isRequired: fieldRequired["Opex_Capex"] ?? false,
@@ -1283,7 +1405,7 @@ class _BaseLineViewState extends State<BaseLineView> {
       ),
     );
 
-    // Markup
+// Markup
     addFieldIfVisible(
       "Markup",
       FormFieldHelper.buildTextField(
@@ -1296,25 +1418,28 @@ class _BaseLineViewState extends State<BaseLineView> {
       ),
     );
 
-    // Expense Type
+// Expense Type
     addFieldIfVisible(
       "Expense_Type",
-      FormFieldHelper.buildDropdownFieldWithIds(
+      AsyncDropdownField(
         context: context,
         label: fieldLabels["Expense_Type"] ?? "",
         value: _selectedExpenseTypeId,
         apiDisplayValue: _selectedExpenseTypeValue,
-        items: catalogItems(),
+        fetchItems: getExpenseTypeCodes,
         onChanged: (value) {
           setState(() {
             _selectedExpenseTypeId = value;
+            // Clear display value when null
+            if (value == null) {
+              _selectedExpenseTypeValue = null;
+            }
           });
         },
         isRequired: fieldRequired["Expense_Type"] ?? false,
         readOnly: fieldReadOnly["Expense_Type"] ?? false,
       ),
     );
-
     return fields;
   }
 }

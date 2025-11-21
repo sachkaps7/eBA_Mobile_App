@@ -1,6 +1,7 @@
 import 'package:eyvo_v3/api/api_service/api_service.dart';
 import 'package:eyvo_v3/api/response_models/order_header_response.dart';
 import 'package:eyvo_v3/app/app_prefs.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/resources/strings_manager.dart';
 import 'package:eyvo_v3/core/widgets/button.dart';
 import 'package:eyvo_v3/core/widgets/form_field_helper.dart';
@@ -82,10 +83,10 @@ class _CreateRequestLineViewState extends State<CreateRequestLineView> {
   // Dropdown data
   List<DropdownItem> catalogItems() {
     return [
-      DropdownItem(id: "1", value: "CAT-001"),
-      DropdownItem(id: "1", value: "CAT-002"),
-      DropdownItem(id: "1", value: "CAT-003"),
-      DropdownItem(id: "1", value: "CAT-004"),
+      DropdownItem(id: "1", value: "CAT-001", code: "uyt"),
+      DropdownItem(id: "1", value: "CAT-002", code: "uyt"),
+      DropdownItem(id: "1", value: "CAT-003", code: "uyt"),
+      DropdownItem(id: "1", value: "CAT-004", code: "uyt"),
     ];
   }
 
@@ -101,6 +102,7 @@ class _CreateRequestLineViewState extends State<CreateRequestLineView> {
         ApiService.createOrderHeader,
         {
           'uid': SharedPrefs().uID,
+          'apptype': AppConstants.apptype,
           'ID': widget.requestId,
           'LineID': 5408,
           'group': 'Request',
@@ -270,6 +272,7 @@ class _CreateRequestLineViewState extends State<CreateRequestLineView> {
       });
     }
   }
+
 //{fieldID: SupplierID, labelName: Supplier, ID: 268, value: NordicaHK, controlType: dropdown, required: false, readWrite: true, visible: true},
   @override
   void initState() {
@@ -429,7 +432,7 @@ class _CreateRequestLineViewState extends State<CreateRequestLineView> {
                       ),
                       const SizedBox(height: 10),
                     ],
-           //-------------------- DROPDOWN: Catalog Items --------------------
+                    //-------------------- DROPDOWN: Catalog Items --------------------
                     if (fieldVisible["SupplierID"] ?? false) ...[
                       FormFieldHelper.buildDropdownFieldWithIds(
                         context: context,

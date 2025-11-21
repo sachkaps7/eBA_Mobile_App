@@ -1,11 +1,13 @@
 import 'dart:async';
 
 import 'package:eyvo_v3/api/api_service/api_service.dart';
+import 'package:eyvo_v3/api/response_models/create_order_request_response.dart';
 import 'package:eyvo_v3/api/response_models/order_approval_list_response.dart';
 import 'package:eyvo_v3/app/app_prefs.dart';
 import 'package:eyvo_v3/app/sizes_helper.dart';
 import 'package:eyvo_v3/core/resources/assets_manager.dart';
 import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/resources/font_manager.dart';
 import 'package:eyvo_v3/core/resources/routes_manager.dart';
 import 'package:eyvo_v3/core/resources/strings_manager.dart';
@@ -20,14 +22,14 @@ import 'package:eyvo_v3/features/auth/view/screens/approval/create_order_details
 import 'package:eyvo_v3/features/auth/view/screens/approval/order_details_view.dart';
 import 'package:flutter/material.dart';
 
-class CreateOrderPage extends StatefulWidget {
-  const CreateOrderPage({super.key});
+class OrderListingPage extends StatefulWidget {
+  const OrderListingPage({super.key});
 
   @override
-  State<CreateOrderPage> createState() => _CreateOrderPageState();
+  State<OrderListingPage> createState() => _OrderListingPageState();
 }
 
-class _CreateOrderPageState extends State<CreateOrderPage> with RouteAware {
+class _OrderListingPageState extends State<OrderListingPage> with RouteAware {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   final ApiService apiService = ApiService();
@@ -76,6 +78,7 @@ class _CreateOrderPageState extends State<CreateOrderPage> with RouteAware {
 
     Map<String, dynamic> requestData = {
       'uid': SharedPrefs().uID,
+      'apptype': AppConstants.apptype,
       'search': _searchController.text,
     };
 
@@ -101,6 +104,63 @@ class _CreateOrderPageState extends State<CreateOrderPage> with RouteAware {
         });
       }
     } else {
+      setState(() {
+        isError = true;
+        errorText = AppStrings.somethingWentWrong;
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> createOrder() async {
+    setState(() {
+      isLoading = true;
+      isError = false;
+    });
+
+    Map<String, dynamic> requestData = {
+      'uid': SharedPrefs().uID,
+      'apptype': AppConstants.apptype,
+      "group": "order",
+      "regionid": 1,
+      "userSession": "",
+    };
+
+    final jsonResponse = await apiService.postRequest(
+      context,
+      ApiService.createorder,
+      requestData,
+    );
+
+    if (jsonResponse != null) {
+      final response = OrderRequestCreateResponse.fromJson(jsonResponse);
+
+      if (response.code == 200) {
+        // SUCCESS
+        setState(() {
+          isLoading = false;
+        });
+
+        showSnackBar(context, "Order created successfully");
+
+        // Navigate if needed
+        navigateToScreen(
+          context,
+          OrderDetailsView(
+            orderId: int.parse(response.data),
+            constantFieldshow: true,
+          ),
+        );
+      } else {
+        // API returned an error
+        setState(() {
+          isError = true;
+          errorText = response.message.join(", ");
+          isLoading = false;
+        });
+      }
+    } else {
+      // Null response (server/error)
       setState(() {
         isError = true;
         errorText = AppStrings.somethingWentWrong;
@@ -160,19 +220,13 @@ class _CreateOrderPageState extends State<CreateOrderPage> with RouteAware {
                     return CustomImageActionAlert(
                       iconString: '',
                       imageString: ImageAssets.common,
-                      titleString: "Create Order",
+                      titleString: "Orders",
                       subTitleString: "Are you sure you want create an order?",
                       destructiveActionString: "Yes",
                       normalActionString: "No",
                       onDestructiveActionTap: () {
+                        createOrder();
                         Navigator.of(context).pop();
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const CreateOrderDetailsPage(),
-                          ),
-                        );
                       },
                       onNormalActionTap: () {
                         Navigator.of(context).pop();
@@ -215,7 +269,7 @@ class _CreateOrderPageState extends State<CreateOrderPage> with RouteAware {
         elevation: 1,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
-          'Create Order',
+          'Orders',
           style: getBoldStyle(
             color: ColorManager.white,
             fontSize: FontSize.s20,
@@ -301,20 +355,22 @@ class _CreateOrderPageState extends State<CreateOrderPage> with RouteAware {
                 itemBuilder: (context, index) {
                   final order = orderApprovalList[index];
                   return GenericCardWidget(
-                    titleKey: 'Order #${order.orderNumber}',
-                    statusKey: order.orderStatus,
-                    supplierKey: order.supplierName,
-                    dateKey: order.orderDate,
-                    valueKey: getFormattedPriceString(order.orderValue),
-                    valueNameKey: 'Order Value',
-                    itemCountKey: order.itemCount.toString(),
-                    onTap: () {
-                      navigateToScreen(
-                        context,
-                        const CreateOrderDetailsPage(),
-                      );
-                    },
-                  );
+                      titleKey: 'Order #${order.orderNumber}',
+                      statusKey: order.orderStatus,
+                      supplierKey: order.supplierName,
+                      dateKey: order.orderDate,
+                      valueKey: getFormattedPriceString(order.orderValue),
+                      valueNameKey: 'Order Value',
+                      itemCountKey: order.itemCount.toString(),
+                      onTap: () {
+                        navigateToScreen(
+                          context,
+                          OrderDetailsView(
+                            orderId: order.orderId,
+                            constantFieldshow: true,
+                          ),
+                        );
+                      });
                 },
               ),
             ),

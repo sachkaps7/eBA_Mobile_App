@@ -13,6 +13,7 @@ class CreateOrderHeaderView extends StatelessWidget {
       id: orderId,
       headerType: HeaderType.order,
       appBarTitle: "Order Header",
+      number: 887,
     );
   }
 }

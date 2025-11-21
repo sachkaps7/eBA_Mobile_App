@@ -9,6 +9,7 @@ class AppConstants {
   static const maxCharactersForQuantity = 12;
   static const imageSizeLimitMB = 5; // limit in MB
   static const imageSizeLimitBytes = imageSizeLimitMB * 1000 * 1000;
+  static const apptype = "mobile";
   static const List<String> allowedImageFormats = [
     "jpg",
     "jpeg",

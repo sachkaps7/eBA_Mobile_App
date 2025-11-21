@@ -375,6 +375,7 @@ import 'package:eyvo_v3/api/response_models/company_code_response.dart';
 import 'package:eyvo_v3/app/app_prefs.dart';
 import 'package:eyvo_v3/app/sizes_helper.dart';
 import 'package:eyvo_v3/core/resources/assets_manager.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/resources/font_manager.dart';
 import 'package:eyvo_v3/core/resources/routes_manager.dart';
 import 'package:eyvo_v3/core/resources/styles_manager.dart';
@@ -466,7 +467,7 @@ class _CompanyCodeViewState extends State<CompanyCodeView> {
     });
 
     final clientCode = codeController.text.trim();
-    Map<String, dynamic> data = {'clientcode': clientCode};
+    Map<String, dynamic> data = {'clientcode': clientCode,'apptype': AppConstants.apptype};
 
     final jsonResponse =
         await apiService.postRequest(context, ApiService.clientCode, data);

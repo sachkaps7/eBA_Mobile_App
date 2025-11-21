@@ -13,6 +13,7 @@ class CreateRequestHeaderView extends StatelessWidget {
       id: requestId,
       headerType: HeaderType.request,
       appBarTitle: "Request Header",
+      number: 987,
     );
   }
 }

@@ -1,19 +1,19 @@
 import 'package:eyvo_v3/api/response_models/header_response.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:eyvo_v3/api/api_service/api_service.dart';
 import 'package:eyvo_v3/app/app_prefs.dart';
- // 👈 hypothetical response model
+// 👈 hypothetical response model
 import 'package:eyvo_v3/core/resources/color_manager.dart';
 import 'package:eyvo_v3/core/resources/font_manager.dart';
 import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
-
 
 class GenericDetailAPIPage extends StatefulWidget {
   final String title;
   final int id;
   final String type;
-  final int? lineId; 
+  final int? lineId;
 
   const GenericDetailAPIPage({
     Key? key,
@@ -51,6 +51,7 @@ class _GenericDetailAPIPageState extends State<GenericDetailAPIPage> {
         ApiService.requestHeader,
         {
           'uid': SharedPrefs().uID,
+          'apptype': AppConstants.apptype,
           'Request_ID': widget.id,
         },
       );
@@ -96,9 +97,10 @@ class _GenericDetailAPIPageState extends State<GenericDetailAPIPage> {
     try {
       final jsonResponse = await apiService.postRequest(
         context,
-        ApiService.requestLineItem, 
+        ApiService.requestLineItem,
         {
           'uid': SharedPrefs().uID,
+          'apptype': AppConstants.apptype,
           'Request_ID': widget.id,
           'Line_ID': widget.lineId,
         },

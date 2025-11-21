@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:eyvo_v3/api/response_models/order_approval_approved_response.dart';
 import 'package:eyvo_v3/api/response_models/order_approval_reject_response.dart';
 import 'package:eyvo_v3/core/resources/assets_manager.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/resources/routes_manager.dart';
 import 'package:eyvo_v3/core/resources/styles_manager.dart';
 import 'package:eyvo_v3/core/utils.dart';
@@ -28,27 +29,49 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class OrderDetailsView extends StatefulWidget {
   final int orderId;
-  final String? orderNumber;
+  final bool? constantFieldshow;
 
-  const OrderDetailsView({Key? key, required this.orderId, this.orderNumber})
+  const OrderDetailsView(
+      {Key? key, required this.orderId, this.constantFieldshow})
       : super(key: key);
 
   @override
   State<OrderDetailsView> createState() => _OrderDetailsViewState();
 }
 
-class _OrderDetailsViewState extends State<OrderDetailsView> {
+class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
   final ApiService apiService = ApiService();
   bool isLoading = false, isError = false;
   String errorText = AppStrings.somethingWentWrong;
   Data? orderDetails;
   String? expandedSection;
+  @override
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    routeObserver.subscribe(
+      this,
+      ModalRoute.of(context)! as PageRoute,
+    );
+  }
+
+  @override
+  void didPopNext() {
+    fetchOrderApprovalDetails();
+  }
 
   @override
   void initState() {
     super.initState();
     expandedSection = "Details"; // Default expanded
     fetchOrderApprovalDetails();
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
   }
 
   Future<void> fetchOrderApprovalDetails() async {
@@ -60,7 +83,11 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
     final jsonResponse = await apiService.postRequest(
       context,
       ApiService.orderApprovalDetails,
-      {'uid': SharedPrefs().uID, 'orderId': widget.orderId},
+      {
+        'uid': SharedPrefs().uID,
+        'apptype': AppConstants.apptype,
+        'orderId': widget.orderId
+      },
     );
 
     if (jsonResponse != null) {
@@ -92,6 +119,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
       ApiService.orderApprovalApproved,
       {
         'uid': SharedPrefs().uID,
+        'apptype': AppConstants.apptype,
         'orderId': widget.orderId,
       },
     );
@@ -140,6 +168,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
       ApiService.orderApprovalReject,
       {
         'uid': SharedPrefs().uID,
+        'apptype': AppConstants.apptype,
         'orderId': widget.orderId,
         'reason': reason,
       },
@@ -182,12 +211,39 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
     });
   }
 
+  bool _shouldShowAddLineItem() {
+    if (orderDetails?.header?.orderStatus == null) return false;
+
+    final status = orderDetails!.header.orderStatus.toUpperCase();
+    return status == 'UNISSUED' || status == 'APPROVED' || status == 'TEMPLATE';
+  }
+
+  void _addNewLineItem() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BaseLineView(
+          id: widget.orderId,
+          lineId: 0,
+          lineType: LineType.order,
+          appBarTitle: "Order Line",
+          buttonshow: true,
+        ),
+      ),
+    ).then((_) {
+      // Refresh after adding
+      fetchOrderApprovalDetails();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: buildCommonAppBar(
         context: context,
-        title: "Order #${widget.orderNumber.toString()}",
+        title: orderDetails == null
+            ? "Order Details"
+            : "Order #${orderDetails!.header.orderNumber}",
       ),
       backgroundColor: ColorManager.primary,
       body: isLoading
@@ -211,7 +267,8 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                             child: Column(
                               children: [
 //------------------------------------ order header--------------------------
-                                ApprovalDetailsHelper.buildSectionForDetails(
+                                ApprovalDetailsHelper
+                                    .buildSectionForDetailsWithEditIcon(
                                   "Details",
                                   Icons.description_outlined,
                                   {
@@ -285,10 +342,17 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                       context,
                                       BaseHeaderView(
                                         id: widget.orderId,
+                                        number: int.tryParse(orderDetails!
+                                                .header.orderNumber) ??
+                                            0,
                                         headerType: HeaderType.order,
                                         appBarTitle: "Order Header",
-                                        buttonshow: false,
-                                        constantFieldshow: false,
+                                        buttonshow: true,
+                                        constantFieldshow:
+                                            widget.constantFieldshow,
+                                        status:
+                                            orderDetails!.header.orderStatus,
+                                        date: orderDetails!.header.orderDate,
                                       ),
                                     );
                                   },
@@ -302,6 +366,73 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                     });
                                   },
                                 ),
+//------------------------------------------ Line Item ----------------------------------
+                                // ApprovalDetailsHelper.buildSection(
+                                //   "Line Items",
+                                //   Icons.list_alt_outlined,
+                                //   orderDetails!.line.isEmpty
+                                //       ? [
+                                //           ApprovalDetailsHelper.buildEmptyView(
+                                //               "No line items found"),
+                                //         ]
+                                //       : [
+                                //           ...orderDetails!.line.map((lineItem) {
+                                //             return ApprovalDetailsHelper
+                                //                 .buildMiniCardWithEditIcon({
+                                //               'Item No': lineItem.itemOrder,
+                                //               'Description': lineItem
+                                //                           .description.length >
+                                //                       50
+                                //                   ? '${lineItem.description.substring(0, 50)}...'
+                                //                   : lineItem.description,
+                                //               'Quantity':
+                                //                   '${getFormattedPriceString(lineItem.quantity)}',
+                                //               'Unit Price':
+                                //                   '${getFormattedPriceString(lineItem.price)} (${lineItem.supplierCcyCode})',
+                                //               'Net Price':
+                                //                   '${getFormattedPriceString(lineItem.netPrice)} (${lineItem.supplierCcyCode})',
+                                //             }, () {
+
+                                // navigateToScreen(
+                                //   context,
+                                //   BaseLineView(
+                                //     id: widget.orderId,
+                                //     lineId: lineItem.orderLineId,
+                                //     lineType: LineType.order,
+                                //     appBarTitle: "Order Line",
+                                //     buttonshow: false,
+                                //   ),
+                                // );
+                                //             });
+                                //           }).toList(),
+
+                                //           // Add the total net price at the bottom
+                                //           ApprovalDetailsHelper
+                                //               .buildNetGrossTotalWidget(
+                                //                   context, orderDetails!.line,
+                                //                   dialogTitle:
+                                //                       'Order Total Summary',
+                                //                   netTotalLabel:
+                                //                       'Order Net Total',
+                                //                   shippingChargesLabel:
+                                //                       'Shipping Charges',
+                                //                   salesTaxLabel: 'Sales Tax',
+                                //                   grossTotalLabel:
+                                //                       'Order Gross Total',
+                                //                   currencyLabel:
+                                //                       'Order Currency'),
+                                //         ],
+                                //   count: orderDetails!.line.length,
+                                //   isExpanded: expandedSection == "Line Items",
+                                //   toggleSection: () {
+                                //     setState(() {
+                                //       expandedSection =
+                                //           expandedSection == "Line Items"
+                                //               ? null
+                                //               : "Line Items";
+                                //     });
+                                //   },
+                                // ),
 //------------------------------------------ Line Item ----------------------------------
                                 ApprovalDetailsHelper.buildSection(
                                   "Line Items",
@@ -328,55 +459,6 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                               'Net Price':
                                                   '${getFormattedPriceString(lineItem.netPrice)} (${lineItem.supplierCcyCode})',
                                             }, () {
-                                              // Navigator.pushNamed(
-                                              //   context,
-                                              //   Routes.genericDetailRoute,
-                                              //   arguments: {
-                                              //     'title': 'Order Line',
-                                              //     'data': {
-                                              //       'Item No.':
-                                              //           lineItem.itemOrder,
-                                              //       'Item Code':
-                                              //           lineItem.itemCode,
-                                              //       'Description':
-                                              //           lineItem.description,
-                                              //       'Suppliers Part No':
-                                              //           lineItem
-                                              //               .suppliersPartNo,
-                                              //       'Due Date':
-                                              //           lineItem.dueDate,
-                                              //       'Quantity':
-                                              //           '${getFormattedPriceString(lineItem.quantity)}',
-                                              //       'Unit': lineItem.unit,
-                                              //       'Pack Size': lineItem
-                                              //           .packSize
-                                              //           .toInt()
-                                              //           .toString(),
-                                              //       'Unit Price':
-                                              //           '${getFormattedPriceString(lineItem.price)} (${lineItem.supplierCcyCode})',
-                                              //       'Discount': lineItem
-                                              //                   .discountType ==
-                                              //               1
-                                              //           ? '${lineItem.discount}(value)'
-                                              //           : '${lineItem.discount}(%)',
-                                              //       'Tax':
-                                              //           '${lineItem.tax.toStringAsFixed(3)}%',
-                                              //       'Tax Value': lineItem
-                                              //           .taxValue
-                                              //           .toStringAsFixed(3),
-                                              //       'Net Price':
-                                              //           '${getFormattedPriceString(lineItem.netPrice)} (${lineItem.supplierCcyCode})',
-                                              //       'Gross Price':
-                                              //           '${getFormattedPriceString(lineItem.grossPrice)} (${lineItem.supplierCcyCode})',
-                                              //       lineItem.expName4:
-                                              //           lineItem.expCode4,
-                                              //       lineItem.expName5:
-                                              //           lineItem.expCode5,
-                                              //       lineItem.expName6:
-                                              //           lineItem.expCode6,
-                                              //     },
-                                              //   },
-                                              // );
                                               navigateToScreen(
                                                 context,
                                                 BaseLineView(
@@ -389,8 +471,6 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                               );
                                             });
                                           }).toList(),
-
-                                          // Add the total net price at the bottom
                                           ApprovalDetailsHelper
                                               .buildNetGrossTotalWidget(
                                                   context, orderDetails!.line,
@@ -416,8 +496,27 @@ class _OrderDetailsViewState extends State<OrderDetailsView> {
                                               : "Line Items";
                                     });
                                   },
+                                  // Add these new parameters
+                                  trailing: _shouldShowAddLineItem()
+                                      ? Container(
+                                          width: 32,
+                                          height: 32,
+                                          decoration: BoxDecoration(
+                                            color: ColorManager.blue
+                                                .withOpacity(0.1),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            Icons.add,
+                                            color: ColorManager.blue,
+                                            size: 18,
+                                          ),
+                                        )
+                                      : null,
+                                  onTrailingTap: _shouldShowAddLineItem()
+                                      ? _addNewLineItem
+                                      : null,
                                 ),
-
 //--------------------------- Rule------------------------------------------------
                                 ApprovalDetailsHelper.buildSection(
                                   "Rules",

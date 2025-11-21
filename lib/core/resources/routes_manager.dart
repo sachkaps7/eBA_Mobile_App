@@ -128,7 +128,6 @@ class RouteGenerator {
         return MaterialPageRoute(
             builder: (_) => const RequestDetailsView(
                   requestId: 0,
-                  requestNumber: '',
                 ));
       case Routes.orderApproverPage:
         return MaterialPageRoute(builder: (_) => const OrderApproverPage());
@@ -136,7 +135,6 @@ class RouteGenerator {
         return MaterialPageRoute(
           builder: (_) => const OrderDetailsView(
             orderId: 0,
-            orderNumber: '0',
           ),
         );
       case Routes.genericDetailRoute:

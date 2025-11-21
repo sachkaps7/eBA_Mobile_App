@@ -1,6 +1,8 @@
 import 'package:eyvo_v3/api/api_service/api_service.dart';
+import 'package:eyvo_v3/api/response_models/dropdown_response_model.dart';
 import 'package:eyvo_v3/api/response_models/order_header_response.dart';
 import 'package:eyvo_v3/app/app_prefs.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/resources/strings_manager.dart';
 import 'package:eyvo_v3/core/widgets/button.dart';
 import 'package:eyvo_v3/core/widgets/form_field_helper.dart';
@@ -13,19 +15,25 @@ import 'package:eyvo_v3/core/resources/styles_manager.dart';
 import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
 
 class BaseHeaderView extends StatefulWidget {
-  final int id;
+  final int? id;
+  final int? number;
   final HeaderType headerType;
   final String appBarTitle;
   final bool? buttonshow;
   final bool? constantFieldshow;
+  final String? status;
+  final String? date;
 
   const BaseHeaderView({
     Key? key,
     required this.id,
+    required this.number,
     required this.headerType,
     required this.appBarTitle,
     this.buttonshow,
     this.constantFieldshow,
+    this.status,
+    this.date,
   }) : super(key: key);
 
   @override
@@ -51,7 +59,7 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       TextEditingController();
   final TextEditingController _requestBudgetController =
       TextEditingController();
-
+  final TextEditingController _searchController = TextEditingController();
   final ApiService apiService = ApiService();
   bool isError = false;
   String errorText = AppStrings.somethingWentWrong;
@@ -100,30 +108,13 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
   }
 
   // Dropdown Data - These can be replaced with API calls
-  List<DropdownItem> getBudget() {
-    return [
-      DropdownItem(id: "In Budget", value: "In Budget"),
-      DropdownItem(id: "Out Budget", value: "Out Budget"),
-      DropdownItem(id: "Over Budget", value: "Over Budget"),
-    ];
-  }
 
   List<DropdownItem> getSupplierCodes() {
     return [
-      DropdownItem(id: "1", value: "Supplier 1"),
-      DropdownItem(id: "2", value: "Supplier 2"),
-      DropdownItem(id: "3", value: "Supplier 3"),
-      DropdownItem(id: "236", value: "MFAX2"),
-    ];
-  }
-
-  List<DropdownItem> getDeliveryCodes() {
-    return [
-      DropdownItem(id: "1", value: "D001"),
-      DropdownItem(id: "2", value: "D002"),
-      DropdownItem(id: "3", value: "D003"),
-      DropdownItem(id: "4", value: "D004"),
-      DropdownItem(id: "5", value: "D005"),
+      DropdownItem(id: "1", value: "Supplier 1", code: "pou"),
+      DropdownItem(id: "2", value: "Supplier 2", code: "pou"),
+      DropdownItem(id: "3", value: "Supplier 3", code: "pou"),
+      DropdownItem(id: "236", value: "MFAX2", code: "pou"),
     ];
   }
 
@@ -147,6 +138,7 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
         ApiService.createOrderHeader,
         {
           'uid': SharedPrefs().uID,
+          'apptype': AppConstants.apptype,
           'ID': widget.id,
           'LineID': 0,
           'group': _getGroupName(),
@@ -203,6 +195,108 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
         isLoading = false;
       });
     }
+  }
+
+  // for fetching dropdown data
+  Future<List<DropdownItem>> _fetchDropdownData(String group,
+      {String search = ""}) async {
+    try {
+      final response = await apiService.getDropdownData(
+        context: context,
+        group: group,
+        search: search, // Use the search parameter here
+      );
+
+      if (response != null) {
+        final dropdownResponse = DropdownDataResponse.fromJson(response);
+        if (dropdownResponse.code == 200 && dropdownResponse.data != null) {
+          return dropdownResponse.data!
+              .map((item) => item.toDropdownItem())
+              .toList();
+        }
+      }
+    } catch (e) {
+      print('Error fetching $group dropdown: $e');
+    }
+
+    // Return empty list if API fails
+    return [];
+  }
+
+// Map field IDs to their respective API groups
+  String _getGroupForField(String fieldId) {
+    switch (fieldId) {
+      case "CategoryID":
+        return "Category";
+      case "SupplierID":
+        return "Supplier";
+      case "DeliveryID":
+        return "Delivery";
+      case "OrderTypeID":
+        return "OrderType";
+      case "InvoicePtID":
+        return "InvoicePt";
+      case "ExpCode1_ID":
+        return "ExpCode1";
+      case "ExpCode2_ID":
+        return "ExpCode2";
+      case "ExpCode3_ID":
+        return "ExpCode3";
+      case "Cust_ID":
+        return "Customer";
+      case "ContractID":
+        return "Contracts";
+      case "Order_Budget_Header":
+        return "Budgets";
+      case "Supp_Cont_ID":
+        return "SuppContacts";
+      default:
+        return "";
+    }
+  }
+
+  Future<List<DropdownItem>> getCategoryCodes({String search = ""}) async {
+    return await _fetchDropdownData("Category", search: search);
+  }
+
+  Future<List<DropdownItem>> getDeliveryCodes({String search = ""}) async {
+    return await _fetchDropdownData("Delivery", search: search);
+  }
+
+  Future<List<DropdownItem>> getOrderTypeCodes({String search = ""}) async {
+    return await _fetchDropdownData("OrderType", search: search);
+  }
+
+  Future<List<DropdownItem>> getInvoiceCodes({String search = ""}) async {
+    return await _fetchDropdownData("InvoicePt", search: search);
+  }
+
+  Future<List<DropdownItem>> getExpenseCode1({String search = ""}) async {
+    return await _fetchDropdownData("ExpCode1", search: search);
+  }
+
+  Future<List<DropdownItem>> getExpenseCode2({String search = ""}) async {
+    return await _fetchDropdownData("ExpCode2", search: search);
+  }
+
+  Future<List<DropdownItem>> getSupplierContacts({String search = ""}) async {
+    return await _fetchDropdownData("SupplierContact", search: search);
+  }
+
+  Future<List<DropdownItem>> getBudget({String search = ""}) async {
+    return await _fetchDropdownData("Budget", search: search);
+  }
+
+  Future<List<DropdownItem>> getCustomerCodes({String search = ""}) async {
+    return await _fetchDropdownData("Customer", search: search);
+  }
+
+  Future<List<DropdownItem>> getContractCodes({String search = ""}) async {
+    return await _fetchDropdownData("Contract", search: search);
+  }
+
+  Future<List<DropdownItem>> getDepartmentCodes({String search = ""}) async {
+    return await _fetchDropdownData("ExpCode3", search: search);
   }
 
   void _assignFieldValue(Datum field) {
@@ -315,6 +409,7 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
     _shipViaController.dispose();
     _justificationController.dispose();
     _paymentTermsController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -401,7 +496,7 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (widget.constantFieldshow ?? true)
+                    if (widget.constantFieldshow ?? false)
                       // Constant Fields
                       _buildConstantFieldsSection(),
                     const SizedBox(height: 16),
@@ -444,11 +539,11 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildConstantField("$prefix No", "${widget.id}"),
+          _buildConstantField("$prefix No", "${widget.number}"),
           const SizedBox(height: 8),
-          _buildConstantField("$prefix Date", _getCurrentDate()),
+          _buildConstantField("$prefix Date", "${widget.date}"),
           const SizedBox(height: 8),
-          _buildConstantField("$prefix Status", "Pending"),
+          _buildConstantField("$prefix Status", "${widget.status}"),
         ],
       ),
     );
@@ -469,318 +564,388 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       }
     }
 
-    // Text Fields
-    addFieldIfVisible(
-      "ReferenceNo",
-      FormFieldHelper.buildTextField(
-        label: fieldLabels["ReferenceNo"] ?? "",
-        controller: _refNoController,
-        hintText: 'Enter ${fieldLabels["ReferenceNo"] ?? ""}',
-        isRequired: fieldRequired["ReferenceNo"] ?? false,
-        readOnly: fieldReadOnly["ReferenceNo"] ?? false,
-      ),
-    );
+    // ---------------- TEXT FIELDS ----------------
 
-    addFieldIfVisible(
-      "FAO",
-      FormFieldHelper.buildTextField(
-        label: fieldLabels["FAO"] ?? "",
-        controller: _deliverToController,
-        hintText: 'Enter ${fieldLabels["FAO"] ?? ""}',
-        isRequired: fieldRequired["FAO"] ?? false,
-        readOnly: fieldReadOnly["FAO"] ?? false,
-      ),
-    );
+    if (fieldVisible["ReferenceNo"] ?? false) {
+      addFieldIfVisible(
+        "ReferenceNo",
+        FormFieldHelper.buildTextField(
+          label: fieldLabels["ReferenceNo"] ?? "",
+          controller: _refNoController,
+          hintText: 'Enter ${fieldLabels["ReferenceNo"] ?? ""}',
+          isRequired: fieldRequired["ReferenceNo"] ?? false,
+          readOnly: fieldReadOnly["ReferenceNo"] ?? false,
+        ),
+      );
+    }
 
-    addFieldIfVisible(
-      "FOB",
-      FormFieldHelper.buildTextField(
-        label: fieldLabels["FOB"] ?? "",
-        controller: _deliverIncoterms,
-        hintText: 'Enter ${fieldLabels["FOB"] ?? ""}',
-        isRequired: fieldRequired["FOB"] ?? false,
-        readOnly: fieldReadOnly["FOB"] ?? false,
-      ),
-    );
+    if (fieldVisible["FAO"] ?? false) {
+      addFieldIfVisible(
+        "FAO",
+        FormFieldHelper.buildTextField(
+          label: fieldLabels["FAO"] ?? "",
+          controller: _deliverToController,
+          hintText: 'Enter ${fieldLabels["FAO"] ?? ""}',
+          isRequired: fieldRequired["FAO"] ?? false,
+          readOnly: fieldReadOnly["FAO"] ?? false,
+        ),
+      );
+    }
 
-    addFieldIfVisible(
-      "Instructions",
-      FormFieldHelper.buildTextField(
-        label: fieldLabels["Instructions"] ?? "",
-        controller: _instructionsController,
-        hintText: 'Enter ${fieldLabels["Instructions"] ?? ""}',
-        isRequired: fieldRequired["Instructions"] ?? false,
-        readOnly: fieldReadOnly["Instructions"] ?? false,
-      ),
-    );
+    if (fieldVisible["FOB"] ?? false) {
+      addFieldIfVisible(
+        "FOB",
+        FormFieldHelper.buildTextField(
+          label: fieldLabels["FOB"] ?? "",
+          controller: _deliverIncoterms,
+          hintText: 'Enter ${fieldLabels["FOB"] ?? ""}',
+          isRequired: fieldRequired["FOB"] ?? false,
+          readOnly: fieldReadOnly["FOB"] ?? false,
+        ),
+      );
+    }
 
-    addFieldIfVisible(
-      "Ship_Via",
-      FormFieldHelper.buildTextField(
-        label: fieldLabels["Ship_Via"] ?? "Ship Via",
-        controller: _shipViaController,
-        hintText: 'Enter ${fieldLabels["Ship_Via"] ?? "Ship Via"}',
-        isRequired: fieldRequired["Ship_Via"] ?? false,
-        readOnly: fieldReadOnly["Ship_Via"] ?? false,
-      ),
-    );
+    if (fieldVisible["Instructions"] ?? false) {
+      addFieldIfVisible(
+        "Instructions",
+        FormFieldHelper.buildTextField(
+          label: fieldLabels["Instructions"] ?? "",
+          controller: _instructionsController,
+          hintText: 'Enter ${fieldLabels["Instructions"] ?? ""}',
+          isRequired: fieldRequired["Instructions"] ?? false,
+          readOnly: fieldReadOnly["Instructions"] ?? false,
+        ),
+      );
+    }
 
-    addFieldIfVisible(
-      "Justification",
-      FormFieldHelper.buildTextField(
-        label: fieldLabels["Justification"] ?? "Justification",
-        controller: _justificationController,
-        hintText: 'Enter ${fieldLabels["Justification"] ?? ""}',
-        isRequired: fieldRequired["Justification"] ?? false,
-        readOnly: fieldReadOnly["Justification"] ?? false,
-      ),
-    );
+    if (fieldVisible["Ship_Via"] ?? false) {
+      addFieldIfVisible(
+        "Ship_Via",
+        FormFieldHelper.buildTextField(
+          label: fieldLabels["Ship_Via"] ?? "Ship Via",
+          controller: _shipViaController,
+          hintText: 'Enter ${fieldLabels["Ship_Via"] ?? "Ship Via"}',
+          isRequired: fieldRequired["Ship_Via"] ?? false,
+          readOnly: fieldReadOnly["Ship_Via"] ?? false,
+        ),
+      );
+    }
 
-    addFieldIfVisible(
-      "Payment_Terms",
-      FormFieldHelper.buildTextField(
-        label: fieldLabels["Payment_Terms"] ?? "",
-        controller: _paymentTermsController,
-        hintText: 'Enter ${fieldLabels["Payment_Terms"] ?? ""}',
-        isRequired: fieldRequired["Payment_Terms"] ?? false,
-        readOnly: fieldReadOnly["Payment_Terms"] ?? false,
-      ),
-    );
+    if (fieldVisible["Justification"] ?? false) {
+      addFieldIfVisible(
+        "Justification",
+        FormFieldHelper.buildTextField(
+          label: fieldLabels["Justification"] ?? "",
+          controller: _justificationController,
+          hintText: 'Enter ${fieldLabels["Justification"] ?? ""}',
+          isRequired: fieldRequired["Justification"] ?? false,
+          readOnly: fieldReadOnly["Justification"] ?? false,
+        ),
+      );
+    }
 
-    // Dropdown Fields
-    addFieldIfVisible(
-      "SupplierID",
-      FormFieldHelper.buildDropdownFieldWithIds(
-        context: context,
-        label: fieldLabels["SupplierID"] ?? "",
-        value: _selectedSupplierCodeId,
-        apiDisplayValue: _selectedSupplierCodeValue,
-        items: getSupplierCodes(),
-        onChanged: (value) {
-          setState(() {
-            _selectedSupplierCodeId = value;
-          });
-        },
-        isRequired: fieldRequired["SupplierID"] ?? false,
-        readOnly: fieldReadOnly["SupplierID"] ?? false,
-      ),
-    );
+    if (fieldVisible["Payment_Terms"] ?? false) {
+      addFieldIfVisible(
+        "Payment_Terms",
+        FormFieldHelper.buildTextField(
+          label: fieldLabels["Payment_Terms"] ?? "",
+          controller: _paymentTermsController,
+          hintText: 'Enter ${fieldLabels["Payment_Terms"] ?? ""}',
+          isRequired: fieldRequired["Payment_Terms"] ?? false,
+          readOnly: fieldReadOnly["Payment_Terms"] ?? false,
+        ),
+      );
+    }
 
-    addFieldIfVisible(
-      "DeliveryID",
-      FormFieldHelper.buildDropdownFieldWithIds(
-        context: context,
-        label: fieldLabels["DeliveryID"] ?? "",
-        value: _selectedDeliveryCodeId,
-        items: getSupplierCodes(),
-        apiDisplayValue: _selectedDeliveryCodeValue,
-        onChanged: (value) {
-          setState(() {
-            _selectedDeliveryCodeId = value;
-          });
-        },
-        isRequired: fieldRequired["DeliveryID"] ?? false,
-        readOnly: fieldReadOnly["DeliveryID"] ?? false,
-      ),
-    );
+    // ---------------- DROPDOWNS ----------------
 
-    addFieldIfVisible(
-      "CategoryID",
-      FormFieldHelper.buildDropdownFieldWithIds(
-        context: context,
-        label: fieldLabels["CategoryID"] ?? "",
-        value: _selectedCategoryCodeId,
-        apiDisplayValue: _selectedCategoryCodeValue,
-        items: getSupplierCodes(),
-        onChanged: (value) {
-          setState(() {
-            _selectedCategoryCodeId = value;
-          });
-        },
-        isRequired: fieldRequired["CategoryID"] ?? false,
-        readOnly: fieldReadOnly["CategoryID"] ?? false,
-      ),
-    );
+    if (fieldVisible["SupplierID"] ?? false) {
+      addFieldIfVisible(
+        "SupplierID",
+        FormFieldHelper.buildDropdownFieldWithIds(
+          context: context,
+          label: fieldLabels["SupplierID"] ?? "",
+          value: _selectedSupplierCodeId,
+          apiDisplayValue: _selectedSupplierCodeValue,
+          items: getSupplierCodes(),
+          onChanged: (value) {
+            setState(() {
+              _selectedSupplierCodeId = value;
+              // Clear display value when null
+              if (value == null) {
+                _selectedSupplierCodeValue = null;
+              }
+            });
+          },
+          isRequired: fieldRequired["SupplierID"] ?? false,
+          readOnly: fieldReadOnly["SupplierID"] ?? false,
+        ),
+      );
+    }
 
-    addFieldIfVisible(
-      "OrderTypeID",
-      FormFieldHelper.buildDropdownFieldWithIds(
-        context: context,
-        label: fieldLabels["OrderTypeID"] ?? "",
-        value: _selectedDocumentTypeId,
-        apiDisplayValue: _selectedDocumentTypeValue,
-        items: getSupplierCodes(),
-        onChanged: (value) {
-          setState(() {
-            _selectedDocumentTypeId = value;
-          });
-        },
-        isRequired: fieldRequired["OrderTypeID"] ?? false,
-        readOnly: fieldReadOnly["OrderTypeID"] ?? false,
-      ),
-    );
+    if (fieldVisible["DeliveryID"] ?? false) {
+      addFieldIfVisible(
+        "DeliveryID",
+        AsyncDropdownField(
+          context: context,
+          label: fieldLabels["DeliveryID"] ?? "",
+          value: _selectedDeliveryCodeId,
+          apiDisplayValue: _selectedDeliveryCodeValue,
+          fetchItems: getDeliveryCodes,
+          onChanged: (value) {
+            setState(() {
+              _selectedDeliveryCodeId = value;
+              // Clear display value when null
+              if (value == null) {
+                _selectedDeliveryCodeValue = null;
+              }
+            });
+          },
+          isRequired: fieldRequired["DeliveryID"] ?? false,
+          readOnly: fieldReadOnly["DeliveryID"] ?? false,
+        ),
+      );
+    }
 
-    addFieldIfVisible(
-      "InvoicePtID",
-      FormFieldHelper.buildDropdownFieldWithIds(
-        context: context,
-        label: fieldLabels["InvoicePtID"] ?? "",
-        value: _selectedInvoiceCodeId,
-        apiDisplayValue: _selectedInvoiceCodeValue,
-        items: getSupplierCodes(),
-        onChanged: (value) {
-          setState(() {
-            _selectedInvoiceCodeId = value;
-          });
-        },
-        isRequired: fieldRequired["InvoicePtID"] ?? false,
-        readOnly: fieldReadOnly["InvoicePtID"] ?? false,
-      ),
-    );
+    if (fieldVisible["CategoryID"] ?? false) {
+      addFieldIfVisible(
+        "CategoryID",
+        AsyncDropdownField(
+          context: context,
+          label: fieldLabels["CategoryID"] ?? "",
+          value: _selectedCategoryCodeId,
+          apiDisplayValue: _selectedCategoryCodeValue,
+          fetchItems: getCategoryCodes,
+          onChanged: (value) {
+            setState(() {
+              _selectedCategoryCodeId = value;
+              // Clear display value when null
+              if (value == null) {
+                _selectedCategoryCodeValue = null;
+              }
+            });
+          },
+          isRequired: fieldRequired["CategoryID"] ?? false,
+          readOnly: fieldReadOnly["CategoryID"] ?? false,
+        ),
+      );
+    }
 
-    addFieldIfVisible(
-      "ExpCode1_ID",
-      FormFieldHelper.buildDropdownFieldWithIds(
-        context: context,
-        label: fieldLabels["ExpCode1_ID"] ?? "",
-        value: _selectedAccountId,
-        apiDisplayValue: _selectedAccountValue,
-        items: getSupplierCodes(),
-        onChanged: (value) {
-          setState(() {
-            _selectedAccountId = value;
-          });
-        },
-        isRequired: fieldRequired["ExpCode1_ID"] ?? false,
-        readOnly: fieldReadOnly["ExpCode1_ID"] ?? false,
-      ),
-    );
-    addFieldIfVisible(
-      "ExpCode1_ID",
-      FormFieldHelper.buildDropdownFieldWithIds(
-        context: context,
-        label: fieldLabels["ExpCode1_ID"] ?? "",
-        value: _selectedAccountId,
-        apiDisplayValue: _selectedAccountValue,
-        items: getSupplierCodes(),
-        onChanged: (value) {
-          setState(() {
-            _selectedAccountId = value;
-          });
-        },
-        isRequired: fieldRequired["SupplierID"] ?? false,
-        readOnly: false,
-      ),
-    );
+    if (fieldVisible["OrderTypeID"] ?? false) {
+      addFieldIfVisible(
+        "OrderTypeID",
+        AsyncDropdownField(
+          context: context,
+          label: fieldLabels["OrderTypeID"] ?? "",
+          value: _selectedDocumentTypeId,
+          apiDisplayValue: _selectedDocumentTypeValue,
+          fetchItems: getOrderTypeCodes,
+          onChanged: (value) {
+            setState(() {
+              _selectedDocumentTypeId = value;
+              // Clear display value when null
+              if (value == null) {
+                _selectedDocumentTypeValue = null;
+              }
+            });
+          },
+          isRequired: fieldRequired["OrderTypeID"] ?? false,
+          readOnly: fieldReadOnly["OrderTypeID"] ?? false,
+        ),
+      );
+    }
 
-    addFieldIfVisible(
-      "ExpCode2_ID",
-      FormFieldHelper.buildDropdownFieldWithIds(
-        context: context,
-        label: fieldLabels["ExpCode2_ID"] ?? "",
-        value: _selectedRestaurentId,
-        apiDisplayValue: _selectedRestaurentValue,
-        items: getSupplierCodes(),
-        onChanged: (value) {
-          setState(() {
-            _selectedRestaurentId = value;
-          });
-        },
-        isRequired: fieldRequired["ExpCode2_ID"] ?? false,
-        readOnly: fieldReadOnly["ExpCode2_ID"] ?? false,
-      ),
-    );
+    if (fieldVisible["InvoicePtID"] ?? false) {
+      addFieldIfVisible(
+        "InvoicePtID",
+        AsyncDropdownField(
+          context: context,
+          label: fieldLabels["InvoicePtID"] ?? "",
+          value: _selectedInvoiceCodeId,
+          apiDisplayValue: _selectedInvoiceCodeValue,
+          fetchItems: getInvoiceCodes,
+          onChanged: (value) {
+            setState(() {
+              _selectedInvoiceCodeId = value;
+              // Clear display value when null
+              if (value == null) {
+                _selectedInvoiceCodeValue = null;
+              }
+            });
+          },
+          isRequired: fieldRequired["InvoicePtID"] ?? false,
+          readOnly: fieldReadOnly["InvoicePtID"] ?? false,
+        ),
+      );
+    }
 
-    addFieldIfVisible(
-      "Supp_Cont_ID",
-      FormFieldHelper.buildDropdownFieldWithIds(
-        context: context,
-        label: fieldLabels["Supp_Cont_ID"] ?? "",
-        value: _selectedSupplierContactId,
-        apiDisplayValue: _selectedSupplierContactValue,
-        items: getSupplierCodes(),
-        onChanged: (value) {
-          setState(() {
-            _selectedSupplierContactId = value;
-          });
-        },
-        isRequired: fieldRequired["Supp_Cont_ID"] ?? false,
-        readOnly: fieldReadOnly["Supp_Cont_ID"] ?? false,
-      ),
-    );
+    if (fieldVisible["ExpCode1_ID"] ?? false) {
+      addFieldIfVisible(
+        "ExpCode1_ID",
+        AsyncDropdownField(
+          context: context,
+          label: fieldLabels["ExpCode1_ID"] ?? "",
+          value: _selectedAccountId,
+          apiDisplayValue: _selectedAccountValue,
+          fetchItems: getExpenseCode1,
+          onChanged: (value) {
+            setState(() {
+              _selectedAccountId = value;
+              // Clear display value when null
+              if (value == null) {
+                _selectedAccountValue = null;
+              }
+            });
+          },
+          isRequired: fieldRequired["ExpCode1_ID"] ?? false,
+          readOnly: fieldReadOnly["ExpCode1_ID"] ?? false,
+        ),
+      );
+    }
 
-    addFieldIfVisible(
-      "Order_Budget_Header",
-      FormFieldHelper.buildDropdownFieldWithIds(
-        context: context,
-        label: fieldLabels["Order_Budget_Header"] ?? "",
-        value: _selectedBudgetId,
-        apiDisplayValue: _selectedBudgetValue,
-        items: getBudget(),
-        onChanged: (value) {
-          setState(() {
-            _selectedBudgetId = value;
-          });
-        },
-        isRequired: fieldRequired["Order_Budget_Header"] ?? false,
-        readOnly: fieldReadOnly["Order_Budget_Header"] ?? false,
-      ),
-    );
+    if (fieldVisible["ExpCode2_ID"] ?? false) {
+      addFieldIfVisible(
+        "ExpCode2_ID",
+        AsyncDropdownField(
+          context: context,
+          label: fieldLabels["ExpCode2_ID"] ?? "",
+          value: _selectedRestaurentId,
+          apiDisplayValue: _selectedRestaurentValue,
+          fetchItems: getExpenseCode2,
+          onChanged: (value) {
+            setState(() {
+              _selectedRestaurentId = value;
+              // Clear display value when null
+              if (value == null) {
+                _selectedRestaurentValue = null;
+              }
+            });
+          },
+          isRequired: fieldRequired["ExpCode2_ID"] ?? false,
+          readOnly: fieldReadOnly["ExpCode2_ID"] ?? false,
+        ),
+      );
+    }
 
-    addFieldIfVisible(
-      "Cust_ID",
-      FormFieldHelper.buildDropdownFieldWithIds(
-        context: context,
-        label: fieldLabels["Cust_ID"] ?? "Customer",
-        value: _selectedCustomerId,
-        apiDisplayValue: _selectedCustomerValue,
-        items: getSupplierCodes(),
-        onChanged: (value) {
-          setState(() {
-            _selectedCustomerId = value;
-          });
-        },
-        isRequired: fieldRequired["Cust_ID"] ?? false,
-        readOnly: fieldReadOnly["Cust_ID"] ?? false,
-      ),
-    );
+    if (fieldVisible["Supp_Cont_ID"] ?? false) {
+      addFieldIfVisible(
+        "Supp_Cont_ID",
+        AsyncDropdownField(
+          context: context,
+          label: fieldLabels["Supp_Cont_ID"] ?? "",
+          value: _selectedSupplierContactId,
+          apiDisplayValue: _selectedSupplierContactValue,
+          fetchItems: getSupplierContacts,
+          onChanged: (value) {
+            setState(() {
+              _selectedSupplierContactId = value;
+              // Clear display value when null
+              if (value == null) {
+                _selectedSupplierContactValue = null;
+              }
+            });
+          },
+          isRequired: fieldRequired["Supp_Cont_ID"] ?? false,
+          readOnly: fieldReadOnly["Supp_Cont_ID"] ?? false,
+        ),
+      );
+    }
 
-    addFieldIfVisible(
-      "ContractID",
-      FormFieldHelper.buildDropdownFieldWithIds(
-        context: context,
-        label: fieldLabels["ContractID"] ?? "",
-        value: _selectedContractNumberId,
-        apiDisplayValue: _selectedContractNumberValue,
-        items: getDeliveryCodes(),
-        onChanged: (value) {
-          setState(() {
-            _selectedContractNumberId = value;
-          });
-        },
-        isRequired: fieldRequired["ContractID"] ?? false,
-        readOnly: fieldReadOnly["ContractID"] ?? false,
-      ),
-    );
+    if (fieldVisible["Order_Budget_Header"] ?? false) {
+      addFieldIfVisible(
+        "Order_Budget_Header",
+        AsyncDropdownField(
+          context: context,
+          label: fieldLabels["Order_Budget_Header"] ?? "",
+          value: _selectedBudgetId,
+          apiDisplayValue: _selectedBudgetValue,
+          fetchItems: getBudget,
+          onChanged: (value) {
+            setState(() {
+              _selectedBudgetId = value;
+              // Clear display value when null
+              if (value == null) {
+                _selectedBudgetValue = null;
+              }
+            });
+          },
+          isRequired: fieldRequired["Order_Budget_Header"] ?? false,
+          readOnly: fieldReadOnly["Order_Budget_Header"] ?? false,
+        ),
+      );
+    }
 
-    addFieldIfVisible(
-      "ExpCode3_ID",
-      FormFieldHelper.buildDropdownFieldWithIds(
-        context: context,
-        label: fieldLabels["ExpCode3_ID"] ?? "",
-        value: _selectDepartmentCodeId,
-        apiDisplayValue: _selectDepartmentCodeValue,
-        items: getSupplierCodes(),
-        onChanged: (value) {
-          setState(() {
-            _selectDepartmentCodeId = value;
-          });
-        },
-        isRequired: fieldRequired["ExpCode3_ID"] ?? false,
-        readOnly: fieldReadOnly["ExpCode3_ID"] ?? false,
-      ),
-    );
+    if (fieldVisible["Cust_ID"] ?? false) {
+      addFieldIfVisible(
+        "Cust_ID",
+        AsyncDropdownField(
+          context: context,
+          label: fieldLabels["Cust_ID"] ?? "",
+          value: _selectedCustomerId,
+          apiDisplayValue: _selectedCustomerValue,
+          fetchItems: getCustomerCodes,
+          onChanged: (value) {
+            setState(() {
+              _selectedCustomerId = value;
+              // Clear display value when null
+              if (value == null) {
+                _selectedCustomerValue = null;
+              }
+            });
+          },
+          isRequired: fieldRequired["Cust_ID"] ?? false,
+          readOnly: fieldReadOnly["Cust_ID"] ?? false,
+        ),
+      );
+    }
 
+    if (fieldVisible["ContractID"] ?? false) {
+      addFieldIfVisible(
+        "ContractID",
+        AsyncDropdownField(
+          context: context,
+          label: fieldLabels["ContractID"] ?? "",
+          value: _selectedContractNumberId,
+          apiDisplayValue: _selectedContractNumberValue,
+          fetchItems: getContractCodes,
+          onChanged: (value) {
+            setState(() {
+              _selectedContractNumberId = value;
+              // Clear display value when null
+              if (value == null) {
+                _selectedContractNumberValue = null;
+              }
+            });
+          },
+          isRequired: fieldRequired["ContractID"] ?? false,
+          readOnly: fieldReadOnly["ContractID"] ?? false,
+        ),
+      );
+    }
+
+    if (fieldVisible["ExpCode3_ID"] ?? false) {
+      addFieldIfVisible(
+        "ExpCode3_ID",
+        AsyncDropdownField(
+          context: context,
+          label: fieldLabels["ExpCode3_ID"] ?? "",
+          value: _selectDepartmentCodeId,
+          apiDisplayValue: _selectDepartmentCodeValue,
+          fetchItems: getDepartmentCodes,
+          onChanged: (value) {
+            setState(() {
+              _selectDepartmentCodeId = value;
+              // Clear display value when null
+              if (value == null) {
+                _selectDepartmentCodeValue = null;
+              }
+            });
+          },
+          isRequired: fieldRequired["ExpCode3_ID"] ?? false,
+          readOnly: fieldReadOnly["ExpCode3_ID"] ?? false,
+        ),
+      );
+    }
     return fields;
   }
 

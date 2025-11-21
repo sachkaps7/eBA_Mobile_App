@@ -91,98 +91,203 @@ class ApprovalDetailsHelper {
   }
 
 //-----------------------------------buildSection----------------------------------------------------------
-  static Widget buildSection(
-    String title,
-    IconData icon,
-    List<Widget> children, {
-    VoidCallback? onTap,
-    int? count,
-    double iconSize = 24,
-    required bool isExpanded,
-    required VoidCallback toggleSection,
-  }) {
-    return Card(
-      color: ColorManager.white,
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      child: Column(
-        children: [
-          InkWell(
-            onTap: () {
-              toggleSection();
-              if (onTap != null) onTap();
-            },
-            borderRadius: BorderRadius.circular(8),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-              horizontalTitleGap: 8,
-              leading: Icon(
-                icon,
-                size: iconSize,
-                color:
-                    isExpanded ? ColorManager.darkBlue : ColorManager.darkGrey,
+  // static Widget buildSection(
+  //   String title,
+  //   IconData icon,
+  //   List<Widget> children, {
+  //   VoidCallback? onTap,
+  //   int? count,
+  //   double iconSize = 24,
+  //   required bool isExpanded,
+  //   required VoidCallback toggleSection,
+  // }) {
+  //   return Card(
+  //     color: ColorManager.white,
+  //     margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+  //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+  //     child: Column(
+  //       children: [
+  //         InkWell(
+  //           onTap: () {
+  //             toggleSection();
+  //             if (onTap != null) onTap();
+  //           },
+  //           borderRadius: BorderRadius.circular(8),
+  //           child: ListTile(
+  //             contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+  //             horizontalTitleGap: 8,
+  //             leading: Icon(
+  //               icon,
+  //               size: iconSize,
+  //               color:
+  //                   isExpanded ? ColorManager.darkBlue : ColorManager.darkGrey,
+  //             ),
+  //             title: Text(
+  //               title,
+  //               style: TextStyle(
+  //                 fontSize: FontSize.s18,
+  //                 fontWeight: FontWeight.w600,
+  //                 color: isExpanded
+  //                     ? ColorManager.darkBlue
+  //                     : ColorManager.darkGrey,
+  //               ),
+  //             ),
+  //             trailing: Row(
+  //               mainAxisSize: MainAxisSize.min,
+  //               children: [
+  //                 if (count != null && count > 0)
+  //                   Container(
+  //                     padding: const EdgeInsets.all(6),
+  //                     decoration: BoxDecoration(
+  //                       color: ColorManager.orange,
+  //                       shape: BoxShape.circle,
+  //                     ),
+  //                     child: Text(
+  //                       '$count',
+  //                       style: TextStyle(
+  //                         color: ColorManager.white,
+  //                         fontWeight: FontWeight.bold,
+  //                         fontSize: FontSize.s12,
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 const SizedBox(width: 8),
+  //                 Icon(
+  //                   isExpanded
+  //                       ? Icons.keyboard_arrow_up
+  //                       : Icons.keyboard_arrow_down,
+  //                   color: isExpanded
+  //                       ? ColorManager.darkBlue
+  //                       : ColorManager.darkGrey,
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //         if (isExpanded)
+  //           Padding(
+  //             padding: const EdgeInsets.symmetric(horizontal: 30),
+  //             child: Divider(
+  //               color: ColorManager.lightGrey4,
+  //               thickness: 1,
+  //               height: 0,
+  //             ),
+  //           ),
+  //         if (isExpanded)
+  //           Padding(
+  //             padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+  //             child: Column(children: children),
+  //           ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+static Widget buildSection(
+  String title,
+  IconData icon,
+  List<Widget> children, {
+  VoidCallback? onTap,
+  int? count,
+  double iconSize = 24,
+  required bool isExpanded,
+  required VoidCallback toggleSection,
+  Widget? trailing, // New parameter for custom trailing widget
+  VoidCallback? onTrailingTap, // New parameter for trailing icon tap
+}) {
+  return Card(
+    color: ColorManager.white,
+    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    child: Column(
+      children: [
+        InkWell(
+          onTap: () {
+            toggleSection();
+            if (onTap != null) onTap();
+          },
+          borderRadius: BorderRadius.circular(8),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+            horizontalTitleGap: 8,
+            leading: Icon(
+              icon,
+              size: iconSize,
+              color: isExpanded ? ColorManager.darkBlue : ColorManager.darkGrey,
+            ),
+            title: Text(
+              title,
+              style: TextStyle(
+                fontSize: FontSize.s18,
+                fontWeight: FontWeight.w600,
+                color: isExpanded
+                    ? ColorManager.darkBlue
+                    : ColorManager.darkGrey,
               ),
-              title: Text(
-                title,
-                style: TextStyle(
-                  fontSize: FontSize.s18,
-                  fontWeight: FontWeight.w600,
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Custom trailing widget
+                if (trailing != null)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: GestureDetector(
+                      onTap: onTrailingTap,
+                      child: trailing,
+                    ),
+                  ),
+                
+                // Count badge
+                if (count != null && count > 0)
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: ColorManager.orange,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '$count',
+                      style: TextStyle(
+                        color: ColorManager.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: FontSize.s12,
+                      ),
+                    ),
+                  ),
+                
+                // Expand/collapse icon
+                const SizedBox(width: 8),
+                Icon(
+                  isExpanded
+                      ? Icons.keyboard_arrow_up
+                      : Icons.keyboard_arrow_down,
                   color: isExpanded
                       ? ColorManager.darkBlue
                       : ColorManager.darkGrey,
                 ),
-              ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (count != null && count > 0)
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: ColorManager.orange,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        '$count',
-                        style: TextStyle(
-                          color: ColorManager.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: FontSize.s12,
-                        ),
-                      ),
-                    ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    isExpanded
-                        ? Icons.keyboard_arrow_up
-                        : Icons.keyboard_arrow_down,
-                    color: isExpanded
-                        ? ColorManager.darkBlue
-                        : ColorManager.darkGrey,
-                  ),
-                ],
-              ),
+              ],
             ),
           ),
-          if (isExpanded)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30),
-              child: Divider(
-                color: ColorManager.lightGrey4,
-                thickness: 1,
-                height: 0,
-              ),
+        ),
+        if (isExpanded)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: Divider(
+              color: ColorManager.lightGrey4,
+              thickness: 1,
+              height: 0,
             ),
-          if (isExpanded)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-              child: Column(children: children),
-            ),
-        ],
-      ),
-    );
-  }
-
+          ),
+        if (isExpanded)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+            child: Column(children: children),
+          ),
+      ],
+    ),
+  );
+}
 //-----------------------------------buildMiniCardWithEditIcon----------------------------------------------------------
   static Widget buildMiniCardWithEditIcon(
       Map<String, dynamic> data, VoidCallback onTap) {
@@ -434,6 +539,153 @@ class ApprovalDetailsHelper {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                 child: Column(
                   children: ApprovalDetailsHelper.buildKeyValueSection(infoMap),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+//-----------------------------------------buildSectionForDetailsWithEditIcon-------------------------------------------------
+  static Widget buildSectionForDetailsWithEditIcon(
+    String title,
+    IconData icon,
+    Map<dynamic, dynamic>? infoMap, {
+    VoidCallback? onTap,
+    required bool isExpanded,
+    required VoidCallback toggleSection,
+  }) {
+    final entries = infoMap?.entries.toList() ?? [];
+
+    return Card(
+      color: ColorManager.white,
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: Column(
+        children: [
+          InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: toggleSection,
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              horizontalTitleGap: 8,
+              leading: Icon(
+                icon,
+                color:
+                    isExpanded ? ColorManager.darkBlue : ColorManager.darkGrey,
+              ),
+              title: Text(
+                title,
+                style: TextStyle(
+                  fontSize: FontSize.s18,
+                  fontWeight: FontWeight.w600,
+                  color: isExpanded
+                      ? ColorManager.darkBlue
+                      : ColorManager.darkGrey,
+                ),
+              ),
+              trailing: Icon(
+                isExpanded
+                    ? Icons.keyboard_arrow_up
+                    : Icons.keyboard_arrow_down,
+                color:
+                    isExpanded ? ColorManager.darkBlue : ColorManager.darkGrey,
+              ),
+            ),
+          ),
+          if (isExpanded && entries.isNotEmpty)
+            InkWell(
+              onTap: onTap, // <---- Entire expanded area is now clickable
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Column(
+                  children: [
+                    // ---------- FIRST ROW WITH EDIT ICON ----------
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 150,
+                          child: Text(
+                            entries[0].key.toString(),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: FontSize.s16,
+                              color: ColorManager.darkGrey,
+                            ),
+                          ),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8),
+                          child: Text(
+                            ":",
+                            style: TextStyle(
+                              fontSize: FontSize.s16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            entries[0].value.toString(),
+                            style: TextStyle(
+                              fontSize: FontSize.s16,
+                              color: ColorManager.darkGrey,
+                            ),
+                          ),
+                        ),
+                        InkWell(
+                          onTap: onTap,
+                          child: Icon(Icons.edit,
+                              size: 18, color: ColorManager.blue),
+                        ),
+                      ],
+                    ),
+
+                    // ---------- OTHER ROWS ----------
+                    ...entries.skip(1).map(
+                          (e) => Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  width: 150,
+                                  child: Text(
+                                    e.key.toString(),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: FontSize.s16,
+                                      color: ColorManager.darkGrey,
+                                    ),
+                                  ),
+                                ),
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 8),
+                                  child: Text(
+                                    ":",
+                                    style: TextStyle(
+                                      fontSize: FontSize.s16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    e.value.toString(),
+                                    style: TextStyle(
+                                      fontSize: FontSize.s16,
+                                      color: ColorManager.darkGrey,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                  ],
                 ),
               ),
             ),

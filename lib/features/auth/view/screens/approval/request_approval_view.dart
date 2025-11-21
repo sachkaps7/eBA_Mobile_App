@@ -3,6 +3,7 @@ import 'package:eyvo_v3/api/response_models/request_approval_list_response.dart'
 import 'package:eyvo_v3/app/app_prefs.dart';
 import 'package:eyvo_v3/core/resources/assets_manager.dart';
 import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/resources/font_manager.dart';
 import 'package:eyvo_v3/core/resources/strings_manager.dart';
 import 'package:eyvo_v3/core/resources/styles_manager.dart';
@@ -45,6 +46,7 @@ class _RequestApprovalPageState extends State<RequestApprovalPage> {
 
     Map<String, dynamic> requestData = {
       'uid': SharedPrefs().uID,
+      'apptype': AppConstants.apptype,
     };
 
     final jsonResponse = await apiService.postRequest(
@@ -200,7 +202,7 @@ class _RequestApprovalPageState extends State<RequestApprovalPage> {
                                       context,
                                       RequestDetailsView(
                                           requestId: request.requestId,
-                                          requestNumber: request.requestNumber),
+                                        ),
                                     );
                                   },
                                 ),

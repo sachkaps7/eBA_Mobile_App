@@ -1,11 +1,13 @@
 import 'dart:async';
 
 import 'package:eyvo_v3/api/api_service/api_service.dart';
-import 'package:eyvo_v3/api/response_models/order_approval_list_response.dart';
+import 'package:eyvo_v3/api/response_models/create_order_request_response.dart';
+import 'package:eyvo_v3/api/response_models/request_approval_list_response.dart';
 import 'package:eyvo_v3/app/app_prefs.dart';
 import 'package:eyvo_v3/app/sizes_helper.dart';
 import 'package:eyvo_v3/core/resources/assets_manager.dart';
 import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/resources/font_manager.dart';
 import 'package:eyvo_v3/core/resources/routes_manager.dart';
 import 'package:eyvo_v3/core/resources/strings_manager.dart';
@@ -19,21 +21,22 @@ import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/create_order_details.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/create_request_details.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/order_details_view.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/request_approval_details.dart';
 import 'package:flutter/material.dart';
 
-class CreateRequestPage extends StatefulWidget {
-  const CreateRequestPage({super.key});
+class RequestListingPage extends StatefulWidget {
+  const RequestListingPage({super.key});
 
   @override
-  State<CreateRequestPage> createState() => _CreateRequestPageState();
+  State<RequestListingPage> createState() => _RequestListingPageState();
 }
 
-class _CreateRequestPageState extends State<CreateRequestPage> with RouteAware {
+class _RequestListingPageState extends State<RequestListingPage> with RouteAware {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   final ApiService apiService = ApiService();
 
-  List<OrderApprovalItem> orderApprovalList = [];
+  List<Datum> requestlList = [];
   bool isLoading = false;
   bool isError = false;
   String errorText = AppStrings.somethingWentWrong;
@@ -43,7 +46,7 @@ class _CreateRequestPageState extends State<CreateRequestPage> with RouteAware {
   @override
   void initState() {
     super.initState();
-    fetchOrderApprovalList();
+    fetchrequestlList();
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -62,36 +65,37 @@ class _CreateRequestPageState extends State<CreateRequestPage> with RouteAware {
         searchText = _searchController.text;
         _debounce?.cancel();
         _debounce = Timer(const Duration(milliseconds: 500), () {
-          fetchOrderApprovalList();
+          fetchrequestlList();
         });
       }
     }
   }
 
-  void fetchOrderApprovalList() async {
+  void fetchrequestlList() async {
     setState(() {
       isLoading = true;
       isError = false;
-      orderApprovalList.clear();
+      requestlList.clear();
     });
 
     Map<String, dynamic> requestData = {
       'uid': SharedPrefs().uID,
+      'apptype': AppConstants.apptype,
       'search': _searchController.text,
     };
 
     final jsonResponse = await apiService.postRequest(
       context,
-      ApiService.orderApprovalList,
+      ApiService.requestList,
       requestData,
     );
 
     if (jsonResponse != null) {
-      final response = OrderApprovalListResponse.fromJson(jsonResponse);
+      final response = RequestApprovalListResponse.fromJson(jsonResponse);
 
       if (response.code == 200) {
         setState(() {
-          orderApprovalList = response.data;
+          requestlList = response.data;
           isLoading = false;
         });
       } else {
@@ -102,6 +106,61 @@ class _CreateRequestPageState extends State<CreateRequestPage> with RouteAware {
         });
       }
     } else {
+      setState(() {
+        isError = true;
+        errorText = AppStrings.somethingWentWrong;
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> createRequest() async {
+    setState(() {
+      isLoading = true;
+      isError = false;
+    });
+
+    Map<String, dynamic> requestData = {
+      'uid': SharedPrefs().uID,
+      'apptype': AppConstants.apptype,
+      "group": "request",
+      "regionid": 1,
+      "userSession": "",
+    };
+
+    final jsonResponse = await apiService.postRequest(
+      context,
+      ApiService.createrequest,
+      requestData,
+    );
+
+    if (jsonResponse != null) {
+      final response = OrderRequestCreateResponse.fromJson(jsonResponse);
+
+      if (response.code == 200) {
+        // SUCCESS
+        setState(() {
+          isLoading = false;
+        });
+
+        showSnackBar(context, "Request created successfully");
+
+        navigateToScreen(
+          context,
+          RequestDetailsView(
+            requestId: int.parse(response.data),
+          ),
+        );
+      } else {
+        // API returned an error
+        setState(() {
+          isError = true;
+          errorText = response.message.join(", ");
+          isLoading = false;
+        });
+      }
+    } else {
+      // Null response (server/error)
       setState(() {
         isError = true;
         errorText = AppStrings.somethingWentWrong;
@@ -161,20 +220,14 @@ class _CreateRequestPageState extends State<CreateRequestPage> with RouteAware {
                     return CustomImageActionAlert(
                       iconString: '',
                       imageString: ImageAssets.common,
-                      titleString: "Create Request",
+                      titleString: "Requests",
                       subTitleString:
                           "Are you sure you want to create a request?",
                       destructiveActionString: "Yes",
                       normalActionString: "No",
                       onDestructiveActionTap: () {
+                        createRequest();
                         Navigator.of(context).pop();
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const CreateRequestDetailsPage(),
-                          ),
-                        );
                       },
                       onNormalActionTap: () {
                         Navigator.of(context).pop();
@@ -217,7 +270,7 @@ class _CreateRequestPageState extends State<CreateRequestPage> with RouteAware {
         elevation: 1,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
-          'Create Request',
+          'Requests',
           style: getBoldStyle(
             color: ColorManager.white,
             fontSize: FontSize.s20,
@@ -237,7 +290,7 @@ class _CreateRequestPageState extends State<CreateRequestPage> with RouteAware {
             onPressed: () {
               setState(() {
                 _searchController.clear();
-                fetchOrderApprovalList();
+                fetchrequestlList();
               });
             },
             icon: Icon(Icons.refresh, color: ColorManager.white),
@@ -274,7 +327,7 @@ class _CreateRequestPageState extends State<CreateRequestPage> with RouteAware {
             )
 
           // No Data
-          else if (orderApprovalList.isEmpty)
+          else if (requestlList.isEmpty)
             Expanded(
               child: Center(
                 child: Column(
@@ -299,45 +352,22 @@ class _CreateRequestPageState extends State<CreateRequestPage> with RouteAware {
           else
             Expanded(
               child: ListView.builder(
-                itemCount: orderApprovalList.length,
+                itemCount: requestlList.length,
                 itemBuilder: (context, index) {
-                  final order = orderApprovalList[index];
-                  return
-                      // CommonCardWidget(
-                      //   subtitles: [
-                      //     {'Order No': order.orderNumber},
-                      //     {'Status': order.orderStatus},
-                      //     {'Supplier Name': order.supplierName},
-                      //     {'Order Date': order.orderDate},
-                      //     {
-                      //       'Order Net Total':
-                      //           '${getFormattedPriceString(order.orderValue)}'
-                      //     },
-                      //   ],
-                      //   onTap: () {
-                      //     navigateToScreen(
-                      //       context,
-                      //       OrderDetailsView(
-                      //         orderId: order.orderId,
-                      //         orderNumber: order.orderNumber,
-                      //       ),
-                      //     );
-                      //   },
-                      // );
-                      GenericCardWidget(
-                    titleKey: 'Request #${order.orderNumber}',
-                    statusKey: order.orderStatus,
-                    supplierKey: 'Tanuja Patil',
-                    dateKey: order.orderDate,
-                    valueKey: getFormattedPriceString(order.orderValue),
-                    valueNameKey: 'Order Value',
-                    itemCountKey: '5',
+                  final request = requestlList[index];
+                  return GenericCardWidget(
+                    titleKey: 'Request #${request.requestNumber}',
+                    statusKey: request.requestStatus,
+                    // supplierKey: 'Tanuja Patil',
+                    dateKey: request.entryDate,
+                    valueKey: getFormattedPriceString(request.requestValue),
+                    valueNameKey: 'Request Value',
+                    itemCountKey: request.itemCount.toString(),
                     onTap: () {
                       navigateToScreen(
                         context,
-                        OrderDetailsView(
-                          orderId: order.orderId,
-                          orderNumber: order.orderNumber,
+                        RequestDetailsView(
+                          requestId: request.requestId,
                         ),
                       );
                     },

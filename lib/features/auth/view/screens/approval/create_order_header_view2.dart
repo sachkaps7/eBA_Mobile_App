@@ -1,6 +1,7 @@
 import 'package:eyvo_v3/api/api_service/api_service.dart';
 import 'package:eyvo_v3/api/response_models/order_header_response.dart';
 import 'package:eyvo_v3/app/app_prefs.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/resources/strings_manager.dart';
 import 'package:eyvo_v3/core/widgets/button.dart';
 import 'package:eyvo_v3/core/widgets/form_field_helper.dart';
@@ -85,28 +86,32 @@ class _CreateOrderHeaderViewState extends State<CreateOrderHeaderView> {
   // Dropdown Data
   List<DropdownItem> getBudget() {
     return [
-      DropdownItem(id: "In Budget", value: "In Budget"),
-      DropdownItem(id: "Out Budget", value: "Out Budget"),
-      DropdownItem(id: "Over Budget", value: "Over Budget"),
+      DropdownItem(
+        id: "In Budget",
+        value: "In Budget",
+        code: "ert",
+      ),
+      DropdownItem(id: "Out Budget", value: "Out Budget", code: "ert"),
+      DropdownItem(id: "Over Budget", value: "Over Budget", code: "ert"),
     ];
   }
 
   List<DropdownItem> getSupplierCodes() {
     return [
-      DropdownItem(id: "1", value: "Supplier 1"),
-      DropdownItem(id: "2", value: "Supplier 2"),
-      DropdownItem(id: "3", value: "Supplier 3"),
-      DropdownItem(id: "236", value: "MFAX2"),
+      DropdownItem(id: "1", value: "Supplier 1", code: "ert"),
+      DropdownItem(id: "2", value: "Supplier 2", code: "ert"),
+      DropdownItem(id: "3", value: "Supplier 3", code: "ert"),
+      DropdownItem(id: "236", value: "MFAX2", code: "ert"),
     ];
   }
 
   List<DropdownItem> getDeliveryCodes() {
     return [
-      DropdownItem(id: "1", value: "D001"),
-      DropdownItem(id: "2", value: "D002"),
-      DropdownItem(id: "3", value: "D003"),
-      DropdownItem(id: "4", value: "D004"),
-      DropdownItem(id: "5", value: "D005"),
+      DropdownItem(id: "1", value: "D001", code: "ert"),
+      DropdownItem(id: "2", value: "D002", code: "ert"),
+      DropdownItem(id: "3", value: "D003", code: "ert"),
+      DropdownItem(id: "4", value: "D004", code: "ert"),
+      DropdownItem(id: "5", value: "D005", code: "ert"),
     ];
   }
 
@@ -122,6 +127,7 @@ class _CreateOrderHeaderViewState extends State<CreateOrderHeaderView> {
         ApiService.createOrderHeader,
         {
           'uid': SharedPrefs().uID,
+          'apptype': AppConstants.apptype,
           'ID': widget.orderId,
           'LineID': 0,
           'group': 'Order',

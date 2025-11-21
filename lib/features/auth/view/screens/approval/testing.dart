@@ -51,7 +51,7 @@ import 'package:flutter/material.dart';
 //     final jsonResponse = await apiService.postRequest(
 //       context,
 //       ApiService.orderApprovalDetails,
-//       {'uid': SharedPrefs().uID, 'orderId': widget.orderId},
+//       { 'uid': SharedPrefs().uID,'apptype': AppConstants.apptype, 'orderId': widget.orderId},
 //     );
 
 //     if (jsonResponse != null) {
@@ -401,7 +401,7 @@ import 'package:flutter/material.dart';
 //       context,
 //       ApiService.orderApprovalApproved,
 //       {
-//         'uid': SharedPrefs().uID,
+//          'uid': SharedPrefs().uID,'apptype': AppConstants.apptype,
 //         'orderId': widget.orderId,
 //       },
 //     );
@@ -449,7 +449,7 @@ import 'package:flutter/material.dart';
 //       context,
 //       ApiService.orderApprovalReject,
 //       {
-//         'uid': SharedPrefs().uID,
+//          'uid': SharedPrefs().uID,'apptype': AppConstants.apptype,
 //         'orderId': widget.orderId,
 //         'reason': reason,
 //       },
@@ -868,7 +868,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   //       context,
   //       ApiService.createOrder, // You'll need to add this to your ApiService
   //       {
-  //         'uid': SharedPrefs().uID,
+  //          'uid': SharedPrefs().uID,'apptype': AppConstants.apptype,
   //         ...orderData,
   //       },
   //     );

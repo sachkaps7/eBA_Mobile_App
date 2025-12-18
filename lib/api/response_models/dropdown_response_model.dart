@@ -57,17 +57,16 @@ class DropdownData {
 
   factory DropdownData.fromJson(Map<String, dynamic> json) {
     return DropdownData(
-      id: json['id'] ?? 0,
-      code: json['code'] ?? '',
-      description: json['description'] ?? '',
+      id: int.tryParse(json['id'].toString()) ?? 0,
+      code: json['code']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
       selected: json['selected'] ?? false,
     );
   }
 
-  // Add this missing method
   DropdownItem toDropdownItem() {
     return DropdownItem(
-        id: id.toString(), value: description, code: code.toString());
+        id: id.toString(), description: description, code: code.toString());
   }
 
   Map<String, dynamic> toJson() => {

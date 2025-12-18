@@ -50,38 +50,73 @@ class ImageHelper {
   }
 
   /// Show bottom sheet for choice
-  Future<File?> pickImageWithChoice({required context}) async {
-    return showModalBottomSheet<File?>(
+  Future<File?> pickImageWithChoice({required BuildContext context}) async {
+    return await showModalBottomSheet<File>(
       context: context,
-      isScrollControlled: true,
-      builder: (_) {
-        final screenHeight = MediaQuery.of(context).size.height;
-        return Container(
-          height: screenHeight * 0.20,
-          child: SafeArea(
-            child: Column(
-              children: [
-                const SizedBox(height: 10),
-                ListTile(
-                  leading: const Icon(Icons.camera_alt),
-                  title: const Text("Take Photo"),
-                  onTap: () async {
-                    Navigator.pop(_, await pickImageFromCamera());
-                  },
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
+      backgroundColor: Colors.white,
+      builder: (sheetContext) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Wrap(
+            children: [
+              Center(
+                child: Container(
+                  width: 50,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(50),
+                  ),
                 ),
-                const SizedBox(height: 10),
-                ListTile(
-                  leading: const Icon(Icons.photo_library),
-                  title: const Text("Choose from Gallery"),
-                  onTap: () async {
-                    Navigator.pop(_, await pickImageFromGallery());
-                  },
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                "Select Option",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
+
+              // CAMERA
+              _buildOption(
+                icon: Icons.camera_alt,
+                label: "Take Photo",
+                onTap: () async {
+                  final file = await pickImageFromCamera();
+                  Navigator.pop(sheetContext, file);
+                },
+              ),
+
+              // GALLERY
+              _buildOption(
+                icon: Icons.photo,
+                label: "Choose Image from Gallery",
+                onTap: () async {
+                  final file = await pickImageFromGallery();
+                  Navigator.pop(sheetContext, file); 
+                }
+              ),
+            ],
           ),
         );
       },
+    );
+  }
+
+  static Widget _buildOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: Colors.grey.shade200,
+        child: Icon(icon, color: Colors.black87),
+      ),
+      title: Text(label, style: const TextStyle(fontSize: 16)),
+      onTap: onTap,
     );
   }
 }

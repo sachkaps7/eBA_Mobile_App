@@ -80,4 +80,5 @@ class ImageAssets {
   static const String uploadIcon2 = "$imagePath/uploadIcon.png";
   static const String orderMenu = "$imagePath/order-m.png";
   static const String requestMenu = "$imagePath/Request-m.png";
+  static const String emptyItem = "$imagePath/empty_item.png";
 }

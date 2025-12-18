@@ -110,7 +110,8 @@ class _ItemListViewState extends State<ItemListView> with RouteAware {
       "locationid": SharedPrefs().selectedLocationID,
       "search": _searchController.text,
       'pageno': page,
-      'pagesize': AppConstants.pageSize
+      'pagesize': AppConstants.pageSize,
+  'apptype': AppConstants.apptype,
     };
     final jsonResponse =
         await apiService.postRequest(context, ApiService.itemsListing, data);

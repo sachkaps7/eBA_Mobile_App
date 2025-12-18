@@ -10,6 +10,8 @@ import 'package:eyvo_v3/core/resources/styles_manager.dart';
 import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
 import 'package:eyvo_v3/core/widgets/form_field_helper.dart';
 import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
+import 'package:eyvo_v3/log_data.dart/logger_data.dart';
+import 'package:eyvo_v3/services/file_upload_helper.dart';
 import 'package:eyvo_v3/services/image_upload_helper.dart';
 import 'package:flutter/material.dart';
 
@@ -29,7 +31,7 @@ class _FileUploadPageState extends State<FileUploadPage> {
   final TextEditingController _itemDescriptionController =
       TextEditingController();
 
-  List<bool> _isCardSelected = [false, false];
+  List<bool> _isCardSelected = [true, false];
 
   File? _selectedImage;
   String? _fileExtension;
@@ -37,8 +39,22 @@ class _FileUploadPageState extends State<FileUploadPage> {
   bool _isUploading = false;
   bool _isFileTooLarge = false;
   bool _isInvalidFormat = false;
+  bool _isFileNameTooLong = false;
+  bool _isDescriptionTooLong = false;
+  //UploadType _selectedUploadType = UploadType.file;
 
-  UploadType _selectedUploadType = UploadType.file;
+  @override
+  void initState() {
+    super.initState();
+    _itemDescriptionController.addListener(_validateDescription);
+  }
+
+  void _validateDescription() {
+    setState(() {
+      _isDescriptionTooLong =
+          _itemDescriptionController.text.trim().length > 50;
+    });
+  }
 
   @override
   void dispose() {
@@ -55,19 +71,46 @@ class _FileUploadPageState extends State<FileUploadPage> {
     return (bytes / kb).toStringAsFixed(decimals) + " KB";
   }
 
-  Future<void> _pickImage() async {
-    final pickedFile = await _imageHelper.pickImageWithChoice(context: context);
+  Future<void> _pickFile() async {
+    File? pickedFile = await FilePickerHelper.showFilePickerSheet(context);
+
     if (pickedFile != null) {
       final bytes = await pickedFile.length();
       final ext = pickedFile.path.split('.').last.toLowerCase();
 
       setState(() {
+        // Reset ALL previous errors
+        _isFileTooLarge = false;
+        _isInvalidFormat = false;
+        _isFileNameTooLong = false;
+
         _fileExtension = ext;
-        _isInvalidFormat = !AppConstants.allowedImageFormats.contains(ext);
         _fileSize = _formatBytes(bytes, 2);
         _selectedImage = pickedFile;
-        _isFileTooLarge = bytes > AppConstants.imageSizeLimitBytes;
+
+        final fileName = pickedFile.path.split('/').last;
+        _isFileNameTooLong = fileName.length > 50;
+
+        // Image validation
+        if (AppConstants.allowedImageFormats.contains(ext)) {
+          _isInvalidFormat = false;
+          _isFileTooLarge = bytes > AppConstants.imageSizeLimitBytes;
+        }
+        // Blocked extensions (exe, dll, msi, bat...)
+        else if (AppConstants.blockedExtensions.contains(ext)) {
+          _isInvalidFormat = true;
+        }
+        // All other files allowed
+        else {
+          _isInvalidFormat = false;
+          _isFileTooLarge = false;
+        }
       });
+
+      // Base64 conversion
+      final fileBytes = await pickedFile.readAsBytes();
+      final base64String = base64Encode(fileBytes);
+      LoggerData.dataLog("Base64 String: $base64String");
     }
   }
 
@@ -76,9 +119,9 @@ class _FileUploadPageState extends State<FileUploadPage> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // ---- Upload Box ----
-        FormFieldHelper.buildUploadBox(
+        FormFieldHelper.buildUploadBoxForFile(
           selectedFile: _selectedImage,
-          onPickFile: _pickImage,
+          onPickFile: _pickFile,
           onRemoveFile: () {
             setState(() {
               _selectedImage = null;
@@ -86,16 +129,21 @@ class _FileUploadPageState extends State<FileUploadPage> {
               _fileSize = null;
               _isFileTooLarge = false;
               _isInvalidFormat = false;
+              _isFileNameTooLong = false;
             });
           },
           isUploading: _isUploading,
         ),
 
         const SizedBox(height: 10),
-        FormFieldHelper.buildFileStatus(
+
+        // ---- File Status (size, extension, errors,file name lenght) ----
+        FormFieldHelper.buildFileStatusForFileUpload(
           isInvalidFormat: _isInvalidFormat,
           isFileTooLarge: _isFileTooLarge,
+          isFileNameTooLong: _isFileNameTooLong,
           fileSize: _fileSize,
+          fileExtension: _fileExtension,
         ),
 
         const SizedBox(height: 10),
@@ -105,11 +153,14 @@ class _FileUploadPageState extends State<FileUploadPage> {
           label: "Item Description",
           controller: _itemDescriptionController,
           hintText: "Enter detailed item description",
+          isRequired: true,
+          showLengthError: _isDescriptionTooLong,
+          errorMessage: "Description cannot exceed 50 characters.",
         ),
 
         const SizedBox(height: 10),
 
-        // ---- Cards ----
+        // ---- File Privacy Cards ----
         Align(
           alignment: Alignment.centerLeft,
           child: Text(
@@ -125,7 +176,7 @@ class _FileUploadPageState extends State<FileUploadPage> {
           index: 0,
           icon: Icons.lock_outlined,
           title: "Private",
-          subtitle: "Only you and Invited members can see this file",
+          subtitle: "Only you and invited members can see this file",
           isCardSelected: _isCardSelected,
           onTap: () {
             setState(() {
@@ -138,94 +189,7 @@ class _FileUploadPageState extends State<FileUploadPage> {
           index: 1,
           icon: Icons.public,
           title: "Public",
-          subtitle: "Anyone with the link can view this file \n",
-          isCardSelected: _isCardSelected,
-          onTap: () {
-            setState(() {
-              _isCardSelected[1] = !_isCardSelected[1];
-            });
-          },
-        ),
-
-        const SizedBox(height: 30),
-
-        // // ---- Upload Button ----
-        // SizedBox(
-        //   width: double.infinity,
-        //   height: 50,
-        //   child: ElevatedButton.icon(
-        //     style: ElevatedButton.styleFrom(
-        //       backgroundColor: ColorManager.darkBlue,
-        //       shape: RoundedRectangleBorder(
-        //         borderRadius: BorderRadius.circular(12),
-        //       ),
-        //     ),
-        //     icon: _isUploading
-        //         ? const SizedBox(
-        //             height: 18,
-        //             width: 18,
-        //             child: CustomProgressIndicator(),
-        //           )
-        //         : const Icon(Icons.cloud_upload, color: Colors.white),
-        //     label: Text(
-        //       _isUploading ? "Uploading..." : "Upload File",
-        //       style: TextStyle(color: ColorManager.white, fontSize: 16),
-        //     ),
-        //     onPressed: () {
-        //       // _isUploading ? null : _uploadImage
-        //     },
-        //   ),
-        // ),
-      ],
-    );
-  }
-
-  Widget _buildUrlInputBox() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        FormFieldHelper.buildTextField(
-          label: "File URL",
-          controller: _descriptionController,
-          hintText: "Enter file URL here",
-        ),
-        const SizedBox(height: 12),
-        FormFieldHelper.buildMultilineTextField(
-          label: "File Description",
-          controller: _descriptionController,
-          hintText: "Enter File URL description here",
-        ),
-        const SizedBox(height: 12),
-        // ---- Cards ----
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            'File Privacy',
-            style: getSemiBoldStyle(
-              color: ColorManager.black,
-              fontSize: FontSize.s14,
-            ),
-          ),
-        ),
-        const SizedBox(height: 5),
-        FormFieldHelper.buildInfoCard(
-          index: 0,
-          icon: Icons.lock_outlined,
-          title: "Private",
-          subtitle: "Only you and Invited members can see this file",
-          isCardSelected: _isCardSelected,
-          onTap: () {
-            setState(() {
-              _isCardSelected[0] = !_isCardSelected[0];
-            });
-          },
-        ),
-        const SizedBox(height: 12),
-        FormFieldHelper.buildInfoCard(
-          index: 1,
-          icon: Icons.public,
-          title: "Public",
-          subtitle: "Anyone with the link can view this file \n",
+          subtitle: "Anyone with the link can view this file",
           isCardSelected: _isCardSelected,
           onTap: () {
             setState(() {
@@ -238,6 +202,65 @@ class _FileUploadPageState extends State<FileUploadPage> {
       ],
     );
   }
+
+  // Widget _buildUrlInputBox() {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.center,
+  //     children: [
+  //       FormFieldHelper.buildTextField(
+  //         label: "File URL",
+  //         controller: _descriptionController,
+  //         hintText: "Enter file URL here",
+  //       ),
+  //       const SizedBox(height: 12),
+  //       FormFieldHelper.buildMultilineTextField(
+  //         label: "File Description",
+  //         controller: _descriptionController,
+  //         hintText: "Enter File URL description here",
+  //       ),
+  //       const SizedBox(height: 12),
+  //       // ---- Cards ----
+  //       Align(
+  //         alignment: Alignment.centerLeft,
+  //         child: Text(
+  //           'File Privacy',
+  //           style: getSemiBoldStyle(
+  //             color: ColorManager.black,
+  //             fontSize: FontSize.s14,
+  //           ),
+  //         ),
+  //       ),
+  //       const SizedBox(height: 5),
+  //       FormFieldHelper.buildInfoCard(
+  //         index: 0,
+  //         icon: Icons.lock_outlined,
+  //         title: "Private",
+  //         subtitle: "Only you and Invited members can see this file",
+  //         isCardSelected: _isCardSelected,
+  //         onTap: () {
+  //           setState(() {
+  //             _isCardSelected[0] = !_isCardSelected[0];
+  //           });
+  //         },
+  //       ),
+  //       const SizedBox(height: 12),
+  //       FormFieldHelper.buildInfoCard(
+  //         index: 1,
+  //         icon: Icons.public,
+  //         title: "Public",
+  //         subtitle: "Anyone with the link can view this file \n",
+  //         isCardSelected: _isCardSelected,
+  //         onTap: () {
+  //           setState(() {
+  //             _isCardSelected[1] = !_isCardSelected[1];
+  //           });
+  //         },
+  //       ),
+
+  //       const SizedBox(height: 30),
+  //     ],
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -248,94 +271,9 @@ class _FileUploadPageState extends State<FileUploadPage> {
       ),
       body: Column(
         children: [
-          // ---- Tabs ----
-          Container(
-            decoration: BoxDecoration(
-              color: ColorManager.white,
-              border: Border(
-                bottom: BorderSide(
-                  color: ColorManager.lightGrey,
-                  width: 1,
-                ),
-              ),
-            ),
-            padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedUploadType = UploadType.file;
-                    });
-                  },
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        "File Upload",
-                        style: TextStyle(
-                          color: _selectedUploadType == UploadType.file
-                              ? ColorManager.darkBlue
-                              : ColorManager.grey,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        height: 2,
-                        width: 80,
-                        color: _selectedUploadType == UploadType.file
-                            ? ColorManager.darkBlue
-                            : Colors.transparent,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 20),
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedUploadType = UploadType.url;
-                    });
-                  },
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        "File URL Upload",
-                        style: TextStyle(
-                          color: _selectedUploadType == UploadType.url
-                              ? ColorManager.darkBlue
-                              : ColorManager.grey,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        height: 2,
-                        width: 120,
-                        color: _selectedUploadType == UploadType.url
-                            ? ColorManager.darkBlue
-                            : Colors.transparent,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // ---- Scrollable Content ----
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: _selectedUploadType == UploadType.file
-                  ? _buildFileUploadUI()
-                  : _buildUrlInputBox(),
-            ),
+                padding: const EdgeInsets.all(20), child: _buildFileUploadUI()),
           ),
           // ---- Upload Button ----
           SizedBox(
@@ -348,13 +286,6 @@ class _FileUploadPageState extends State<FileUploadPage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              // icon: _isUploading
-              //     ? const SizedBox(
-              //         height: 18,
-              //         width: 18,
-              //         child: CustomProgressIndicator(),
-              //       )
-              //     : const Icon(Icons.cloud_upload, color: Colors.white),
               label: Text(
                 _isUploading ? "Uploading..." : "Save",
                 style: getBoldStyle(
@@ -362,9 +293,7 @@ class _FileUploadPageState extends State<FileUploadPage> {
                   fontSize: FontSize.s18,
                 ),
               ),
-              onPressed: () {
-                // _isUploading ? null : _uploadImage
-              },
+              onPressed: () {},
             ),
           ),
           const SizedBox(

@@ -103,6 +103,7 @@ class _BlindStockDetailsViewState extends State<BlindStockDetailsView> {
           ? SharedPrefs().scannedRegionID
           : SharedPrefs().selectedRegionID,
       "uid": SharedPrefs().uID,
+      'apptype': AppConstants.apptype,
     };
 
     final jsonResponse = await apiService.postRequest(
@@ -179,6 +180,7 @@ class _BlindStockDetailsViewState extends State<BlindStockDetailsView> {
       "notes": notes,
       "uid": SharedPrefs().uID,
       "itemtype": itemType,
+      'apptype': AppConstants.apptype,
     };
 
     final jsonResponse = await apiService.postRequest(

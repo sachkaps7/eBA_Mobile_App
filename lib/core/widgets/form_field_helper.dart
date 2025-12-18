@@ -112,6 +112,105 @@ class FormFieldHelper {
     );
   }
 
+//----------------- Card Widget---------------------------
+  static Widget buildCardWidget({
+    required int index,
+    required List<Map<String, String>> subtitles,
+    required List<bool> isCardSelected,
+    required VoidCallback onTap,
+  }) {
+    final isSelected = isCardSelected[index];
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero, // always rectangle
+          side: BorderSide(
+            color: isSelected ? ColorManager.darkBlue : Colors.transparent,
+            width: 1.5,
+          ),
+        ),
+        color: isSelected ? ColorManager.highlightColor : Colors.white,
+        // elevation: 2,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: subtitles.map((item) {
+                    final key = item.keys.first;
+                    final value = item.values.first;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Label
+                          Padding(
+                            padding:
+                                const EdgeInsets.only(right: 10.0, bottom: 4),
+                            child: Text(
+                              "$key",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: FontSize.s16,
+                                color: ColorManager.darkGrey,
+                              ),
+                            ),
+                          ),
+                          // Colon
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Text(
+                              ':',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: FontSize.s16,
+                                color: ColorManager.darkGrey,
+                              ),
+                            ),
+                          ),
+                          // Value
+                          const SizedBox(width: 8),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Text(
+                              value,
+                              style: TextStyle(
+                                fontWeight: FontWeight.normal,
+                                fontSize: FontSize.s16,
+                                color: ColorManager.darkGrey,
+                                decoration: null,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+              if (isSelected)
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: ColorManager.darkBlue,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.check, color: Colors.white, size: 16),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   //-------------------- MULTILINE TEXT FIELD --------------------
   static Widget buildMultilineTextField({
     required String label,
@@ -120,12 +219,13 @@ class FormFieldHelper {
     int maxLines = 4,
     bool isRequired = false,
     bool readOnly = false,
+    bool showLengthError = false,
+    String? errorMessage,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
               label,
@@ -137,6 +237,8 @@ class FormFieldHelper {
           ],
         ),
         const SizedBox(height: 8),
+
+        // TEXT FIELD
         Stack(
           alignment: Alignment.topRight,
           children: [
@@ -177,18 +279,9 @@ class FormFieldHelper {
                       width: readOnly ? 1.0 : 2.0,
                     ),
                   ),
-                  disabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(
-                      color: ColorManager.darkGrey,
-                      width: 1.0,
-                    ),
-                  ),
                 ),
               ),
             ),
-
-            // Lock icon when readonly
             if (readOnly)
               Positioned(
                 right: 8,
@@ -199,8 +292,6 @@ class FormFieldHelper {
                   color: ColorManager.lightGrey3,
                 ),
               ),
-
-            // Red triangle indicator (if required)
             if (isRequired)
               Positioned(
                 right: 0,
@@ -212,6 +303,268 @@ class FormFieldHelper {
               ),
           ],
         ),
+
+        // ERROR MESSAGE
+        if (showLengthError && errorMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(
+              errorMessage,
+              style: TextStyle(
+                color: ColorManager.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+  // static Widget buildNotesTextField({
+  //   required String label,
+  //   required TextEditingController controller,
+  //   String? hintText,
+  //   int maxLines = 4,
+  //   bool isRequired = false,
+  //   bool readOnly = false,
+  //   int maxLength = 2500,
+  //   bool showLengthError = false,
+  //   String? errorMessage,
+  // }) {
+  //   int currentLength = controller.text.length;
+  //   int remaining = maxLength - currentLength;
+
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       Row(
+  //         children: [
+  //           Text(
+  //             label,
+  //             style: getSemiBoldStyle(
+  //               color: ColorManager.black,
+  //               fontSize: FontSize.s14,
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //       const SizedBox(height: 8),
+
+  //       // TEXT FIELD
+  //       Stack(
+  //         alignment: Alignment.topRight,
+  //         children: [
+  //           FocusScope(
+  //             canRequestFocus: !readOnly,
+  //             child: TextField(
+  //               controller: controller,
+  //               maxLines: maxLines,
+  //               readOnly: readOnly,
+  //               maxLength: maxLength, // <-- LIMIT APPLIED
+  //               style: TextStyle(
+  //                 fontSize: FontSize.s14,
+  //                 color: ColorManager.black,
+  //               ),
+  //               decoration: InputDecoration(
+  //                 counterText: "", // hide default counter
+  //                 filled: true,
+  //                 fillColor: readOnly
+  //                     ? ColorManager.readOnlyColor
+  //                     : ColorManager.white,
+  //                 hintText: hintText,
+  //                 hintStyle: getMediumStyle(
+  //                   color: ColorManager.lightGrey,
+  //                   fontSize: FontSize.s14,
+  //                 ),
+  //                 contentPadding:
+  //                     const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+  //                 enabledBorder: OutlineInputBorder(
+  //                   borderRadius: BorderRadius.circular(8),
+  //                   borderSide: BorderSide(
+  //                     color: ColorManager.darkGrey,
+  //                     width: 1.0,
+  //                   ),
+  //                 ),
+  //                 focusedBorder: OutlineInputBorder(
+  //                   borderRadius: BorderRadius.circular(8),
+  //                   borderSide: BorderSide(
+  //                     color:
+  //                         readOnly ? ColorManager.darkGrey : ColorManager.blue,
+  //                     width: readOnly ? 1.0 : 2.0,
+  //                   ),
+  //                 ),
+  //               ),
+  //             ),
+  //           ),
+  //           if (readOnly)
+  //             Positioned(
+  //               right: 8,
+  //               top: 8,
+  //               child: Icon(
+  //                 Icons.lock_outline,
+  //                 size: 20,
+  //                 color: ColorManager.lightGrey3,
+  //               ),
+  //             ),
+  //           if (isRequired)
+  //             Positioned(
+  //               right: 0,
+  //               top: 0,
+  //               child: CustomPaint(
+  //                 size: const Size(16, 16),
+  //                 painter: _RedTrianglePainter(),
+  //               ),
+  //             ),
+  //         ],
+  //       ),
+
+  //       const SizedBox(height: 6),
+
+  //       // REMAINING CHARACTERS
+  //       Align(
+  //         alignment: Alignment.centerRight,
+  //         child: Text(
+  //           "Characters Remaining: $remaining",
+  //           style: TextStyle(
+  //             color: remaining == 0 ? ColorManager.red : ColorManager.grey,
+  //             fontSize: FontSize.s12,
+  //           ),
+  //         ),
+  //       ),
+
+  //       // ERROR MESSAGE
+  //       if (showLengthError && errorMessage != null)
+  //         Padding(
+  //           padding: const EdgeInsets.only(top: 6),
+  //           child: Text(
+  //             errorMessage,
+  //             style: TextStyle(
+  //               color: ColorManager.red,
+  //               fontWeight: FontWeight.bold,
+  //             ),
+  //           ),
+  //         ),
+  //     ],
+  //   );
+  // }
+  static Widget buildNotesTextField({
+    required String label,
+    required TextEditingController controller,
+    String? hintText,
+    int maxLines = 4,
+    bool isRequired = false,
+    bool readOnly = false,
+    int maxLength = 2500,
+    bool showLengthError = false,
+    String? errorMessage,
+  }) {
+    final currentLength = controller.text.length;
+    final remaining = maxLength - currentLength;
+
+    final borderColor =
+        readOnly ? ColorManager.lightGrey : ColorManager.darkGrey;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // LABEL
+        Row(
+          children: [
+            Text(
+              label,
+              style: getSemiBoldStyle(
+                color: readOnly ? ColorManager.grey : ColorManager.black,
+                fontSize: FontSize.s14,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        // TEXT FIELD
+        Stack(
+          children: [
+            FocusScope(
+              canRequestFocus: !readOnly,
+              child: TextField(
+                controller: controller,
+                maxLines: maxLines,
+                readOnly: readOnly,
+                maxLength: maxLength,
+                style: TextStyle(
+                  fontSize: FontSize.s14,
+                  color: readOnly ? ColorManager.grey : ColorManager.black,
+                ),
+                decoration: InputDecoration(
+                  counterText: "",
+                  filled: true,
+                  fillColor: readOnly
+                      ? ColorManager.readOnlyColor
+                      : ColorManager.white,
+                  hintText: hintText,
+                  hintStyle: getMediumStyle(
+                    color: ColorManager.lightGrey,
+                    fontSize: FontSize.s14,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: borderColor,
+                      width: 1.0,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: readOnly ? borderColor : ColorManager.blue,
+                      width: readOnly ? 1.0 : 2.0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // 🔺 REQUIRED MARK
+            if (isRequired)
+              Positioned(
+                right: 0,
+                top: 0,
+                child: CustomPaint(
+                  size: const Size(16, 16),
+                  painter: _RedTrianglePainter(),
+                ),
+              ),
+          ],
+        ),
+
+        const SizedBox(height: 6),
+
+        // CHARACTER COUNTER
+        Align(
+          alignment: Alignment.centerRight,
+          child: Text(
+            "Characters Remaining: $remaining",
+            style: TextStyle(
+              color: remaining == 0 ? ColorManager.red : ColorManager.grey,
+              fontSize: FontSize.s12,
+            ),
+          ),
+        ),
+
+        // ERROR MESSAGE
+        if (showLengthError && errorMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(
+              errorMessage,
+              style: TextStyle(
+                color: ColorManager.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -316,10 +669,10 @@ class FormFieldHelper {
       try {
         final foundItem = items.firstWhere(
           (item) => item.id == value,
-          orElse: () => DropdownItem(id: '', value: '', code: ''),
+          orElse: () => DropdownItem(id: '', description: '', code: ''),
         );
         displayValue =
-            foundItem.id.isNotEmpty ? foundItem.value : apiDisplayValue;
+            foundItem.id.isNotEmpty ? foundItem.description : apiDisplayValue;
       } catch (e) {
         displayValue = apiDisplayValue;
       }
@@ -345,7 +698,7 @@ class FormFieldHelper {
                   ? null
                   : () async {
                       List<String> displayItems =
-                          items.map((item) => item.value).toList();
+                          items.map((item) => item.description).toList();
 
                       if (apiDisplayValue != null &&
                           !displayItems.contains(apiDisplayValue)) {
@@ -372,8 +725,8 @@ class FormFieldHelper {
                           selectedId = value ?? '';
                         } else {
                           selectedId = items
-                              .firstWhere(
-                                  (item) => item.value == selectedDisplayValue)
+                              .firstWhere((item) =>
+                                  item.description == selectedDisplayValue)
                               .id;
                         }
                         onChanged(selectedId);
@@ -531,13 +884,13 @@ class FormFieldHelper {
                           final selectedItem = items.firstWhere(
                             (item) => item.code == selectedCode,
                             orElse: () =>
-                                DropdownItem(id: '', value: '', code: ''),
+                                DropdownItem(id: '', description: '', code: ''),
                           );
 
                           selectedId = selectedItem.id;
                           // Show both code and description as display value
                           selectedDisplayText =
-                              "${selectedItem.code} - ${selectedItem.value}";
+                              "${selectedItem.code} - ${selectedItem.description}";
                         }
 
                         // Update display value to show both code and description
@@ -751,68 +1104,161 @@ class FormFieldHelper {
   }
 
   //-------------------- INFO CARD --------------------
+  // static Widget buildInfoCard({
+  //   required int index,
+  //   required IconData icon,
+  //   required String title,
+  //   required String subtitle,
+  //   required List<bool> isCardSelected,
+  //   required VoidCallback onTap,
+  // }) {
+  //   final isSelected = isCardSelected[index];
+
+  //   return GestureDetector(
+  //     onTap: onTap,
+  //     child: Card(
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.circular(12),
+  //         side: BorderSide(
+  //           color: isSelected ? ColorManager.darkBlue : ColorManager.lightGrey,
+  //           width: 1,
+  //         ),
+  //       ),
+  //       color: isSelected ? ColorManager.highlightColor : Colors.white,
+  //       elevation: 2,
+  //       child: Padding(
+  //         padding: const EdgeInsets.all(12),
+  //         child: Row(
+  //           crossAxisAlignment: CrossAxisAlignment.center,
+  //           children: [
+  //             Icon(icon, color: ColorManager.darkBlue, size: 28),
+  //             const SizedBox(width: 12),
+  //             Expanded(
+  //               child: Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   Text(
+  //                     title,
+  //                     style: getSemiBoldStyle(
+  //                       color: ColorManager.black,
+  //                       fontSize: FontSize.s16,
+  //                     ),
+  //                   ),
+  //                   const SizedBox(height: 4),
+  //                   Text(
+  //                     subtitle,
+  //                     style: getRegularStyle(
+  //                       color: ColorManager.darkGrey,
+  //                       fontSize: FontSize.s14,
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //             if (isSelected)
+  //               Container(
+  //                 width: 24,
+  //                 height: 24,
+  //                 decoration: BoxDecoration(
+  //                   color: ColorManager.darkBlue,
+  //                   shape: BoxShape.circle,
+  //                 ),
+  //                 child: const Icon(Icons.check, color: Colors.white, size: 16),
+  //               ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
   static Widget buildInfoCard({
     required int index,
     required IconData icon,
     required String title,
     required String subtitle,
     required List<bool> isCardSelected,
-    required VoidCallback onTap,
+    required VoidCallback? onTap,
+    bool isEnabled = true,
   }) {
     final isSelected = isCardSelected[index];
 
+    final borderColor = !isEnabled
+        ? ColorManager.lightGrey
+        : isSelected
+            ? ColorManager.darkBlue
+            : ColorManager.lightGrey;
+
+    final bgColor = !isEnabled
+        ? ColorManager.lightGrey.withOpacity(0.2)
+        : isSelected
+            ? ColorManager.highlightColor
+            : Colors.white;
+
+    final iconColor = !isEnabled ? ColorManager.grey : ColorManager.darkBlue;
+
     return GestureDetector(
-      onTap: onTap,
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(
-            color: isSelected ? ColorManager.darkBlue : ColorManager.lightGrey,
-            width: 1,
+      onTap: isEnabled ? onTap : null,
+      child: Opacity(
+        opacity: isEnabled ? 1.0 : 0.6,
+        child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: borderColor, width: 1),
           ),
-        ),
-        color: isSelected ? ColorManager.highlightColor : Colors.white,
-        elevation: 2,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Icon(icon, color: ColorManager.darkBlue, size: 28),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: getSemiBoldStyle(
-                        color: ColorManager.black,
-                        fontSize: FontSize.s16,
+          color: bgColor,
+          elevation: isEnabled ? 2 : 0,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(icon, color: iconColor, size: 28),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: getSemiBoldStyle(
+                          color: isEnabled
+                              ? ColorManager.black
+                              : ColorManager.grey,
+                          fontSize: FontSize.s16,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: getRegularStyle(
-                        color: ColorManager.darkGrey,
-                        fontSize: FontSize.s14,
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: getRegularStyle(
+                          color: isEnabled
+                              ? ColorManager.darkGrey
+                              : ColorManager.grey,
+                          fontSize: FontSize.s14,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              if (isSelected)
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: ColorManager.darkBlue,
-                    shape: BoxShape.circle,
+                    ],
                   ),
-                  child: const Icon(Icons.check, color: Colors.white, size: 16),
                 ),
-            ],
+
+                // ✔ Show check even in read-only mode
+                if (isSelected)
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color:
+                          isEnabled ? ColorManager.darkBlue : ColorManager.grey,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -932,6 +1378,175 @@ class FormFieldHelper {
     }
     return const SizedBox.shrink();
   }
+
+//-------------------- FILE STATUS FOR FILE UPLOAD --------------------
+  static Widget buildFileStatusForFileUpload({
+    required bool isInvalidFormat,
+    required bool isFileTooLarge,
+    required bool isFileNameTooLong,
+    String? fileSize,
+    String? fileExtension,
+  }) {
+    if (isInvalidFormat) {
+      return Text(
+        "Invalid file type selected.",
+        style: TextStyle(color: ColorManager.red, fontWeight: FontWeight.bold),
+      );
+    } else if (isFileTooLarge) {
+      return Text(
+        "The file size exceeds ${AppConstants.imageSizeLimitMB} MB",
+        style: TextStyle(color: ColorManager.red, fontWeight: FontWeight.bold),
+      );
+    } else if (isFileNameTooLong) {
+      return Text(
+        "The file name is too long. File names must not exceed 50 characters.",
+        style: TextStyle(color: ColorManager.red, fontWeight: FontWeight.bold),
+      );
+    } else if (fileSize != null) {
+      return Text(
+        "Size: $fileSize${fileExtension != null ? "  :  Type: $fileExtension" : ""}",
+        style: TextStyle(
+          color: ColorManager.green,
+          fontWeight: FontWeight.bold,
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
+
+  // -------------------- UPLOAD BOX FOR FILE  --------------------
+  static Widget buildUploadBoxForFile({
+    required File? selectedFile,
+    required VoidCallback onPickFile,
+    required VoidCallback onRemoveFile,
+    required bool isUploading,
+  }) {
+    final String? ext = selectedFile != null
+        ? selectedFile.path.split('.').last.toLowerCase()
+        : null;
+
+    final bool isImage =
+        ext != null && AppConstants.allowedImageFormats.contains(ext);
+
+    return GestureDetector(
+      onTap: onPickFile,
+      child: DottedBorder(
+        borderType: BorderType.RRect,
+        radius: const Radius.circular(12),
+        color: ColorManager.lightGrey1,
+        strokeWidth: 1,
+        dashPattern: const [6, 3],
+        child: Container(
+          width: double.infinity,
+          height: 200,
+          padding: const EdgeInsets.all(12),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: ColorManager.white,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: selectedFile == null
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(ImageAssets.uploadIcon2, height: 60),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Choose a file",
+                      style: getBoldStyle(
+                        color: ColorManager.black,
+                        fontSize: FontSize.s16,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      "Supports up to 5MB",
+                      style: getRegularStyle(
+                        color: ColorManager.black,
+                        fontSize: FontSize.s14,
+                      ),
+                    ),
+                  ],
+                )
+              : Stack(
+                  children: [
+                    Center(
+                      child: isImage
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: SizedBox.expand(
+                                child: Image.file(
+                                  selectedFile,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _fileIcon(ext),
+                                const SizedBox(height: 8),
+                                Text(
+                                  selectedFile.path.split('/').last,
+                                  textAlign: TextAlign.center,
+                                  style: getRegularStyle(
+                                    color: ColorManager.black,
+                                    fontSize: FontSize.s14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                    // DELETE BUTTON
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: GestureDetector(
+                        onTap: onRemoveFile,
+                        child: CircleAvatar(
+                          radius: 16,
+                          backgroundColor: ColorManager.red,
+                          child: Icon(Icons.delete,
+                              size: 18, color: ColorManager.white),
+                        ),
+                      ),
+                    ),
+                    if (isUploading)
+                      const Positioned.fill(
+                        child: Center(
+                          child: SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CustomProgressIndicator(),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+
+  static Icon _fileIcon(String? ext) {
+    switch (ext) {
+      case "pdf":
+        return Icon(Icons.picture_as_pdf, size: 70, color: ColorManager.red);
+      case "doc":
+      case "docx":
+        return Icon(Icons.description, size: 70, color: ColorManager.lightBlue);
+      case "xls":
+      case "xlsx":
+        return Icon(Icons.table_chart, size: 70, color: ColorManager.green);
+      case "zip":
+      case "rar":
+        return Icon(Icons.archive, size: 70, color: ColorManager.orange);
+      default:
+        return Icon(Icons.insert_drive_file,
+            size: 70, color: ColorManager.grey);
+    }
+  }
 }
 
 class _DropdownTableModal extends StatefulWidget {
@@ -955,7 +1570,9 @@ class _DropdownTableModalState extends State<_DropdownTableModal> {
   @override
   Widget build(BuildContext context) {
     final filteredItems = widget.items.where((item) {
-      return item.value.toLowerCase().contains(searchText.toLowerCase()) ||
+      return item.description
+              .toLowerCase()
+              .contains(searchText.toLowerCase()) ||
           item.id.toLowerCase().contains(searchText.toLowerCase());
     }).toList();
 
@@ -1055,7 +1672,7 @@ class _DropdownTableModalState extends State<_DropdownTableModal> {
                           Expanded(
                             flex: 3,
                             child: Text(
-                              item.value,
+                              item.description,
                               style: getRegularStyle(
                                 color: ColorManager.black,
                                 fontSize: FontSize.s14,
@@ -1149,7 +1766,7 @@ class _AsyncDropdownFieldState extends State<AsyncDropdownField> {
       context: widget.context,
       label: widget.label,
       value: widget.value,
-      fetchItems: _fetchItemsWithSearch,
+      fetchItems: () => _fetchItemsWithSearch(),
       onChanged: (value) {
         widget.onChanged(value);
       },
@@ -1222,7 +1839,7 @@ class _CustomDropdownModalState extends State<CustomDropdownModal> {
             ? _originalItems
             : _originalItems.where((item) {
                 return item.code.toLowerCase().contains(query) ||
-                    item.value.toLowerCase().contains(query);
+                    item.description.toLowerCase().contains(query);
               }).toList();
       });
     }
@@ -1242,7 +1859,7 @@ class _CustomDropdownModalState extends State<CustomDropdownModal> {
       Navigator.of(context).pop(null);
     } else {
       // Otherwise return the selected value
-      Navigator.of(context).pop("${item.code} - ${item.value}");
+      Navigator.of(context).pop("${item.code} - ${item.description}");
     }
   }
 
@@ -1322,25 +1939,26 @@ class _CustomDropdownModalState extends State<CustomDropdownModal> {
 
           // LIST + SCROLLBAR
           Expanded(
-            child: ScrollbarTheme(
-              data: ScrollbarThemeData(
-                thumbColor: MaterialStateProperty.all(ColorManager.blue),
-                thickness: MaterialStateProperty.all(4),
-                radius: const Radius.circular(12),
-                minThumbLength: 300,
-              ),
-              child: Scrollbar(
-                controller: _scrollController,
-                thumbVisibility: true,
-                child: _filteredItems.isEmpty
-                    ? Center(
-                        child: Text(
-                          "No results found",
-                          style: getRegularStyle(
-                              fontSize: FontSize.s16, color: ColorManager.grey),
-                        ),
-                      )
-                    : ListView.builder(
+            child: _filteredItems.isEmpty
+                ? Center(
+                    child: Text(
+                      "No results found",
+                      style: getRegularStyle(
+                        fontSize: FontSize.s16,
+                        color: ColorManager.grey,
+                      ),
+                    ),
+                  )
+                : ScrollbarTheme(
+                    data: ScrollbarThemeData(
+                      thumbColor: MaterialStateProperty.all(ColorManager.blue),
+                      thickness: MaterialStateProperty.all(4),
+                      radius: const Radius.circular(12),
+                    ),
+                    child: Scrollbar(
+                      controller: _scrollController,
+                      thumbVisibility: true,
+                      child: ListView.builder(
                         controller: _scrollController,
                         itemCount: _filteredItems.length,
                         itemBuilder: (context, index) {
@@ -1364,7 +1982,7 @@ class _CustomDropdownModalState extends State<CustomDropdownModal> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    item.value,
+                                    item.description,
                                     style: getRegularStyle(
                                         fontSize: FontSize.s14,
                                         color: ColorManager.darkGrey),
@@ -1387,8 +2005,8 @@ class _CustomDropdownModalState extends State<CustomDropdownModal> {
                           );
                         },
                       ),
-              ),
-            ),
+                    ),
+                  ),
           ),
         ],
       ),

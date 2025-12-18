@@ -38,7 +38,7 @@ class ApiService {
   static const String itemsInOut = 'Items/inout';
   static const String switchboard = "switchboard/index";
   static const String orderApprovalList = "order/approvallist";
-  static const String orderApprovalDetails = "Order/orderview";
+  static const String orderDetails = "Order/orderview";
   static const String groupApproverList = "groupapprover/list";
   static const String orderApprovalApproved = "order/approve";
   static const String orderApprovalReject = "order/reject";
@@ -59,6 +59,19 @@ class ApiService {
   static const String createrequest = "request/create";
   static const String dropdownAPI = "common/getmasterdata";
   static const String createorder = "Order/create";
+  static const String getLineItems = 'common/getlineitems';
+  static const String getRuleList = 'common/getrules';
+  static const String getRuleApproversList = 'common/getruleapprovers';
+  static const String getCostCenterList = 'common/getcostcenters';
+  static const String getCostCenterApproversList =
+      'common/getcostcenterapprovers';
+  static const String getGroupApproversList = 'common/getgroupapprovers';
+  static const String getAttachmentList = 'common/getattachments';
+  static const String getTermsList = 'common/getterms';
+  static const String getNotesList = 'common/getnotes';
+  static const String getLogsList = 'common/getlogs';
+  static const String getnoteDetails = 'common/getnotedetails';
+    static const String savenote = 'common/savenote';
 
   Future<bool> updateToken(BuildContext context) async {
     Map<String, dynamic> data = {
@@ -189,7 +202,6 @@ class ApiService {
           'apptype': AppConstants.apptype,
           'regionid': regionId,
           'search': search,
-          'apptype': 'mobile',
         },
       );
       return response;

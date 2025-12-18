@@ -249,10 +249,10 @@ class _CreateOrderDetailsPageState extends State<CreateOrderDetailsPage> {
                                   Icons.note_add,
                                   [
                                     buildAddCard("Add Notes", () {
-                                      navigateToScreen(
-                                        context,
-                                        NotesView(),
-                                      );
+                                      // navigateToScreen(
+                                      //   context,
+                                      //   NotesView(),
+                                      // );
                                     }),
                                   ],
                                   isExpanded: expandedSection == "Notes",

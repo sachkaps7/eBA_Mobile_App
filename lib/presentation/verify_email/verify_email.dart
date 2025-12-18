@@ -84,7 +84,8 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
     Map<String, dynamic> data = {
       'email': SharedPrefs().userEmail,
       'resend': true,
-      'userid': widget.userName
+      'userid': widget.userName,
+      'apptype': AppConstants.apptype,
     };
     final jsonResponse =
         await apiService.postRequest(context, ApiService.forgotPassword, data);
@@ -117,7 +118,8 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
       });
       Map<String, dynamic> data = {
         'email': SharedPrefs().userEmail,
-        'otp': otp
+        'otp': otp,
+        'apptype': AppConstants.apptype,
       };
       final jsonResponse =
           await apiService.postRequest(context, ApiService.verifyOTP, data);

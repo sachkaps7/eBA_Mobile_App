@@ -345,6 +345,7 @@ class _ImageUploadPopupState extends State<ImageUploadPopup> {
         'fileNameAzure': azureImageName,
         'fileContents': base64Image,
         "updateDB": false,
+        'apptype': AppConstants.apptype,
       };
 
       final jsonResponse =

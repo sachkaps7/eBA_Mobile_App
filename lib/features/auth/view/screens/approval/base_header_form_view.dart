@@ -109,15 +109,6 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
 
   // Dropdown Data - These can be replaced with API calls
 
-  List<DropdownItem> getSupplierCodes() {
-    return [
-      DropdownItem(id: "1", value: "Supplier 1", code: "pou"),
-      DropdownItem(id: "2", value: "Supplier 2", code: "pou"),
-      DropdownItem(id: "3", value: "Supplier 3", code: "pou"),
-      DropdownItem(id: "236", value: "MFAX2", code: "pou"),
-    ];
-  }
-
   String _getGroupName() {
     return widget.headerType == HeaderType.order ? 'Order' : 'Request';
   }
@@ -198,13 +189,17 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
   }
 
   // for fetching dropdown data
-  Future<List<DropdownItem>> _fetchDropdownData(String group,
-      {String search = ""}) async {
+  Future<List<DropdownItem>> _fetchDropdownData(
+    String group, {
+    String search = "",
+    int id = 0,
+  }) async {
     try {
       final response = await apiService.getDropdownData(
         context: context,
         group: group,
-        search: search, // Use the search parameter here
+        search: search,
+        id: id ?? 0,
       );
 
       if (response != null) {
@@ -245,11 +240,11 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       case "Cust_ID":
         return "Customer";
       case "ContractID":
-        return "Contracts";
+        return "contracts";
       case "Order_Budget_Header":
         return "Budgets";
       case "Supp_Cont_ID":
-        return "SuppContacts";
+        return "contacts";
       default:
         return "";
     }
@@ -280,7 +275,16 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
   }
 
   Future<List<DropdownItem>> getSupplierContacts({String search = ""}) async {
-    return await _fetchDropdownData("SupplierContact", search: search);
+    final id =
+        _selectedSupplierCodeId == null || _selectedSupplierCodeId!.isEmpty
+            ? 0
+            : int.tryParse(_selectedSupplierCodeId!) ?? 0;
+
+    return await _fetchDropdownData(
+      "contacts",
+      search: search,
+      id: id,
+    );
   }
 
   Future<List<DropdownItem>> getBudget({String search = ""}) async {
@@ -292,11 +296,24 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
   }
 
   Future<List<DropdownItem>> getContractCodes({String search = ""}) async {
-    return await _fetchDropdownData("Contract", search: search);
+       final id =
+        _selectedSupplierCodeId == null || _selectedSupplierCodeId!.isEmpty
+            ? 0
+            : int.tryParse(_selectedSupplierCodeId!) ?? 0;
+
+    return await _fetchDropdownData(
+      "Contract",
+      search: search,
+      id: id,
+    );
   }
 
   Future<List<DropdownItem>> getDepartmentCodes({String search = ""}) async {
     return await _fetchDropdownData("ExpCode3", search: search);
+  }
+
+  Future<List<DropdownItem>> getSupplierCodes({String search = ""}) async {
+    return await _fetchDropdownData("Supplier", search: search);
   }
 
   void _assignFieldValue(Datum field) {
@@ -506,8 +523,9 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
 
                     const SizedBox(height: 30),
 
-                    // Save Button
-                    if (widget.buttonshow ?? true)
+                    if (SharedPrefs().userOrder == "RW" ||
+                        SharedPrefs().userRequest == "RW")
+                      //  if (widget.buttonshow ?? true)
                       SizedBox(
                         height: 50,
                         child: CustomButton(
@@ -662,12 +680,12 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
     if (fieldVisible["SupplierID"] ?? false) {
       addFieldIfVisible(
         "SupplierID",
-        FormFieldHelper.buildDropdownFieldWithIds(
+        AsyncDropdownField(
           context: context,
           label: fieldLabels["SupplierID"] ?? "",
           value: _selectedSupplierCodeId,
           apiDisplayValue: _selectedSupplierCodeValue,
-          items: getSupplierCodes(),
+          fetchItems: getSupplierCodes,
           onChanged: (value) {
             setState(() {
               _selectedSupplierCodeId = value;

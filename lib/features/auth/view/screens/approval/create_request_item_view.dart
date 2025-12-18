@@ -83,10 +83,10 @@ class _CreateRequestLineViewState extends State<CreateRequestLineView> {
   // Dropdown data
   List<DropdownItem> catalogItems() {
     return [
-      DropdownItem(id: "1", value: "CAT-001", code: "uyt"),
-      DropdownItem(id: "1", value: "CAT-002", code: "uyt"),
-      DropdownItem(id: "1", value: "CAT-003", code: "uyt"),
-      DropdownItem(id: "1", value: "CAT-004", code: "uyt"),
+      DropdownItem(id: "1", description: "CAT-001", code: "uyt"),
+      DropdownItem(id: "1", description: "CAT-002", code: "uyt"),
+      DropdownItem(id: "1", description: "CAT-003", code: "uyt"),
+      DropdownItem(id: "1", description: "CAT-004", code: "uyt"),
     ];
   }
 

@@ -187,6 +187,7 @@ import 'package:eyvo_v3/api/api_service/api_service.dart';
 import 'package:eyvo_v3/api/response_models/default_api_response.dart';
 import 'package:eyvo_v3/core/resources/assets_manager.dart';
 import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/resources/font_manager.dart';
 import 'package:eyvo_v3/core/resources/strings_manager.dart';
 import 'package:eyvo_v3/core/resources/styles_manager.dart';
@@ -241,6 +242,7 @@ class _PDFViewScreenState extends State<PDFViewScreen> {
     Map<String, dynamic> data = {
       'orderid': widget.orderId,
       'grnno': widget.grNo,
+      'apptype': AppConstants.apptype,
     };
 
     final jsonResponse = await apiService.postRequest(

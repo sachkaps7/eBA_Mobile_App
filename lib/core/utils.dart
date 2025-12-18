@@ -281,6 +281,16 @@ Color getStatusColor(String? status) {
       return const Color(0xFFA07C03);
     case 'CANCELLED':
       return const Color(0xFFB0BEC5);
+    case 'RFQ':
+      return const Color(0xFF006023);
+    case 'ORDER':
+      return const Color(0xFF1F41B6);
+    case 'DORMANT':
+      return const Color(0xFF827717);
+    case 'IREQUEST':
+      return const Color(0xFF006064);
+    case 'ASSIGNED':
+      return const Color(0xFF4A148C);
     default:
       return Colors.grey;
   }

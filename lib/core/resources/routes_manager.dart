@@ -2,6 +2,11 @@ import 'package:eyvo_v3/core/widgets/approver_detailed_page.dart';
 import 'package:eyvo_v3/core/widgets/generic_detail_api_page.dart';
 import 'package:eyvo_v3/core/widgets/thankYouPage.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/approval_view.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/create_cost_center_view.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/create_group_approvers_view.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/create_terms_and_condition_view.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/file_upload.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/note_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/order_approval_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/order_details_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/request_approval_details.dart';
@@ -75,6 +80,11 @@ class Routes {
   static const String thankYouRoute = "/thankYou";
   static const String showGroupApprovalListRoute = "/showGroupApprovalList";
   static const String logOutRoute = "/logOutPage";
+  static const String notesViewRoute = "/notesViewRoute";
+  static const String attachmentPageRoute = "/attachmentPageRoute";
+  static const String costCenterSplitRoute = "/costCenterSplitRoute";
+  static const String groupApprovalRoute = "/groupApprovalRoute";
+  static const String termsAndConditionRoute = "/termsAndConditionRoute";
 }
 
 class RouteGenerator {
@@ -124,6 +134,14 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const ApprovalView());
       case Routes.requestApprovalRoute:
         return MaterialPageRoute(builder: (_) => const RequestApprovalPage());
+      case Routes.costCenterSplitRoute:
+        return MaterialPageRoute(builder: (_) => const CreateCostCenterView());
+      case Routes.groupApprovalRoute:
+        return MaterialPageRoute(
+            builder: (_) => const CreateGroupApproverView());
+      case Routes.termsAndConditionRoute:
+        return MaterialPageRoute(
+            builder: (_) => const CreateTermsAndConditionView());
       case Routes.requestApprovalDetailsRoute:
         return MaterialPageRoute(
             builder: (_) => const RequestDetailsView(
@@ -215,6 +233,17 @@ class RouteGenerator {
             lineId: args['lineId'],
           ),
         );
+      case Routes.notesViewRoute:
+        final args = routeSettings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => NotesView(
+            noteId: args['noteId'],
+            group: args['group'],
+            ordReqID: args['ordReqID'],
+          ),
+        );
+      case Routes.attachmentPageRoute:
+        return MaterialPageRoute(builder: (_) => const FileUploadPage());
       default:
         return unDefinedRoute();
     }

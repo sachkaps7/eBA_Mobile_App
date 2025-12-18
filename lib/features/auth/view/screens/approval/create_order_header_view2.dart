@@ -88,30 +88,30 @@ class _CreateOrderHeaderViewState extends State<CreateOrderHeaderView> {
     return [
       DropdownItem(
         id: "In Budget",
-        value: "In Budget",
+        description: "In Budget",
         code: "ert",
       ),
-      DropdownItem(id: "Out Budget", value: "Out Budget", code: "ert"),
-      DropdownItem(id: "Over Budget", value: "Over Budget", code: "ert"),
+      DropdownItem(id: "Out Budget", description: "Out Budget", code: "ert"),
+      DropdownItem(id: "Over Budget", description: "Over Budget", code: "ert"),
     ];
   }
 
   List<DropdownItem> getSupplierCodes() {
     return [
-      DropdownItem(id: "1", value: "Supplier 1", code: "ert"),
-      DropdownItem(id: "2", value: "Supplier 2", code: "ert"),
-      DropdownItem(id: "3", value: "Supplier 3", code: "ert"),
-      DropdownItem(id: "236", value: "MFAX2", code: "ert"),
+      DropdownItem(id: "1", description: "Supplier 1", code: "ert"),
+      DropdownItem(id: "2", description: "Supplier 2", code: "ert"),
+      DropdownItem(id: "3", description: "Supplier 3", code: "ert"),
+      DropdownItem(id: "236", description: "MFAX2", code: "ert"),
     ];
   }
 
   List<DropdownItem> getDeliveryCodes() {
     return [
-      DropdownItem(id: "1", value: "D001", code: "ert"),
-      DropdownItem(id: "2", value: "D002", code: "ert"),
-      DropdownItem(id: "3", value: "D003", code: "ert"),
-      DropdownItem(id: "4", value: "D004", code: "ert"),
-      DropdownItem(id: "5", value: "D005", code: "ert"),
+      DropdownItem(id: "1", description: "D001", code: "ert"),
+      DropdownItem(id: "2", description: "D002", code: "ert"),
+      DropdownItem(id: "3", description: "D003", code: "ert"),
+      DropdownItem(id: "4", description: "D004", code: "ert"),
+      DropdownItem(id: "5", description: "D005", code: "ert"),
     ];
   }
 

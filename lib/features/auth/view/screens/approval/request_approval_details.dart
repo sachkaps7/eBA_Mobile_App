@@ -13,10 +13,12 @@ import 'package:eyvo_v3/core/utils.dart';
 import 'package:eyvo_v3/core/widgets/alert.dart';
 import 'package:eyvo_v3/core/widgets/approval_details_helper.dart';
 import 'package:eyvo_v3/core/widgets/button.dart';
+import 'package:eyvo_v3/core/widgets/button_helper.dart';
 import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
 import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/base_header_form_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/base_line_form_view.dart';
+import 'package:eyvo_v3/log_data.dart/logger_data.dart';
 import 'package:flutter/material.dart';
 
 class RequestDetailsView extends StatefulWidget {
@@ -202,6 +204,155 @@ class _RequestDetailsViewState extends State<RequestDetailsView>
     setState(() => isLoading = false);
   }
 
+  Future<void> _editRequest() async {
+    setState(() {
+      isLoading = true;
+      isError = false;
+    });
+  }
+
+  Future<void> _submitForApproval() async {
+    setState(() {
+      isLoading = true;
+      isError = false;
+    });
+  }
+
+  Future<void> _takeOwnership() async {
+    setState(() {
+      isLoading = true;
+      isError = false;
+    });
+  }
+
+  Future<void> _createOrderFromRequest() async {
+    setState(() {
+      isLoading = true;
+      isError = false;
+    });
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (!mounted) return;
+
+    Navigator.pushReplacementNamed(
+      context,
+      Routes.thankYouRoute,
+      arguments: {
+        'message': "Request submitted for approval successfully",
+        'approverName': 'requestApproval',
+        'status': 'Submitted',
+        'requestName': 'Request Number',
+        'number': requestDetails!.header.requestNumber,
+      },
+    );
+
+    setState(() {
+      isLoading = false;
+      isError = true;
+    });
+  }
+
+  Future<void> _issueOrder() async {
+    setState(() {
+      isLoading = true;
+      isError = false;
+    });
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (!mounted) return;
+
+    Navigator.pushReplacementNamed(
+      context,
+      Routes.thankYouRoute,
+      arguments: {
+        'message': "Order issued successfully",
+        'approverName': 'orderApproval',
+        'status': 'Order Issued',
+        'requestName': 'Order Number',
+        'number': requestDetails!.header.requestNumber,
+      },
+    );
+
+    setState(() {
+      isLoading = false;
+      isError = true;
+    });
+  }
+
+  Future<void> _reIssueOrder() async {
+    setState(() {
+      isLoading = true;
+      isError = false;
+    });
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (!mounted) return;
+
+    Navigator.pushReplacementNamed(
+      context,
+      Routes.thankYouRoute,
+      arguments: {
+        'message': "Request re-issued successfully",
+        'approverName': 'orderApproval',
+        'status': 'Request Re-Issued',
+        'requestName': 'Request Number',
+        'number': requestDetails!.header.requestNumber,
+      },
+    );
+
+    setState(() {
+      isLoading = false;
+      isError = true;
+    });
+  }
+
+  bool _shouldShowAddItem() {
+    if (requestDetails?.header?.requestStatus == null) return false;
+
+    final status = requestDetails?.header?.requestStatus.toUpperCase();
+
+    bool isValidStatus = status == 'DORMANT' ||
+        status == 'REJECTED' ||
+        status == 'TEMPLATE' ||
+        status == 'REJECTED';
+
+    return isValidStatus && SharedPrefs().userRequest == "RW";
+  }
+
+  void _addNewNotes() {
+    Navigator.pushNamed(context, Routes.notesViewRoute);
+  }
+
+  void _addNewAttachment() {
+    Navigator.pushNamed(context, Routes.attachmentPageRoute);
+  }
+
+  void _deleteCostCenterSplit() {
+    LoggerData.dataPrint("Delete pressed");
+    // Add your API or logic here
+  }
+
+  void _addNewLineItem() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BaseLineView(
+          id: widget.requestId,
+          lineId: 0,
+          lineType: LineType.order,
+          appBarTitle: "Request Line",
+          buttonshow: true,
+        ),
+      ),
+    ).then((_) {
+      // Refresh after adding
+      fetchRequestApprovalDetails();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -283,7 +434,6 @@ class _RequestDetailsViewState extends State<RequestDetailsView>
                                       id: widget.requestId,
                                       headerType: HeaderType.request,
                                       appBarTitle: "Request Header",
-                                      buttonshow: false,
                                       constantFieldshow: false,
                                       number: int.tryParse(requestDetails!
                                               .header.requestNumber) ??
@@ -403,6 +553,26 @@ class _RequestDetailsViewState extends State<RequestDetailsView>
                                         ? null
                                         : "Line Items";
                               }),
+                              trailing: _shouldShowAddItem()
+                                  ? Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: ColorManager.blue,
+                                        // .withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.add,
+                                          color: ColorManager.white,
+                                          size: 22,
+                                        ),
+                                      ),
+                                    )
+                                  : null,
+                              onTrailingTap:
+                                  _shouldShowAddItem() ? _addNewLineItem : null,
                             ),
 
 // ---------------------------------------------------------------------- RULES -------------------------------------------------------------------
@@ -429,6 +599,26 @@ class _RequestDetailsViewState extends State<RequestDetailsView>
                                 expandedSection =
                                     expandedSection == "Rules" ? null : "Rules";
                               }),
+                              trailing: _shouldShowAddItem()
+                                  ? Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: ColorManager.blue,
+                                        // .withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.add,
+                                          color: ColorManager.white,
+                                          size: 22,
+                                        ),
+                                      ),
+                                    )
+                                  : null,
+                              onTrailingTap:
+                                  _shouldShowAddItem() ? _addNewLineItem : null,
                             ),
 
 // ---------------------------------------------- RULE APPROVERS ----------------------------------------------------------
@@ -474,6 +664,26 @@ class _RequestDetailsViewState extends State<RequestDetailsView>
                                         ? null
                                         : "Rule Approvers";
                               }),
+                              trailing: _shouldShowAddItem()
+                                  ? Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: ColorManager.blue,
+                                        // .withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.add,
+                                          color: ColorManager.white,
+                                          size: 22,
+                                        ),
+                                      ),
+                                    )
+                                  : null,
+                              onTrailingTap:
+                                  _shouldShowAddItem() ? _addNewLineItem : null,
                             ),
 
 //-------------------------------------------------------------------- COST CENTERS ------------------------------------------------------------------------------------------------------------------------
@@ -486,16 +696,33 @@ class _RequestDetailsViewState extends State<RequestDetailsView>
                                       ApprovalDetailsHelper.buildEmptyView(
                                           "No cost center data"),
                                     ]
-                                  : requestDetails!.costCenter!.map((cc) {
+                                  //  : requestDetails!.costCenter!.map((cc) {
+                                  : requestDetails!.costCenter
+                                      .asMap()
+                                      .entries
+                                      .map((entry) {
+                                      int index = entry.key;
+                                      var cc = entry.value;
                                       return ApprovalDetailsHelper
-                                          .buildMiniCard({
-                                        'Cost Center Code': cc.costCode,
-                                        'Description': cc.costDescription,
-                                        'Split Percentage':
-                                            '${cc.splitPercentage}%',
-                                        'Split Value': getFormattedPriceString(
-                                            cc.splitValue),
-                                      });
+                                          .buildMiniCard1(
+                                        {
+                                          'Cost Center Code': cc.costCode,
+                                          'Description': cc.costDescription,
+                                          'Split Percentage':
+                                              '${cc.splitPercentage}%',
+                                          'Split Value':
+                                              getFormattedPriceString(
+                                                  cc.splitValue),
+                                        },
+                                        showDelete: (requestDetails!
+                                                    .header.requestStatus ==
+                                                "DORMANT" ||
+                                            requestDetails!
+                                                    .header.requestStatus ==
+                                                "PENDING"),
+                                        onDelete: () =>
+                                            _deleteCostCenterSplit(),
+                                      );
                                     }).toList(),
                               count: requestDetails?.costCenter?.length ?? 0,
                               isExpanded: expandedSection == "Cost Centers",
@@ -517,10 +744,15 @@ class _RequestDetailsViewState extends State<RequestDetailsView>
                                       ApprovalDetailsHelper.buildEmptyView(
                                           "No attachments")
                                     ]
-                                  : requestDetails!.attachedDocument!
-                                      .map((doc) {
+                                  : requestDetails!.attachedDocument!.map((d) {
                                       return ApprovalDetailsHelper
-                                          .buildMiniCard(doc);
+                                          .buildMiniCard({
+                                        'File Name': d.documentFileName,
+                                        'File Privacy': d.docPrivacyText,
+                                        'Deascription': d.documentDescription,
+                                        'Entry Date': d.docStamp,
+                                        'Entered By': d.enteredBy,
+                                      }, onTap: () {});
                                     }).toList(),
                               count:
                                   requestDetails?.attachedDocument?.length ?? 0,
@@ -531,7 +763,79 @@ class _RequestDetailsViewState extends State<RequestDetailsView>
                                         ? null
                                         : "Attachments";
                               }),
+                              trailing: _shouldShowAddItem()
+                                  ? Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: ColorManager.blue,
+                                        // .withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.add,
+                                          color: ColorManager.white,
+                                          size: 22,
+                                        ),
+                                      ),
+                                    )
+                                  : null,
+                              onTrailingTap: _shouldShowAddItem()
+                                  ? _addNewAttachment
+                                  : null,
                             ),
+                            //----------------------------------Notes------------------------------------------------------
+                            ApprovalDetailsHelper.buildSection(
+                              "Notes",
+                              Icons.attach_file,
+                              (requestDetails!.notes == null ||
+                                      requestDetails!.notes!.isEmpty)
+                                  ? [
+                                      ApprovalDetailsHelper.buildEmptyView(
+                                          "No Notes found"),
+                                    ]
+                                  : requestDetails!.notes!.map((d) {
+                                      return ApprovalDetailsHelper
+                                          .buildMiniCard({
+                                        'File Name': d.documentFileName,
+                                        'File Privacy': d.docPrivacyText,
+                                        'Deascription': d.documentDescription,
+                                        'Entry Date': d.docStamp,
+                                        'Entered By': d.enteredBy,
+                                      }, onTap: () {});
+                                    }).toList(),
+                              count: requestDetails!.notes?.length ?? 0,
+                              isExpanded: expandedSection == "Notes",
+                              toggleSection: () {
+                                setState(() {
+                                  expandedSection = expandedSection == "Notes"
+                                      ? null
+                                      : "Notes";
+                                });
+                              },
+                              trailing: _shouldShowAddItem()
+                                  ? Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: ColorManager.blue,
+                                        // .withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.add,
+                                          color: ColorManager.white,
+                                          size: 22,
+                                        ),
+                                      ),
+                                    )
+                                  : null,
+                              onTrailingTap:
+                                  _shouldShowAddItem() ? _addNewNotes : null,
+                            ),
+
 // -------------------- EVENT LOG --------------------
                             ApprovalDetailsHelper.buildSection(
                               "Event Log",
@@ -562,85 +866,22 @@ class _RequestDetailsViewState extends State<RequestDetailsView>
                       ),
                     ),
 
-                    // -------------------- APPROVE / REJECT BUTTONS --------------------
-                    Container(
-                      color: ColorManager.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: CustomTextActionButton(
-                              buttonText: "Approve",
-                              icon: Icons.thumb_up_outlined,
-                              backgroundColor: ColorManager.green,
-                              borderColor: ColorManager.white,
-                              fontColor: ColorManager.white,
-                              fontSize: FontSize.s18,
-                              isBoldFont: true,
-                              onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return CustomImageActionAlert(
-                                      iconString: '',
-                                      imageString: ImageAssets.common,
-                                      titleString: "Confirm Approval",
-                                      subTitleString:
-                                          "Are you sure you want to approve this order?",
-                                      destructiveActionString: "Yes",
-                                      normalActionString: "No",
-                                      onDestructiveActionTap: () {
-                                        Navigator.of(context).pop();
-                                        requestApprovalApprove();
-                                      },
-                                      onNormalActionTap: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      isConfirmationAlert: true,
-                                      isNormalAlert: true,
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: CustomTextActionButton(
-                              buttonText: "Reject",
-                              icon: Icons.thumb_down_outlined,
-                              backgroundColor: ColorManager.red,
-                              borderColor: ColorManager.white,
-                              fontColor: ColorManager.white,
-                              fontSize: FontSize.s18,
-                              isBoldFont: true,
-                              onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return CustomRejectReasonAlert(
-                                      iconString: '',
-                                      imageString: ImageAssets.rejection,
-                                      titleString: "Please Add Reject Reason",
-                                      rejectActionString: "Reject",
-                                      cancelActionString: "Cancel",
-                                      onCancelTap: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      onRejectTap: (reason) {
-                                        Navigator.of(context).pop();
-                                        requestApprovalReject(reason);
-                                      },
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    // -------------------- BUTTONS --------------------
+
+                    // Container(
+                    //     color: ColorManager.white,
+                    //     padding: const EdgeInsets.symmetric(
+                    //         horizontal: 16, vertical: 12),
+                    //     child: RequestActionButtonsHelper.buildButtons(
+                    //       context: context,
+                    //       status: requestDetails!.header.requestStatus,
+                    //       onSubmitForApproval: _submitForApproval,
+                    //       onApprove: requestApprovalApprove,
+                    //       onReject: (reason) => requestApprovalReject(reason),
+                    //       onTakeOwnership: _takeOwnership,
+                    //       onCreateOrder: _createOrderFromRequest,
+                    //       onEditRequest: _editRequest,
+                    //     )),
                   ],
                 ),
     );

@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
 import 'package:eyvo_v3/core/widgets/custom_card_item.dart';
 import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
@@ -50,6 +51,7 @@ class _ShowGroupApprovalListState extends State<ShowGroupApprovalList> {
     final requestData = {
       'id': widget.id,
       'from': widget.from,
+      "apptype": AppConstants.apptype,
     };
     log('Sending request to API: $requestData');
     final jsonResponse = await apiService.postRequest(

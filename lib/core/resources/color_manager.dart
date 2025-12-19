@@ -45,6 +45,7 @@ class ColorManager {
   static Color green = HexColor.fromHex('#09af00');
   static Color yellow = HexColor.fromHex('#ffa500');
   static Color highlightColor = HexColor.fromHex('#f0f6ff');
+  static Color checkBackground = HexColor.fromHex('#e9eaff');
 }
 
 extension HexColor on Color {

@@ -1,5 +1,4 @@
 import 'package:eyvo_v3/core/widgets/approver_detailed_page.dart';
-import 'package:eyvo_v3/core/widgets/generic_detail_api_page.dart';
 import 'package:eyvo_v3/core/widgets/thankYouPage.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/approval_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/order_approval_view.dart';

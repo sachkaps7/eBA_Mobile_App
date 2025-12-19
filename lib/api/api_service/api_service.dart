@@ -1,10 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
+import 'dart:io';
 import 'package:eyvo_v3/Environment/environment.dart';
 import 'package:eyvo_v3/api/response_models/default_api_response.dart';
 import 'package:eyvo_v3/api/response_models/token_response.dart';
 import 'package:eyvo_v3/app/app_prefs.dart';
+import 'package:eyvo_v3/core/network/ssl_http_client.dart';
 import 'package:eyvo_v3/core/resources/routes_manager.dart';
 import 'package:eyvo_v3/core/resources/strings_manager.dart';
 import 'package:eyvo_v3/core/utils.dart';
@@ -103,22 +105,94 @@ class ApiService {
     }
   }
 
+  // Future<Map<String, dynamic>?> postRequest(
+  //     BuildContext context, String endpoint, Map<String, dynamic> data) async {
+  //   final url = Uri.encodeFull('$baseUrl/$endpoint');
+  //   try {
+  //     debugPrint('PS:- URL: $url');
+  //     final token = SharedPrefs().jwtToken;
+  //     final headers = endpoint == clientCode
+  //         ? {
+  //             'Content-Type': 'application/json',
+  //             'GenericAccessKey': SharedPrefs().genericAccessKey
+  //           }
+  //         : (endpoint.contains('login') && !endpoint.contains('changepassword'))
+  //             ? {
+  //                 'Content-Type': 'application/json',
+  //                 'clientcode': SharedPrefs().companyCode,
+  //                 'accessKey': SharedPrefs().accessKey
+  //               }
+  //             : {
+  //                 'Content-Type': 'application/json',
+  //                 'clientcode': SharedPrefs().companyCode,
+  //                 'accessKey': SharedPrefs().accessKey,
+  //                 'Authorization': 'Bearer $token',
+  //               };
+  //     final body = json.encode(data);
+
+  //     LoggerData.dataLog('Url : $url --Header : $headers --body: $body');
+
+  //     final response = await http.post(
+  //       Uri.parse(url),
+  //       headers: headers,
+  //       body: body,
+  //     );
+  //     if (response.statusCode == 401) {
+  //       if (response.body.isNotEmpty) {
+  //         final jsonResponse =
+  //             DefaultAPIResponse.fromJson(json.decode(response.body));
+  //         final message = jsonResponse.message.join(', ');
+  //         if (message == AppStrings.apiTokenExpired) {
+  //           debugPrint('PS:- token expired called: $message');
+  //           bool tokenRefreshed = await updateToken(context);
+  //           if (tokenRefreshed) {
+  //             postRequest(context, endpoint, data);
+  //           }
+  //         } else {
+  //           return await processResponse(context, response, url);
+  //         }
+  //       } else {
+  //         return await processResponse(context, response, url);
+  //       }
+  //     } else {
+  //       return await processResponse(context, response, url);
+  //     }
+  //   } catch (e) {
+  //     LoggerData.dataLog("Url : $url --Error : $e");
+  //     //debugPrint('Post request error: $e');
+  //   }
+  //   return null;
+  // }
   Future<Map<String, dynamic>?> postRequest(
-      BuildContext context, String endpoint, Map<String, dynamic> data) async {
-    final url = Uri.encodeFull('$baseUrl/$endpoint');
+    BuildContext context,
+    String endpoint,
+    Map<String, dynamic> data,
+  ) async {
+    final url = Uri.parse('$baseUrl/$endpoint');
+    http.Client? client;
+
     try {
       debugPrint('PS:- URL: $url');
+
+      final env = Environment.current;
+
+      //  Use SSL pinning ONLY in PROD
+      if (env == Environment.PROD) {
+        client = await getHttpClient();
+      }
+
       final token = SharedPrefs().jwtToken;
+
       final headers = endpoint == clientCode
           ? {
               'Content-Type': 'application/json',
-              'GenericAccessKey': SharedPrefs().genericAccessKey
+              'GenericAccessKey': SharedPrefs().genericAccessKey,
             }
           : (endpoint.contains('login') && !endpoint.contains('changepassword'))
               ? {
                   'Content-Type': 'application/json',
                   'clientcode': SharedPrefs().companyCode,
-                  'accessKey': SharedPrefs().accessKey
+                  'accessKey': SharedPrefs().accessKey,
                 }
               : {
                   'Content-Type': 'application/json',
@@ -126,39 +200,51 @@ class ApiService {
                   'accessKey': SharedPrefs().accessKey,
                   'Authorization': 'Bearer $token',
                 };
+
       final body = json.encode(data);
 
-      LoggerData.dataLog('Url : $url --Header : $headers --body: $body');
-
-      final response = await http.post(
-        Uri.parse(url),
-        headers: headers,
-        body: body,
+      LoggerData.dataLog(
+        'Url : $url --Header : $headers --body: $body',
       );
+
+      ///  PROD → pinned client
+      ///  DEV/STAGING → system http
+      final response = env == Environment.PROD
+          ? await client!
+              .post(url, headers: headers, body: body)
+              .timeout(const Duration(seconds: 30))
+          : await http
+              .post(url, headers: headers, body: body)
+              .timeout(const Duration(seconds: 30));
+
+      ///  TOKEN EXPIRED HANDLING (UNCHANGED LOGIC)
       if (response.statusCode == 401) {
         if (response.body.isNotEmpty) {
           final jsonResponse =
               DefaultAPIResponse.fromJson(json.decode(response.body));
           final message = jsonResponse.message.join(', ');
+
           if (message == AppStrings.apiTokenExpired) {
             debugPrint('PS:- token expired called: $message');
+
             bool tokenRefreshed = await updateToken(context);
             if (tokenRefreshed) {
-              postRequest(context, endpoint, data);
+              return postRequest(context, endpoint, data);
             }
-          } else {
-            return await processResponse(context, response, url);
           }
-        } else {
-          return await processResponse(context, response, url);
         }
-      } else {
-        return await processResponse(context, response, url);
       }
+
+      return await processResponse(context, response, url.toString());
+    } on HandshakeException catch (e) {
+      LoggerData.dataLog(' SSL HANDSHAKE FAILED: $e');
+      rethrow;
     } catch (e) {
-      LoggerData.dataLog("Url : $url --Error : $e");
-      //debugPrint('Post request error: $e');
+      LoggerData.dataLog(' API Error : $e');
+    } finally {
+      client?.close(); //close only pinned client
     }
+
     return null;
   }
 

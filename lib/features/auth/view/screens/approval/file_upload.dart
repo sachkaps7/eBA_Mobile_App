@@ -2,11 +2,15 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:eyvo_v3/api/api_service/api_service.dart';
+import 'package:eyvo_v3/api/response_models/note_details_response_model.dart';
+import 'package:eyvo_v3/app/app_prefs.dart';
 import 'package:eyvo_v3/core/resources/assets_manager.dart';
 import 'package:eyvo_v3/core/resources/color_manager.dart';
 import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/resources/font_manager.dart';
+import 'package:eyvo_v3/core/resources/strings_manager.dart';
 import 'package:eyvo_v3/core/resources/styles_manager.dart';
+import 'package:eyvo_v3/core/utils.dart';
 import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
 import 'package:eyvo_v3/core/widgets/form_field_helper.dart';
 import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
@@ -18,7 +22,10 @@ import 'package:flutter/material.dart';
 enum UploadType { file, url }
 
 class FileUploadPage extends StatefulWidget {
-  const FileUploadPage({Key? key}) : super(key: key);
+  final int ordReqID;
+  final String group;
+  const FileUploadPage({Key? key, required this.group, required this.ordReqID})
+      : super(key: key);
 
   @override
   State<FileUploadPage> createState() => _FileUploadPageState();
@@ -41,12 +48,16 @@ class _FileUploadPageState extends State<FileUploadPage> {
   bool _isInvalidFormat = false;
   bool _isFileNameTooLong = false;
   bool _isDescriptionTooLong = false;
+  String? _fileName;
+  String? _base64File;
+
   //UploadType _selectedUploadType = UploadType.file;
 
   @override
   void initState() {
     super.initState();
     _itemDescriptionController.addListener(_validateDescription);
+    LoggerData.dataLog('${widget.ordReqID}');
   }
 
   void _validateDescription() {
@@ -63,6 +74,10 @@ class _FileUploadPageState extends State<FileUploadPage> {
     super.dispose();
   }
 
+  bool get _privacyValue {
+    return _isCardSelected[0]; // true = Private, false = Public
+  }
+
   String _formatBytes(int bytes, int decimals) {
     if (bytes <= 0) return "0 KB";
     const int kb = 1000;
@@ -77,40 +92,27 @@ class _FileUploadPageState extends State<FileUploadPage> {
     if (pickedFile != null) {
       final bytes = await pickedFile.length();
       final ext = pickedFile.path.split('.').last.toLowerCase();
+      final fileName = pickedFile.path.split('/').last;
 
       setState(() {
-        // Reset ALL previous errors
-        _isFileTooLarge = false;
-        _isInvalidFormat = false;
-        _isFileNameTooLong = false;
-
+        _selectedImage = pickedFile;
         _fileExtension = ext;
         _fileSize = _formatBytes(bytes, 2);
-        _selectedImage = pickedFile;
+        _fileName = fileName;
 
-        final fileName = pickedFile.path.split('/').last;
+        _isFileTooLarge = false;
+        _isInvalidFormat = false;
         _isFileNameTooLong = fileName.length > 50;
 
-        // Image validation
         if (AppConstants.allowedImageFormats.contains(ext)) {
-          _isInvalidFormat = false;
           _isFileTooLarge = bytes > AppConstants.imageSizeLimitBytes;
-        }
-        // Blocked extensions (exe, dll, msi, bat...)
-        else if (AppConstants.blockedExtensions.contains(ext)) {
+        } else if (AppConstants.blockedExtensions.contains(ext)) {
           _isInvalidFormat = true;
-        }
-        // All other files allowed
-        else {
-          _isInvalidFormat = false;
-          _isFileTooLarge = false;
         }
       });
 
-      // Base64 conversion
       final fileBytes = await pickedFile.readAsBytes();
-      final base64String = base64Encode(fileBytes);
-      LoggerData.dataLog("Base64 String: $base64String");
+      _base64File = base64Encode(fileBytes);
     }
   }
 
@@ -180,7 +182,7 @@ class _FileUploadPageState extends State<FileUploadPage> {
           isCardSelected: _isCardSelected,
           onTap: () {
             setState(() {
-              _isCardSelected[0] = !_isCardSelected[0];
+              _isCardSelected = [true, false];
             });
           },
         ),
@@ -193,7 +195,7 @@ class _FileUploadPageState extends State<FileUploadPage> {
           isCardSelected: _isCardSelected,
           onTap: () {
             setState(() {
-              _isCardSelected[1] = !_isCardSelected[1];
+              _isCardSelected = [false, true];
             });
           },
         ),
@@ -261,6 +263,49 @@ class _FileUploadPageState extends State<FileUploadPage> {
   //     ],
   //   );
   // }
+  Future<void> saveAttachment() async {
+    setState(() {
+      _isUploading = true;
+    });
+
+    final jsonResponse = await apiService.postRequest(
+      context,
+      ApiService.saveattachment,
+      {
+        'uid': SharedPrefs().uID,
+        'apptype': AppConstants.apptype,
+        'ID': '0',
+        'OrdReqID': widget.ordReqID,
+        'group': widget.group,
+        'FileName': _fileName,
+        'Description': _itemDescriptionController.text.trim(),
+        'File_Type': 'File',
+        'AttachmentFrom': 'Flutter',
+        'Privacy': _privacyValue,
+        'Document_File': _base64File,
+      },
+    );
+
+    setState(() {
+      _isUploading = false;
+    });
+
+    if (jsonResponse != null) {
+      final resp = NotesResponse.fromJson(jsonResponse);
+
+      if (resp.code == 200) {
+        showSnackBar(context, resp.message.first);
+        Navigator.pop(context, true);
+      } else {
+        showSnackBar(
+          context,
+          resp.message.isNotEmpty
+              ? resp.message.join(', ')
+              : AppStrings.somethingWentWrong,
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -293,7 +338,9 @@ class _FileUploadPageState extends State<FileUploadPage> {
                   fontSize: FontSize.s18,
                 ),
               ),
-              onPressed: () {},
+              onPressed: () {
+                saveAttachment();
+              },
             ),
           ),
           const SizedBox(

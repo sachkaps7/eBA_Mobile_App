@@ -1,17 +1,31 @@
-
+import 'dart:async';
 
 import 'package:eyvo_v3/api/api_service/api_service.dart';
+import 'package:eyvo_v3/api/response_models/all_CC_list_response_model.dart';
+import 'package:eyvo_v3/api/response_models/all_terms_conditions_response.dart';
+import 'package:eyvo_v3/api/response_models/note_details_response_model.dart';
+import 'package:eyvo_v3/api/response_models/terms_save_response.dart';
+import 'package:eyvo_v3/app/app_prefs.dart';
 import 'package:eyvo_v3/core/resources/color_manager.dart';
+import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/resources/strings_manager.dart';
+import 'package:eyvo_v3/core/utils.dart';
 import 'package:eyvo_v3/core/widgets/button.dart';
 import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
 import 'package:eyvo_v3/core/widgets/custom_field.dart';
 import 'package:eyvo_v3/core/widgets/form_field_helper.dart';
 import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
+import 'package:eyvo_v3/log_data.dart/logger_data.dart';
 import 'package:flutter/material.dart';
 
 class CreateCostCenterView extends StatefulWidget {
-  const CreateCostCenterView({super.key});
+  final String group;
+  final int ordReqID;
+  const CreateCostCenterView({
+    super.key,
+    required this.group,
+    required this.ordReqID,
+  });
 
   @override
   State<CreateCostCenterView> createState() => _CreateCostCenterView();
@@ -19,46 +33,148 @@ class CreateCostCenterView extends StatefulWidget {
 
 class _CreateCostCenterView extends State<CreateCostCenterView> {
   final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
+  String searchText = '';
+
   final ApiService apiService = ApiService();
 
   bool isLoading = false;
   bool isError = false;
   String errorText = AppStrings.somethingWentWrong;
   List<bool> _isCardSelected = [];
-
-  List<Map<String, String>> costCenterList = [
-    {'Cost Center': "FIN001", 'Description': "Finance Department"},
-    {'Cost Center': "Marketing", 'Description': "Marketing"},
-    {'Cost Center': "Legal", 'Description': "Legal"},
-    {'Cost Center': "0100-ABC", 'Description': "Projct-Mgt-Maint"},
-    {'Cost Center': "B_001", 'Description': "B_Hardware"},
-    {'Cost Center': "B_001HW", 'Description': "Hardware for SiteB"},
-    {'Cost Center': "B_001test", 'Description': "Hardware for SiteB"},
-  ];
+  CostCenterData? costCenterData;
+  List<CostCenterItem> allCC = [];
+  List<int> costCentreId = [];
 
   @override
   void initState() {
     super.initState();
-    _searchController.addListener(_filterCostCenter);
-    // _isCardSelected = List.generate(costCenterList.length, (_) => false); // for all cards
-    _isCardSelected = List.generate(costCenterList.length,
-        (index) => index == 0); // selected first card by default
-  }
-
-  void _filterCostCenter() {
-    final query = _searchController.text.toLowerCase();
-    setState(() {
-      // filteredCostCenter = requestApprovalList.where((request) {
-      //   return request.requestNumber.toLowerCase().contains(query) ||
-      //       request.requestStatus.toLowerCase().contains(query);
-      // }).toList();
-    });
+    _searchController.addListener(_onSearchChanged);
+    fetchCCDetails();
   }
 
   @override
   void dispose() {
+    _debounce?.cancel();
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged() {
+    // Trigger only when >=3 chars OR cleared
+    if (_searchController.text.length >= 3 || _searchController.text.isEmpty) {
+      if (searchText != _searchController.text) {
+        searchText = _searchController.text;
+
+        _debounce?.cancel();
+        _debounce = Timer(
+          const Duration(milliseconds: 500),
+          () {
+            fetchCCDetails();
+          },
+        );
+      }
+    }
+  }
+
+  Future<void> fetchCCDetails() async {
+    setState(() {
+      isLoading = true;
+      isError = false;
+    });
+
+    final jsonResponse = await apiService.postRequest(
+      context,
+      ApiService.getAllCC,
+      {
+        'uid': SharedPrefs().uID,
+        'apptype': AppConstants.apptype,
+        'ID': widget.ordReqID,
+        "regionid": '1',
+        "search": _searchController.text.trim(),
+        'group': widget.group,
+      },
+    );
+
+    if (jsonResponse != null) {
+      final resp = CostCenterResponse.fromJson(jsonResponse);
+
+      if (resp.code == 200) {
+        setState(() {
+          costCenterData = resp.data;
+          allCC = resp.data.list;
+
+          _isCardSelected = allCC.map((CC) => CC.recNum != 0).toList();
+
+          costCentreId = allCC
+              .where((CC) => CC.costCentreId != 0)
+              .map((CC) => CC.costCentreId)
+              .toList();
+
+          isLoading = false;
+        });
+        return;
+      } else {
+        errorText = resp.message.join(', ');
+      }
+    }
+
+    setState(() {
+      isError = true;
+      isLoading = false;
+    });
+  }
+
+  Future<void> saveCCDetails() async {
+    setState(() {
+      isLoading = true;
+      isError = false;
+    });
+
+    final jsonResponse = await apiService.postRequest(
+      context,
+      ApiService.saveAllTerms,
+      {
+        'uid': SharedPrefs().uID,
+        'apptype': AppConstants.apptype,
+        'OrdReqID': widget.ordReqID,
+        "search": _searchController.text.trim(),
+        'group': widget.group,
+        'TextCodeIDs': costCentreId.join(','),
+        'id': '0',
+      },
+    );
+
+    if (jsonResponse != null) {
+      final resp = SaveTerms.fromJson(jsonResponse);
+
+      if (resp.code == 200) {
+        if (resp.code == 200) {
+          final successMessage = resp.message.isNotEmpty
+              ? resp.message.first
+              : 'Terms saved successfully';
+
+          showSnackBar(context, successMessage);
+
+          Navigator.pop(context, true);
+        } else {
+          showSnackBar(
+            context,
+            resp.message.isNotEmpty
+                ? resp.message.join(', ')
+                : AppStrings.somethingWentWrong,
+          );
+        }
+      } else {
+        errorText = resp.message.join(', ');
+      }
+    }
+
+    setState(() {
+      isError = true;
+      isLoading = false;
+    });
   }
 
   @override
@@ -67,7 +183,7 @@ class _CreateCostCenterView extends State<CreateCostCenterView> {
       backgroundColor: ColorManager.primary,
       appBar: buildCommonAppBar(
         context: context,
-        title: "Cost Center Split",
+        title: "Cost Center",
       ),
       body: isLoading
           ? const Center(child: CustomProgressIndicator())
@@ -80,7 +196,7 @@ class _CreateCostCenterView extends State<CreateCostCenterView> {
                           horizontal: 12, vertical: 8),
                       child: CustomSearchField(
                         controller: _searchController,
-                        placeholderText: 'Search by cost center or description',
+                        placeholderText: 'Search by code or outline',
                         inputType: TextInputType.text,
                       ),
                     ),
@@ -98,31 +214,38 @@ class _CreateCostCenterView extends State<CreateCostCenterView> {
                           thumbVisibility: true,
                           child: ListView.builder(
                             //itemCount: filteredRequests.length,
-                            itemCount: costCenterList.length,
+                            itemCount: allCC.length,
                             itemBuilder: (context, index) {
-                              //final request = filteredRequests[index];
-                              final item = costCenterList[index];
+                              final item = allCC[index];
+
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 4),
                                 child: FormFieldHelper.buildCardWidget(
                                   index: index,
                                   subtitles: [
-                                    {'Cost Center': item['Cost Center']!},
-                                    {'Description': item['Description']!},
+                                    {'Code    ': item.costCode},
+                                    {'Outline': item.costDescription},
                                   ],
                                   isCardSelected: _isCardSelected,
                                   onTap: () {
-                                    // navigateToScreen(
-                                    //   context,
-                                    //   RequestDetailsView(
-                                    //       requestId: request.requestId,
-                                    //       requestNumber: request.requestNumber),
-                                    // );
-
                                     setState(() {
                                       _isCardSelected[index] =
                                           !_isCardSelected[index];
+
+                                      final ccId = allCC[index].costCentreId;
+
+                                      if (_isCardSelected[index]) {
+                                        //  Selected  add
+                                        if (!costCentreId.contains(ccId)) {
+                                          costCentreId.add(ccId);
+                                        }
+                                      } else {
+                                        // Unselected  remove
+                                        costCentreId.remove(ccId);
+                                      }
+                                      LoggerData.dataLog(
+                                          "##############${costCentreId}");
                                     });
                                   },
                                 ),
@@ -139,33 +262,14 @@ class _CreateCostCenterView extends State<CreateCostCenterView> {
                       child: CustomButton(
                         buttonText: 'Save',
                         onTap: () {
-                          final selectedCenters = <String>[];
-
-                          for (int i = 0; i < costCenterList.length; i++) {
-                            if (_isCardSelected[i]) {
-                              selectedCenters
-                                  .add(costCenterList[i]['Cost Center'] ?? '');
-                            }
-                          }
-                          if (selectedCenters.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("No Cost Center selected!"),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
+                          if (costCentreId.isEmpty) {
+                            showSnackBar(
+                                context, "No Terms & Condition selected!");
                           } else {
-                            final selectedNames =
-                                selectedCenters.join(', '); // join with commas
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  "Cost Center Saved Successfully!\nSelected: $selectedNames",
-                                ),
-                                backgroundColor: Colors.green,
-                                duration: const Duration(seconds: 3),
-                              ),
+                            saveCCDetails();
+                            showSnackBar(
+                              context,
+                              "Saved Successfully!\nRecNums: ${costCentreId.join(', ')}",
                             );
                           }
                         },

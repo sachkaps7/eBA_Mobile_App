@@ -342,7 +342,7 @@ class _RequestDetailsViewState extends State<RequestDetailsView>
         builder: (context) => BaseLineView(
           id: widget.requestId,
           lineId: 0,
-          lineType: LineType.order,
+          lineType: LineType.request,
           appBarTitle: "Request Line",
           buttonshow: true,
         ),

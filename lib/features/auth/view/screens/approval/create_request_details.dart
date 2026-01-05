@@ -205,10 +205,10 @@ class _CreateOrderDetailsPageState extends State<CreateRequestDetailsPage> {
                                   Icons.attach_file,
                                   [
                                     buildAddCard("Add Attached Documents", () {
-                                      navigateToScreen(
-                                        context,
-                                        const FileUploadPage(),
-                                      );
+                                      // navigateToScreen(
+                                      //   context,
+                                      //   const FileUploadPage(group: 'Order',ordReqID: ,),
+                                      // );
                                     }),
                                   ],
                                   isExpanded:

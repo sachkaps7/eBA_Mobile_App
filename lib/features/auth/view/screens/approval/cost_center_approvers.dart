@@ -17,21 +17,22 @@ import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
 import 'package:eyvo_v3/log_data.dart/logger_data.dart';
 import 'package:flutter/material.dart';
 
-class CreateTermsAndConditionView extends StatefulWidget {
+class CreateCostCenterApproverView extends StatefulWidget {
   final String group;
   final int ordReqID;
-  const CreateTermsAndConditionView({
+  const CreateCostCenterApproverView({
     super.key,
     required this.group,
     required this.ordReqID,
   });
 
   @override
-  State<CreateTermsAndConditionView> createState() =>
-      _CreateTermsAndConditionView();
+  State<CreateCostCenterApproverView> createState() =>
+      _CreateCostCenterApproverView();
 }
 
-class _CreateTermsAndConditionView extends State<CreateTermsAndConditionView> {
+class _CreateCostCenterApproverView
+    extends State<CreateCostCenterApproverView> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   String searchText = '';
@@ -50,7 +51,7 @@ class _CreateTermsAndConditionView extends State<CreateTermsAndConditionView> {
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
-    fetchTermsDetails();
+    fetchCCApprovalDetails();
   }
 
   @override
@@ -71,14 +72,14 @@ class _CreateTermsAndConditionView extends State<CreateTermsAndConditionView> {
         _debounce = Timer(
           const Duration(milliseconds: 500),
           () {
-            fetchTermsDetails();
+            fetchCCApprovalDetails();
           },
         );
       }
     }
   }
 
-  Future<void> fetchTermsDetails() async {
+  Future<void> fetchCCApprovalDetails() async {
     setState(() {
       isLoading = true;
       isError = false;
@@ -127,7 +128,7 @@ class _CreateTermsAndConditionView extends State<CreateTermsAndConditionView> {
     });
   }
 
-  Future<void> saveTermsDetails() async {
+  Future<void> saveCCApprovalDetails() async {
     setState(() {
       isLoading = true;
       isError = false;
@@ -184,7 +185,7 @@ class _CreateTermsAndConditionView extends State<CreateTermsAndConditionView> {
       backgroundColor: ColorManager.primary,
       appBar: buildCommonAppBar(
         context: context,
-        title: "Terms & Condition",
+        title: "Cost Center Approval",
       ),
       body: isLoading
           ? const Center(child: CustomProgressIndicator())
@@ -256,26 +257,27 @@ class _CreateTermsAndConditionView extends State<CreateTermsAndConditionView> {
                         ),
                       ),
                     ),
-                    Container(
-                      color: ColorManager.white,
-                      padding: const EdgeInsets.all(16),
-                      width: double.infinity,
-                      child: CustomButton(
-                        buttonText: 'Save',
-                        onTap: () {
-                          if (selectedRecNums.isEmpty) {
-                            showSnackBar(
-                                context, "No Terms & Condition selected!");
-                          } else {
-                            saveTermsDetails();
-                            showSnackBar(
-                              context,
-                              "Saved Successfully!\nRecNums: ${selectedRecNums.join(', ')}",
-                            );
-                          }
-                        },
+                    if (termsListDetail?.permission.mode == "RW")
+                      Container(
+                        color: ColorManager.white,
+                        padding: const EdgeInsets.all(16),
+                        width: double.infinity,
+                        child: CustomButton(
+                          buttonText: 'Save',
+                          onTap: () {
+                            if (selectedRecNums.isEmpty) {
+                              showSnackBar(
+                                  context, "No Group Approval selected!");
+                            } else {
+                              saveCCApprovalDetails();
+                              showSnackBar(
+                                context,
+                                "Saved Successfully!\nRecNums: ${selectedRecNums.join(', ')}",
+                              );
+                            }
+                          },
+                        ),
                       ),
-                    ),
                   ],
                 ),
     );

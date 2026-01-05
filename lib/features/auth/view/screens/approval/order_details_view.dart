@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/cost_center_split_details.dart';
 import 'package:permission_handler/permission_handler.dart' as PH;
 import 'package:eyvo_v3/api/response_models/attachement_list_response_model.dart';
 import 'package:eyvo_v3/api/response_models/cost_center_approval_list_response_model.dart';
@@ -681,8 +682,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
         ),
       ),
     ).then((_) {
-      // Refresh after adding
-      fetchOrderDetails();
+      fetchLineItemsWrapper();
     });
   }
 
@@ -695,27 +695,92 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
         'group': 'Order',
         'ordReqID': orderDetails!.header.orderId,
       },
-    );
+    ).then((result) {
+      if (result == true) {
+        fetchNotesListWrapper();
+      }
+    });
   }
 
   void _addNewAttachment() {
-    Navigator.pushNamed(context, Routes.attachmentPageRoute);
+    Navigator.pushNamed(
+      context,
+      Routes.attachmentPageRoute,
+      arguments: {
+        'group': 'Order',
+        'ordReqID': orderDetails!.header.orderId,
+      },
+    ).then((result) {
+      if (result == true) {
+        fetchAttachmentListWrapper();
+      }
+    });
+    LoggerData.dataLog('${orderDetails!.header.orderId}###########');
   }
 
   void _addNewCostCenterSplit() {
-    Navigator.pushNamed(context, Routes.costCenterSplitRoute);
+    // Navigator.pushNamed(
+    //   context,
+    //   Routes.costCenterSplitRoute,
+    //   arguments: {
+    //     'group': 'Order',
+    //     'ordReqID': orderDetails!.header.orderId,
+    //   },
+    // ).then((result) {
+    //   if (result == true) {
+    //     fetchGroupApproversListWrapper();
+    //   }
+    // });
+    navigateToScreen(context, BudgetGraphPage());
+  }
+
+  void _addNewCCApproval() {
+    Navigator.pushNamed(
+      context,
+      Routes.createCostCenterApproverView,
+      arguments: {
+        'group': 'Order',
+        'ordReqID': orderDetails!.header.orderId,
+      },
+    ).then((result) {
+      if (result == true) {
+        fetchGroupApproversListWrapper();
+      }
+    });
   }
 
   void _addNewGroupApproval() {
-    Navigator.pushNamed(context, Routes.groupApprovalRoute);
+    Navigator.pushNamed(
+      context,
+      Routes.groupApprovalRoute,
+      arguments: {
+        'group': 'Order',
+        'ordReqID': orderDetails!.header.orderId,
+      },
+    ).then((result) {
+      if (result == true) {
+        fetchGroupApproversListWrapper();
+      }
+    });
   }
 
   void _termsAndCondition() {
-    Navigator.pushNamed(context, Routes.termsAndConditionRoute);
+    Navigator.pushNamed(
+      context,
+      Routes.termsAndConditionRoute,
+      arguments: {
+        'group': 'Order',
+        'ordReqID': orderDetails!.header.orderId,
+      },
+    ).then((result) {
+      if (result == true) {
+        fetchTermsListWrapper();
+      }
+    });
   }
 
   void _deleteCostCenterSplit() {
-    print("Delete pressed");
+    //   print("Delete pressed");
     // Add your API or logic here
   }
 
@@ -1395,7 +1460,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
                                     onTrailingTap: (ccApprovalData != null &&
                                             ccApprovalData!.permission.mode ==
                                                 "RW")
-                                        ? _addNewCostCenterSplit
+                                        ? _addNewCCApproval
                                         : null,
                                   ),
 

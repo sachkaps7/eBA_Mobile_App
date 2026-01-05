@@ -2,6 +2,7 @@ import 'package:eyvo_v3/core/widgets/approver_detailed_page.dart';
 import 'package:eyvo_v3/core/widgets/generic_detail_api_page.dart';
 import 'package:eyvo_v3/core/widgets/thankYouPage.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/approval_view.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/cost_center_approvers.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/create_cost_center_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/create_group_approvers_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/create_terms_and_condition_view.dart';
@@ -85,6 +86,8 @@ class Routes {
   static const String costCenterSplitRoute = "/costCenterSplitRoute";
   static const String groupApprovalRoute = "/groupApprovalRoute";
   static const String termsAndConditionRoute = "/termsAndConditionRoute";
+  static const String createCostCenterApproverView =
+      "/createCostCenterApproverView";
 }
 
 class RouteGenerator {
@@ -135,13 +138,36 @@ class RouteGenerator {
       case Routes.requestApprovalRoute:
         return MaterialPageRoute(builder: (_) => const RequestApprovalPage());
       case Routes.costCenterSplitRoute:
-        return MaterialPageRoute(builder: (_) => const CreateCostCenterView());
+        final args = routeSettings.arguments as Map<String, dynamic>;
+
+        return MaterialPageRoute(
+          builder: (_) => CreateCostCenterView(
+            group: args['group'],
+            ordReqID: args['ordReqID'],
+          ),
+        );
+
       case Routes.groupApprovalRoute:
+        final args = routeSettings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
-            builder: (_) => const CreateGroupApproverView());
+            builder: (_) => CreateGroupApproverView(
+                  group: args['group'],
+                  ordReqID: args['ordReqID'],
+                ));
       case Routes.termsAndConditionRoute:
+        final args = routeSettings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
-            builder: (_) => const CreateTermsAndConditionView());
+            builder: (_) => CreateTermsAndConditionView(
+                  group: args['group'],
+                  ordReqID: args['ordReqID'],
+                ));
+      case Routes.createCostCenterApproverView:
+        final args = routeSettings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+            builder: (_) => CreateCostCenterApproverView(
+                  group: args['group'],
+                  ordReqID: args['ordReqID'],
+                ));
       case Routes.requestApprovalDetailsRoute:
         return MaterialPageRoute(
             builder: (_) => const RequestDetailsView(
@@ -243,7 +269,15 @@ class RouteGenerator {
           ),
         );
       case Routes.attachmentPageRoute:
-        return MaterialPageRoute(builder: (_) => const FileUploadPage());
+        final args = routeSettings.arguments as Map<String, dynamic>;
+
+        return MaterialPageRoute(
+          builder: (_) => FileUploadPage(
+            group: args['group'] as String,
+            ordReqID: args['ordReqID'] as int,
+          ),
+        );
+
       default:
         return unDefinedRoute();
     }

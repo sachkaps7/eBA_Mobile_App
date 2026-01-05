@@ -18,10 +18,11 @@ class Environment {
   static const String DEV = "DEV";
   static const String STAGING = "STAGING";
   static const String PROD = "PROD";
-
+  static late String current;
   BaseConfig? config;
 
   void initConfig(String environment) {
+    current = environment;
     config = _getConfig(environment);
     _mapToPreviousEnvs();
   }

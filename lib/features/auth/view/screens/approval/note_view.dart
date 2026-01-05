@@ -246,6 +246,7 @@ class _NotesViewState extends State<NotesView> {
           ),
         ),
       ),
+
       bottomNavigationBar: isEditable
           ? Padding(
               padding: const EdgeInsets.all(16),

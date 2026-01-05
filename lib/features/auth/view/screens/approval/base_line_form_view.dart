@@ -759,10 +759,10 @@ class _BaseLineViewState extends State<BaseLineView> {
   // Dropdown data - These can be replaced with API calls
   List<DropdownItem> catalogItems() {
     return [
-      DropdownItem(id: "1", value: "CAT-001", code: "pou"),
-      DropdownItem(id: "2", value: "CAT-002", code: "pou"),
-      DropdownItem(id: "3", value: "CAT-003", code: "pou"),
-      DropdownItem(id: "4", value: "CAT-004", code: "pou"),
+      DropdownItem(id: "1", description: "CAT-001", code: "pou"),
+      DropdownItem(id: "2", description: "CAT-002", code: "pou"),
+      DropdownItem(id: "3", description: "CAT-003", code: "pou"),
+      DropdownItem(id: "4", description: "CAT-004", code: "pou"),
     ];
   }
 
@@ -1128,16 +1128,6 @@ class _BaseLineViewState extends State<BaseLineView> {
                     ..._buildDynamicFields(),
 
                     const SizedBox(height: 30),
-
-                    // Save Button
-                    if (widget.buttonshow ?? true)
-                      SizedBox(
-                        height: 50,
-                        child: CustomButton(
-                          buttonText: 'Save',
-                          onTap: _saveForm,
-                        ),
-                      )
                   ],
                 ),
               ),
@@ -1145,6 +1135,22 @@ class _BaseLineViewState extends State<BaseLineView> {
           ),
         ),
       ),
+      bottomNavigationBar:
+          (SharedPrefs().userOrder == "RW" || SharedPrefs().userRequest == "RW")
+              ?     CustomTextActionButton(
+                  buttonText: 'Save',
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                  backgroundColor: ColorManager.green,
+                  borderColor: ColorManager.green,
+                  fontColor: ColorManager.white,
+                  isBoldFont: true,
+                  fontSize: FontSize.s18,
+                  buttonWidth: 150,
+                  buttonHeight: 50,
+                )
+              : null,
     );
   }
 

@@ -175,7 +175,6 @@ class _OrderListingPageState extends State<OrderListingPage> with RouteAware {
       child: Row(
         children: [
           if (_showSearchBar) ...[
-            // Expanded search bar
             Expanded(
               child: CustomSearchField(
                 controller: _searchController,
@@ -185,7 +184,6 @@ class _OrderListingPageState extends State<OrderListingPage> with RouteAware {
               ),
             ),
             const SizedBox(width: 8),
-            // Close button
             IconButton(
               icon: Icon(Icons.close, color: ColorManager.black),
               onPressed: () {
@@ -196,9 +194,9 @@ class _OrderListingPageState extends State<OrderListingPage> with RouteAware {
               },
             ),
           ] else ...[
-            // Compact search field
+            // compact search bar
             Flexible(
-              flex: 1, // leaves space for icons
+              flex: 1,
               child: CustomSearchField(
                 controller: _searchController,
                 placeholderText: AppStrings.searchItems,
@@ -212,47 +210,49 @@ class _OrderListingPageState extends State<OrderListingPage> with RouteAware {
             ),
             const SizedBox(width: 10),
 
-            GestureDetector(
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return CustomImageActionAlert(
-                      iconString: '',
-                      imageString: ImageAssets.common,
-                      titleString: "Orders",
-                      subTitleString: "Are you sure you want create an order?",
-                      destructiveActionString: "Yes",
-                      normalActionString: "No",
-                      onDestructiveActionTap: () {
-                        createOrder();
-                        Navigator.of(context).pop();
-                      },
-                      onNormalActionTap: () {
-                        Navigator.of(context).pop();
-                      },
-                      isConfirmationAlert: true,
-                      isNormalAlert: true,
-                    );
-                  },
-                );
-              },
-              child: Container(
-                height: 40,
-                width: 40,
-                decoration: BoxDecoration(
-                  color: ColorManager.blue,
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.add,
-                    color: Colors.white,
-                    size: 24,
+            if (SharedPrefs().userOrder == "RW")
+              GestureDetector(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return CustomImageActionAlert(
+                        iconString: '',
+                        imageString: ImageAssets.common,
+                        titleString: "Orders",
+                        subTitleString:
+                            "Are you sure you want create an order?",
+                        destructiveActionString: "Yes",
+                        normalActionString: "No",
+                        onDestructiveActionTap: () {
+                          createOrder();
+                          Navigator.of(context).pop();
+                        },
+                        onNormalActionTap: () {
+                          Navigator.of(context).pop();
+                        },
+                        isConfirmationAlert: true,
+                        isNormalAlert: true,
+                      );
+                    },
+                  );
+                },
+                child: Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    color: ColorManager.blue,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.add,
+                      color: Colors.white,
+                      size: 24,
+                    ),
                   ),
                 ),
               ),
-            ),
           ],
         ],
       ),

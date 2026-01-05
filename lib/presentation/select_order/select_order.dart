@@ -136,7 +136,8 @@ class _SelectOrderViewState extends State<SelectOrderView> with RouteAware {
       'search': searchController.text,
       'regionid': SharedPrefs().selectedRegionID,
       'pageno': requestPage,
-      'pagesize': AppConstants.pageSize
+      'pagesize': AppConstants.pageSize,
+    
     };
 
     try {

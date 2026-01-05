@@ -71,7 +71,8 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
       'uid': uID,
       'oldpassword': oldPassword,
       'password': password,
-      'usersession': userSession
+      'usersession': userSession,
+      'apptype': AppConstants.apptype,
     };
     final jsonResponse =
         await apiService.postRequest(context, ApiService.changePassword, data);

@@ -17,4 +17,5 @@ class AppConstants {
     "heic",
     "heif"
   ];
+  static const List<String> blockedExtensions = ["exe", "dll", "msi", "bat"];
 }

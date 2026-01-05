@@ -102,10 +102,10 @@ class _CreateOrderLineViewState extends State<CreateOrderLineView> {
   // Dropdown data
   List<DropdownItem> catalogItems() {
     return [
-      DropdownItem(id: "1", value: "CAT-001", code: "ert"),
-      DropdownItem(id: "1", value: "CAT-002", code: "ert"),
-      DropdownItem(id: "1", value: "CAT-003", code: "ert"),
-      DropdownItem(id: "1", value: "CAT-004", code: "ert"),
+      DropdownItem(id: "1", description: "CAT-001", code: "ert"),
+      DropdownItem(id: "1", description: "CAT-002", code: "ert"),
+      DropdownItem(id: "1", description: "CAT-003", code: "ert"),
+      DropdownItem(id: "1", description: "CAT-004", code: "ert"),
     ];
   }
 

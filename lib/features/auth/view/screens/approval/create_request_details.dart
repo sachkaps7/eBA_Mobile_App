@@ -94,7 +94,7 @@ class _CreateOrderDetailsPageState extends State<CreateRequestDetailsPage> {
                                           id: 2753,
                                           headerType: HeaderType.request,
                                           appBarTitle: "Order Header",
-                                          number:123 ,
+                                          number: 123,
                                         ),
                                       );
                                     }),
@@ -205,10 +205,10 @@ class _CreateOrderDetailsPageState extends State<CreateRequestDetailsPage> {
                                   Icons.attach_file,
                                   [
                                     buildAddCard("Add Attached Documents", () {
-                                      navigateToScreen(
-                                        context,
-                                        const FileUploadPage(),
-                                      );
+                                      // navigateToScreen(
+                                      //   context,
+                                      //   const FileUploadPage(group: 'Order',ordReqID: ,),
+                                      // );
                                     }),
                                   ],
                                   isExpanded:
@@ -249,10 +249,10 @@ class _CreateOrderDetailsPageState extends State<CreateRequestDetailsPage> {
                                   Icons.note_add,
                                   [
                                     buildAddCard("Add Notes", () {
-                                      navigateToScreen(
-                                        context,
-                                        NotesView(),
-                                      );
+                                      // navigateToScreen(
+                                      //   context,
+                                      //   NotesView(),
+                                      // );
                                     }),
                                   ],
                                   isExpanded: expandedSection == "Notes",

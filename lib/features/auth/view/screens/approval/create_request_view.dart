@@ -31,7 +31,8 @@ class RequestListingPage extends StatefulWidget {
   State<RequestListingPage> createState() => _RequestListingPageState();
 }
 
-class _RequestListingPageState extends State<RequestListingPage> with RouteAware {
+class _RequestListingPageState extends State<RequestListingPage>
+    with RouteAware {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   final ApiService apiService = ApiService();
@@ -211,49 +212,49 @@ class _RequestListingPageState extends State<RequestListingPage> with RouteAware
               ),
             ),
             const SizedBox(width: 10),
-
-            GestureDetector(
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return CustomImageActionAlert(
-                      iconString: '',
-                      imageString: ImageAssets.common,
-                      titleString: "Requests",
-                      subTitleString:
-                          "Are you sure you want to create a request?",
-                      destructiveActionString: "Yes",
-                      normalActionString: "No",
-                      onDestructiveActionTap: () {
-                        createRequest();
-                        Navigator.of(context).pop();
-                      },
-                      onNormalActionTap: () {
-                        Navigator.of(context).pop();
-                      },
-                      isConfirmationAlert: true,
-                      isNormalAlert: true,
-                    );
-                  },
-                );
-              },
-              child: Container(
-                height: 40,
-                width: 40,
-                decoration: BoxDecoration(
-                  color: ColorManager.blue,
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.add,
-                    color: Colors.white,
-                    size: 24,
+            if (SharedPrefs().userRequest == "RW")
+              GestureDetector(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return CustomImageActionAlert(
+                        iconString: '',
+                        imageString: ImageAssets.common,
+                        titleString: "Requests",
+                        subTitleString:
+                            "Are you sure you want to create a request?",
+                        destructiveActionString: "Yes",
+                        normalActionString: "No",
+                        onDestructiveActionTap: () {
+                          createRequest();
+                          Navigator.of(context).pop();
+                        },
+                        onNormalActionTap: () {
+                          Navigator.of(context).pop();
+                        },
+                        isConfirmationAlert: true,
+                        isNormalAlert: true,
+                      );
+                    },
+                  );
+                },
+                child: Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    color: ColorManager.blue,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.add,
+                      color: Colors.white,
+                      size: 24,
+                    ),
                   ),
                 ),
               ),
-            ),
           ],
         ],
       ),
@@ -358,7 +359,7 @@ class _RequestListingPageState extends State<RequestListingPage> with RouteAware
                   return GenericCardWidget(
                     titleKey: 'Request #${request.requestNumber}',
                     statusKey: request.requestStatus,
-                    // supplierKey: 'Tanuja Patil',
+                  
                     dateKey: request.entryDate,
                     valueKey: getFormattedPriceString(request.requestValue),
                     valueNameKey: 'Request Value',

@@ -63,6 +63,7 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
     Map<String, dynamic> data = {
       'email': email,
       'password': password,
+      'apptype': AppConstants.apptype,
     };
     final jsonResponse =
         await apiService.postRequest(context, ApiService.resetPassword, data);

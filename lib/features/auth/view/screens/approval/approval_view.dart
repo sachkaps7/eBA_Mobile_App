@@ -27,10 +27,10 @@ class _ApprovalViewState extends State<ApprovalView> {
   void initState() {
     super.initState();
     // Load flags from SharedPrefs
-    request = SharedPrefs().requestFlag;
-    order = SharedPrefs().orderFlag;
-    invoice = SharedPrefs().invoiceFlag;
-    expense = SharedPrefs().expenseFlag;
+    request = SharedPrefs().userRequestApproval;
+    order = SharedPrefs().userOrderApproval;
+    invoice = SharedPrefs().userInvoiceApproval;
+    expense = SharedPrefs().userExpenseApproval;
     LoggerData.dataLog('request: $request');
     LoggerData.dataLog('order: $order');
     LoggerData.dataLog('invoice: $invoice');
@@ -65,22 +65,22 @@ class _ApprovalViewState extends State<ApprovalView> {
       ));
     }
     if (expense) {
-      cards.add(_buildCard(
-        titleLine1: "Expense",
-        titleLine2: "Approval",
-        imageAsset: ImageAssets.expense,
-        backgroundColor: ColorManager.white,
-        onTap: () => navigateToScreen(context, const RequestApprovalPage()),
-      ));
+      // cards.add(_buildCard(
+      //   titleLine1: "Expense",
+      //   titleLine2: "Approval",
+      //   imageAsset: ImageAssets.expense,
+      //   backgroundColor: ColorManager.white,
+      //   onTap: () => navigateToScreen(context, const ExpenseApprovalPage()),
+      // ));
     }
     if (invoice) {
-      cards.add(_buildCard(
-        titleLine1: "Invoice",
-        titleLine2: "Approval",
-        imageAsset: ImageAssets.invoiceApproval,
-        backgroundColor: ColorManager.white,
-        onTap: () => navigateToScreen(context, const RequestApprovalPage()),
-      ));
+      // cards.add(_buildCard(
+      //   titleLine1: "Invoice",
+      //   titleLine2: "Approval",
+      //   imageAsset: ImageAssets.invoiceApproval,
+      //   backgroundColor: ColorManager.white,
+      //   onTap: () => navigateToScreen(context, const InvoiceApprovalPage()),
+      // ));
     }
 
     // Convert cards into 2x2 grid

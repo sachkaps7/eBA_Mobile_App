@@ -125,7 +125,8 @@ class _BlindStockListViewState extends State<BlindStockListView>
       "locationid": SharedPrefs().selectedLocationID,
       "search": _searchController.text,
       "pageno": requestPage,
-      "pagesize": AppConstants.pageSize
+      "pagesize": AppConstants.pageSize,
+      'apptype': AppConstants.apptype,
     };
 
     try {

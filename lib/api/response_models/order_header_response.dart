@@ -112,11 +112,19 @@ class EnumValues<T> {
 
 class DropdownItem {
   final String id;
-  final String value;
+  final String description;
   final String code;
 
-  DropdownItem({required this.id, required this.value, required this.code});
+  DropdownItem(
+      {required this.id, required this.description, required this.code});
+  factory DropdownItem.fromJson(Map<String, dynamic> json) {
+    return DropdownItem(
+      id: json['id']?.toString() ?? "",
+      code: json['code']?.toString() ?? "",
+      description: json['description']?.toString() ?? "",
+    );
+  }
 
   @override
-  String toString() => value;
+  String toString() => description;
 }

@@ -38,17 +38,46 @@ const String MOBILE_VERSION = "MOBILE_VERSION";
 const String BIOMETRIC_AUTH_ID = "BIOMETRIC_AUTH_ID";
 const String IS_BIOMATRIC_ENABLED = "IS_BIOMATRIC_ENABLED";
 const String BIOMETRIC_PROMPT_SHOWKEY = "BIOMETRIC_PROMPT_SHOWKEY";
-const String REQUEST_FLAG = "REQUEST_FLAG";
-const String ORDER_FLAG = "ORDER_FLAG";
-const String INVENTORY_FLAG = "INVENTORY_FLAG";
-const String INVOICE_FLAG = "INVOICE_FLAG";
-const String EXPENSE_FLAG = "EXPENSE_FLAG ";
 const String REGION = "REGION ";
 const String SELECT_REGIN_TITLE = "SELECT_REGIN_TITLE ";
 const String BLIND_STOCK_EDIT = "BLIND_STOCK_EDIT";
 const String INVENTORY_MANAGER = "INVENTORY_MANAGER";
 const String PREFS_KEY_DEVICE_ID = "PREFS_KEY_DEVICE_ID";
 const String DEVICE_PLATFORM_KEY = "DEVICE_PLATFORM_KEY";
+const String PREFS_KEY_LOGIN = "PREFS_KEY_LOGIN";
+// SystemFunction
+const String SYS_REQUEST = "SYS_REQUEST";
+const String SYS_ORDER = "SYS_ORDER";
+const String SYS_RFQ = "SYS_RFQ";
+const String SYS_EXPENSE = "SYS_EXPENSE";
+const String SYS_RECIPE = "SYS_RECIPE";
+const String SYS_INVENTORY = "SYS_INVENTORY";
+const String SYS_PAYMENTS = "SYS_PAYMENTS";
+const String SYS_PAYMENT_APPROVER = "SYS_PAYMENT_APPROVER";
+const String SYS_REGION_FUNCTION = "SYS_REGION_FUNCTION";
+const String SYS_REGION_FUNCTION_AVAILABLE = "SYS_REGION_FUNCTION_AVAILABLE";
+const String SYS_REGION_NAME = "SYS_REGION_NAME";
+const String SYS_REQUEST_APPROVAL = "SYS_REQUEST_APPROVAL";
+const String SYS_RULE_FUNCTION = "SYS_RULE_FUNCTION";
+const String SYS_RULE_APPROVAL = "SYS_RULE_APPROVAL";
+const String SYS_COST_CENTRE_APPROVAL = "SYS_COST_CENTRE_APPROVAL";
+const String SYS_GROUP_APPROVAL = "SYS_GROUP_APPROVAL";
+
+// UserPermissions
+const String USER_REQUEST = "USER_REQUEST";
+const String USER_ORDER = "USER_ORDER";
+const String USER_RFQ = "USER_RFQ";
+const String USER_GR = "USER_GR";
+const String USER_PAYMENTS = "USER_PAYMENTS";
+const String USER_EXPENSE = "USER_EXPENSE";
+const String USER_RECIPE = "USER_RECIPE";
+const String USER_INVENTORY = "USER_INVENTORY";
+
+// UserApprovals
+const String USER_REQUEST_APPROVAL = "USER_REQUEST_APPROVAL";
+const String USER_ORDER_APPROVAL = "USER_ORDER_APPROVAL";
+const String USER_INVOICE_APPROVAL = "USER_INVOICE_APPROVAL";
+const String USER_EXPENSE_APPROVAL = "USER_EXPENSE_APPROVAL";
 
 class SharedPrefs {
   late final SharedPreferences _sharedPrefs;
@@ -270,26 +299,6 @@ class SharedPrefs {
   set hasSeenBiometricPrompt(bool value) =>
       _sharedPrefs.setBool(BIOMETRIC_PROMPT_SHOWKEY, value);
 
-  bool get requestFlag => _sharedPrefs.getBool(REQUEST_FLAG) ?? false;
-
-  set requestFlag(bool value) => _sharedPrefs.setBool(REQUEST_FLAG, value);
-
-  bool get orderFlag => _sharedPrefs.getBool(ORDER_FLAG) ?? false;
-
-  set orderFlag(bool value) => _sharedPrefs.setBool(ORDER_FLAG, value);
-
-  bool get expenseFlag => _sharedPrefs.getBool(EXPENSE_FLAG) ?? false;
-
-  set expenseFlag(bool value) => _sharedPrefs.setBool(EXPENSE_FLAG, value);
-
-  bool get invoiceFlag => _sharedPrefs.getBool(INVOICE_FLAG) ?? false;
-
-  set invoiceFlag(bool value) => _sharedPrefs.setBool(INVOICE_FLAG, value);
-
-  bool get inventoryFlag => _sharedPrefs.getBool(INVENTORY_FLAG) ?? false;
-
-  set inventoryFlag(bool value) => _sharedPrefs.setBool(INVENTORY_FLAG, value);
-
   bool get region => _sharedPrefs.getBool(REGION) ?? false;
 
   set region(bool value) => _sharedPrefs.setBool(REGION, value);
@@ -319,4 +328,112 @@ class SharedPrefs {
 
   set devicePlatform(String value) =>
       _sharedPrefs.setString(DEVICE_PLATFORM_KEY, value);
+  bool get sysRequest => _sharedPrefs.getBool(SYS_REQUEST) ?? false;
+  set sysRequest(bool value) => _sharedPrefs.setBool(SYS_REQUEST, value);
+
+  bool get sysOrder => _sharedPrefs.getBool(SYS_ORDER) ?? false;
+  set sysOrder(bool value) => _sharedPrefs.setBool(SYS_ORDER, value);
+
+  bool get sysRFQ => _sharedPrefs.getBool(SYS_RFQ) ?? false;
+  set sysRFQ(bool value) => _sharedPrefs.setBool(SYS_RFQ, value);
+
+  bool get sysExpense => _sharedPrefs.getBool(SYS_EXPENSE) ?? false;
+  set sysExpense(bool value) => _sharedPrefs.setBool(SYS_EXPENSE, value);
+
+  bool get sysRecipe => _sharedPrefs.getBool(SYS_RECIPE) ?? false;
+  set sysRecipe(bool value) => _sharedPrefs.setBool(SYS_RECIPE, value);
+
+  bool get sysInventory => _sharedPrefs.getBool(SYS_INVENTORY) ?? false;
+  set sysInventory(bool value) => _sharedPrefs.setBool(SYS_INVENTORY, value);
+
+  bool get sysPayments => _sharedPrefs.getBool(SYS_PAYMENTS) ?? false;
+  set sysPayments(bool value) => _sharedPrefs.setBool(SYS_PAYMENTS, value);
+
+  int get sysPaymentApprover => _sharedPrefs.getInt(SYS_PAYMENT_APPROVER) ?? 0;
+  set sysPaymentApprover(int value) =>
+      _sharedPrefs.setInt(SYS_PAYMENT_APPROVER, value);
+
+  bool get sysRegionFunction =>
+      _sharedPrefs.getBool(SYS_REGION_FUNCTION) ?? false;
+  set sysRegionFunction(bool value) =>
+      _sharedPrefs.setBool(SYS_REGION_FUNCTION, value);
+
+  bool get sysRegionFunctionAvailable =>
+      _sharedPrefs.getBool(SYS_REGION_FUNCTION_AVAILABLE) ?? false;
+  set sysRegionFunctionAvailable(bool value) =>
+      _sharedPrefs.setBool(SYS_REGION_FUNCTION_AVAILABLE, value);
+
+  String get sysRegionName => _sharedPrefs.getString(SYS_REGION_NAME) ?? "";
+  set sysRegionName(String value) =>
+      _sharedPrefs.setString(SYS_REGION_NAME, value);
+
+  bool get sysRequestApproval =>
+      _sharedPrefs.getBool(SYS_REQUEST_APPROVAL) ?? false;
+  set sysRequestApproval(bool value) =>
+      _sharedPrefs.setBool(SYS_REQUEST_APPROVAL, value);
+
+  bool get sysRuleFunction => _sharedPrefs.getBool(SYS_RULE_FUNCTION) ?? false;
+  set sysRuleFunction(bool value) =>
+      _sharedPrefs.setBool(SYS_RULE_FUNCTION, value);
+
+  bool get sysRuleApproval => _sharedPrefs.getBool(SYS_RULE_APPROVAL) ?? false;
+  set sysRuleApproval(bool value) =>
+      _sharedPrefs.setBool(SYS_RULE_APPROVAL, value);
+
+  bool get sysCostCentreApproval =>
+      _sharedPrefs.getBool(SYS_COST_CENTRE_APPROVAL) ?? false;
+  set sysCostCentreApproval(bool value) =>
+      _sharedPrefs.setBool(SYS_COST_CENTRE_APPROVAL, value);
+
+  bool get sysGroupApproval =>
+      _sharedPrefs.getBool(SYS_GROUP_APPROVAL) ?? false;
+  set sysGroupApproval(bool value) =>
+      _sharedPrefs.setBool(SYS_GROUP_APPROVAL, value);
+  String get userRequest => _sharedPrefs.getString(USER_REQUEST) ?? "";
+  set userRequest(String value) => _sharedPrefs.setString(USER_REQUEST, value);
+
+  String get userOrder => _sharedPrefs.getString(USER_ORDER) ?? "";
+  set userOrder(String value) => _sharedPrefs.setString(USER_ORDER, value);
+
+  String get userRFQ => _sharedPrefs.getString(USER_RFQ) ?? "";
+  set userRFQ(String value) => _sharedPrefs.setString(USER_RFQ, value);
+
+  String get userGR => _sharedPrefs.getString(USER_GR) ?? "";
+  set userGR(String value) => _sharedPrefs.setString(USER_GR, value);
+
+  String get userPayments => _sharedPrefs.getString(USER_PAYMENTS) ?? "";
+  set userPayments(String value) =>
+      _sharedPrefs.setString(USER_PAYMENTS, value);
+
+  String get userExpense => _sharedPrefs.getString(USER_EXPENSE) ?? "";
+  set userExpense(String value) => _sharedPrefs.setString(USER_EXPENSE, value);
+
+  String get userRecipe => _sharedPrefs.getString(USER_RECIPE) ?? "";
+  set userRecipe(String value) => _sharedPrefs.setString(USER_RECIPE, value);
+
+  String get userInventory => _sharedPrefs.getString(USER_INVENTORY) ?? "";
+  set userInventory(String value) =>
+      _sharedPrefs.setString(USER_INVENTORY, value);
+  bool get userRequestApproval =>
+      _sharedPrefs.getBool(USER_REQUEST_APPROVAL) ?? false;
+  set userRequestApproval(bool value) =>
+      _sharedPrefs.setBool(USER_REQUEST_APPROVAL, value);
+
+  bool get userOrderApproval =>
+      _sharedPrefs.getBool(USER_ORDER_APPROVAL) ?? false;
+  set userOrderApproval(bool value) =>
+      _sharedPrefs.setBool(USER_ORDER_APPROVAL, value);
+
+  bool get userInvoiceApproval =>
+      _sharedPrefs.getBool(USER_INVOICE_APPROVAL) ?? false;
+  set userInvoiceApproval(bool value) =>
+      _sharedPrefs.setBool(USER_INVOICE_APPROVAL, value);
+
+  bool get userExpenseApproval =>
+      _sharedPrefs.getBool(USER_EXPENSE_APPROVAL) ?? false;
+  set userExpenseApproval(bool value) =>
+      _sharedPrefs.setBool(USER_EXPENSE_APPROVAL, value);
+ bool get isLoggedIn  => _sharedPrefs.getBool(PREFS_KEY_LOGIN) ?? false;
+  set isLoggedIn (bool value) =>
+      _sharedPrefs.setBool(PREFS_KEY_LOGIN, value);
 }

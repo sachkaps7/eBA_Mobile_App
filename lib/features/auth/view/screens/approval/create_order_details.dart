@@ -205,10 +205,10 @@ class _CreateOrderDetailsPageState extends State<CreateOrderDetailsPage> {
                                   Icons.attach_file,
                                   [
                                     buildAddCard("Add Attached Documents", () {
-                                      navigateToScreen(
-                                        context,
-                                        const FileUploadPage(),
-                                      );
+                                      // navigateToScreen(
+                                      //   context,
+                                      //   const FileUploadPage(),
+                                      // );
                                     }),
                                   ],
                                   isExpanded:
@@ -249,10 +249,10 @@ class _CreateOrderDetailsPageState extends State<CreateOrderDetailsPage> {
                                   Icons.note_add,
                                   [
                                     buildAddCard("Add Notes", () {
-                                      navigateToScreen(
-                                        context,
-                                        NotesView(),
-                                      );
+                                      // navigateToScreen(
+                                      //   context,
+                                      //   NotesView(),
+                                      // );
                                     }),
                                   ],
                                   isExpanded: expandedSection == "Notes",

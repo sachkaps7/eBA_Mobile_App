@@ -5,6 +5,7 @@ import 'package:eyvo_v3/app/app_prefs.dart';
 import 'package:eyvo_v3/core/resources/assets_manager.dart';
 import 'package:eyvo_v3/core/widgets/NotificationProvider.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/order_details_view.dart';
+import 'package:eyvo_v3/features/auth/view/screens/login/login.dart';
 import 'package:eyvo_v3/log_data.dart/logger_data.dart';
 import 'package:eyvo_v3/presentation/notification_dashboard.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -14,7 +15,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:eyvo_v3/main.dart'; // for navigatorKey
 import 'package:http/http.dart' as http;
-
 // class NotificationService {
 //   NotificationService._privateConstructor();
 //   static final NotificationService instance =
@@ -38,23 +38,20 @@ import 'package:http/http.dart' as http;
 //     String? token = await _firebaseMessaging.getToken();
 //     LoggerData.dataLog("FCM Token: $token");
 
-//     // // Store the token in Shared Preferences
 //     if (token != null && token.isNotEmpty) {
 //       SharedPrefs.instance.fcmToken = token;
 //     }
 
-//     // Listen for token refreshes and save updated token
-//     FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+//     _firebaseMessaging.onTokenRefresh.listen((newToken) {
 //       LoggerData.dataLog("FCM Token Refreshed: $newToken");
 //       SharedPrefs.instance.fcmToken = newToken;
 //     });
 
 //     const AndroidInitializationSettings androidSettings =
-//         AndroidInitializationSettings('@mipmap/ic_launcher');
+//         AndroidInitializationSettings('@drawable/ic_notification');
 
-//     const InitializationSettings initSettings = InitializationSettings(
-//       android: androidSettings,
-//     );
+//     const InitializationSettings initSettings =
+//         InitializationSettings(android: androidSettings);
 
 //     await _flutterLocalNotificationsPlugin.initialize(
 //       initSettings,
@@ -71,8 +68,19 @@ import 'package:http/http.dart' as http;
 //             AndroidFlutterLocalNotificationsPlugin>()
 //         ?.createNotificationChannel(_channel);
 
+//     // Listeners
 //     FirebaseMessaging.onMessage.listen(_onForegroundMessage);
 //     FirebaseMessaging.onMessageOpenedApp.listen(_onMessageOpenedApp);
+
+//     // App killed state
+//     FirebaseMessaging.instance.getInitialMessage().then((message) {
+//       if (message != null) {
+//         WidgetsBinding.instance.addPostFrameCallback((_) {
+//           _onMessageOpenedApp(message);
+//         });
+//       }
+//     });
+
 //     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 //   }
 
@@ -91,14 +99,43 @@ import 'package:http/http.dart' as http;
 //     final data = message.data;
 //     final title = message.notification?.title ?? data['title'];
 //     final body = message.notification?.body ?? data['body'];
+
 //     _saveNotificationToProvider(title, body, extraData: data);
 
-//     navigatorKey.currentState?.push(
-//       MaterialPageRoute(
-//         builder: (_) => NotificationDashboard(
-//             notificationData: Map<String, String>.from(data)),
-//       ),
-//     );
+//     final action = data['action'];
+//     final idStr = data['orderId'] ?? data['requestId'];
+//     final id = int.tryParse(idStr ?? '');
+
+//     if (id != null) {
+//       if (action == 'order') {
+//         navigatorKey.currentState?.push(
+//           MaterialPageRoute(
+//             builder: (_) => OrderDetailsView(
+//               orderId: id,
+//             ),
+//           ),
+//         );
+//       } else if (action == 'request') {
+//         navigatorKey.currentState?.push(
+//           MaterialPageRoute(
+//             builder: (_) => NotificationDashboard(
+//                 notificationData: Map<String, String>.from(data)),
+//           ),
+//         );
+//       } else {
+//         navigatorKey.currentState?.push(MaterialPageRoute(
+//           builder: (_) => NotificationDashboard(
+//               notificationData: Map<String, String>.from(data)),
+//         ));
+//       }
+//     } else {
+//       navigatorKey.currentState?.push(
+//         MaterialPageRoute(
+//           builder: (_) => NotificationDashboard(
+//               notificationData: Map<String, String>.from(data)),
+//         ),
+//       );
+//     }
 //   }
 
 //   static Future<void> _firebaseMessagingBackgroundHandler(
@@ -106,8 +143,56 @@ import 'package:http/http.dart' as http;
 //     await Firebase.initializeApp();
 //     final title = message.notification?.title ?? message.data['title'];
 //     final body = message.notification?.body ?? message.data['body'];
+
 //     NotificationService.instance
 //         ._saveNotificationToProvider(title, body, extraData: message.data);
+//   }
+
+//   void _handleMessageFromPayload(String payload) {
+//     try {
+//       final Map<String, dynamic> decoded = jsonDecode(payload);
+//       final Map<String, String> data = decoded.map(
+//         (key, value) => MapEntry(key.toString(), value?.toString() ?? ''),
+//       );
+
+//       _saveNotificationToProvider(data['title'], data['body'], extraData: data);
+
+//       final action = data['action'];
+//       final idStr = data['orderId'] ?? data['requestId'];
+//       final id = int.tryParse(idStr ?? '');
+
+//       if (id != null) {
+//         if (action == 'order') {
+//           navigatorKey.currentState?.push(
+//             MaterialPageRoute(
+//               builder: (_) => OrderDetailsView(
+//                 orderId: id,
+//               ),
+//             ),
+//           );
+//         } else if (action == 'request') {
+//           navigatorKey.currentState?.push(
+//             MaterialPageRoute(
+//               builder: (_) => NotificationDashboard(notificationData: data),
+//             ),
+//           );
+//         } else {
+//           navigatorKey.currentState?.push(
+//             MaterialPageRoute(
+//               builder: (_) => NotificationDashboard(notificationData: data),
+//             ),
+//           );
+//         }
+//       } else {
+//         navigatorKey.currentState?.push(
+//           MaterialPageRoute(
+//             builder: (_) => NotificationDashboard(notificationData: data),
+//           ),
+//         );
+//       }
+//     } catch (e) {
+//       LoggerData.dataLog('Failed to parse payload: $e');
+//     }
 //   }
 
 //   void _showLocalNotification(
@@ -115,9 +200,8 @@ import 'package:http/http.dart' as http;
 //     final fullPayload = jsonEncode({
 //       'title': notification.title,
 //       'body': notification.body,
-//       'imageUrl': data['imageUrl'],
-//       'requestId': data['requestId'],
 //       'time': DateTime.now().toIso8601String(),
+//       ...data.map((key, value) => MapEntry(key, value.toString())),
 //     });
 
 //     await _flutterLocalNotificationsPlugin.show(
@@ -128,6 +212,8 @@ import 'package:http/http.dart' as http;
 //         android: AndroidNotificationDetails(
 //           _channel.id,
 //           _channel.name,
+//           icon: 'ic_notification',
+//           //    color: Colors.white,
 //           channelDescription: _channel.description,
 //           importance: Importance.high,
 //           priority: Priority.high,
@@ -137,65 +223,66 @@ import 'package:http/http.dart' as http;
 //     );
 //   }
 
-//   void _handleMessageFromPayload(String payload) {
-//     try {
-//       final Map<String, dynamic> decoded = jsonDecode(payload);
-//       final Map<String, String> data = decoded.map(
-//         (key, value) => MapEntry(key.toString(), value?.toString() ?? ''),
-//       );
-
-//       _saveNotificationToProvider(data['title'], data['body']);
-//       navigatorKey.currentState?.push(
-//         MaterialPageRoute(
-//           builder: (_) => NotificationDashboard(notificationData: data),
-//         ),
-//       );
-//     } catch (e) {
-//       LoggerData.dataLog('Failed to parse payload: $e');
-//     }
-//   }
-
 //   void _saveNotificationToProvider(String? title, String? body,
 //       {Map<String, dynamic>? extraData}) {
-//     if (navigatorKey.currentContext != null && title != null && body != null) {
-//       final provider = Provider.of<NotificationProvider>(
-//         navigatorKey.currentContext!,
-//         listen: false,
-//       );
+//     try {
+//       if (navigatorKey.currentContext != null &&
+//           title != null &&
+//           body != null) {
+//         final provider = Provider.of<NotificationProvider>(
+//           navigatorKey.currentContext!,
+//           listen: false,
+//         );
 
-//       final data = {
-//         'title': title,
-//         'body': body,
-//         if (extraData != null)
-//           ...extraData.map((key, value) => MapEntry(key, value.toString())),
-//       };
+//         final data = {
+//           'title': title,
+//           'body': body,
+//           'time': DateTime.now().toIso8601String(),
+//           if (extraData != null)
+//             ...extraData.map((key, value) => MapEntry(key, value.toString())),
+//         };
+//         LoggerData.dataLog("extraData: ${jsonEncode(data)}");
 
-//       provider.setNotificationData(data['title']!, data['body']!);
+//         provider.setNotificationData(data['title']!, data['body']!,
+//             extraData: data);
+//       }
+//     } catch (e) {
+//       LoggerData.dataLog('Notification Provider Error: $e');
 //     }
 //   }
 
-//   // Optional: send a test notification from device
 //   Future<void> sendNotification({
 //     required String targetToken,
 //     required String title,
 //     required String body,
+//     required String id,
+//     required String action,
 //   }) async {
-//     const String serverKey =
-//         'approvalmobiletesting'; // Replace with your real key (securely)
-
+//     const String serverKey = 'approvalmobiletesting';
 //     final url = Uri.parse('https://fcm.googleapis.com/fcm/send');
 
+//     // Prepare custom data payload
+//     final dataPayload = {
+//       'action': action,
+//       if (action.toLowerCase() == 'order') 'orderId': id else 'requestId': id,
+//     };
+
+//     // Construct the FCM notification payload
 //     final payload = {
 //       'to': targetToken,
 //       'notification': {
 //         'title': title,
 //         'body': body,
+//         'android_channel_id': 'high_importance_channel',
+//         'icon': 'ic_notification',
 //       },
-//       'data': {
-//         'type': 'request_action',
-//         'requestId': '12345',
-//         'imageUrl': 'https://yourcdn.com/image.jpg',
-//       },
+//       'data': dataPayload,
+//       'android': {
+//         'notification': {
+//           'icon': 'ic_notification',
+//           'channel_id': 'high_importance_channel',
+//         }
+//       }
 //     };
 
 //     try {
@@ -212,10 +299,10 @@ import 'package:http/http.dart' as http;
 //         LoggerData.dataLog('Notification sent successfully');
 //       } else {
 //         LoggerData.dataLog(
-//             'Failed to send notification: ${response.statusCode} ${response.body}');
+//             ' Failed to send notification: ${response.statusCode} ${response.body}');
 //       }
 //     } catch (e) {
-//       LoggerData.dataLog('Error sending notification: $e');
+//       LoggerData.dataLog(' Error sending notification: $e');
 //     }
 //   }
 // }
@@ -301,12 +388,72 @@ class NotificationService {
   }
 
   void _onMessageOpenedApp(RemoteMessage message) {
-    final data = message.data;
+    final Map<String, dynamic> data = message.data;
     final title = message.notification?.title ?? data['title'];
     final body = message.notification?.body ?? data['body'];
 
     _saveNotificationToProvider(title, body, extraData: data);
+    
+    // Convert Map<String, dynamic> to Map<String, String>
+    final Map<String, String> stringData = _convertToStringMap(data);
+    _handleNotificationNavigation(stringData);
+  }
 
+  static Future<void> _firebaseMessagingBackgroundHandler(
+      RemoteMessage message) async {
+    await Firebase.initializeApp();
+    final title = message.notification?.title ?? message.data['title'];
+    final body = message.notification?.body ?? message.data['body'];
+
+    NotificationService.instance
+        ._saveNotificationToProvider(title, body, extraData: message.data);
+  }
+
+  void _handleMessageFromPayload(String payload) {
+    try {
+      final Map<String, dynamic> decoded = jsonDecode(payload);
+      
+      // Convert Map<String, dynamic> to Map<String, String>
+      final Map<String, String> data = _convertToStringMap(decoded);
+
+      _saveNotificationToProvider(data['title'], data['body'], extraData: data);
+      _handleNotificationNavigation(data);
+    } catch (e) {
+      LoggerData.dataLog('Failed to parse payload: $e');
+    }
+  }
+
+  // Helper method to convert Map<String, dynamic> to Map<String, String>
+  Map<String, String> _convertToStringMap(Map<String, dynamic> dynamicMap) {
+    return dynamicMap.map((key, value) => 
+      MapEntry(key, value?.toString() ?? '')
+    );
+  }
+
+  void _handleNotificationNavigation(Map<String, String> data) async {
+    // Check login status
+    bool isLoggedIn = SharedPrefs.instance.isLoggedIn;
+    
+    if (!isLoggedIn) {
+      // User not logged in, redirect to login screen with notification data
+      LoggerData.dataLog("User not logged in, redirecting to login screen");
+      
+      navigatorKey.currentState?.pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => LoginViewPage(
+            notificationData: data,
+          ),
+        ),
+        (route) => false,
+      );
+      return;
+    }
+
+    // User is logged in, proceed with normal navigation
+    _navigateToTargetScreen(data);
+  }
+
+  void _navigateToTargetScreen(Map<String, String> data) {
     final action = data['action'];
     final idStr = data['orderId'] ?? data['requestId'];
     final id = int.tryParse(idStr ?? '');
@@ -324,79 +471,22 @@ class NotificationService {
         navigatorKey.currentState?.push(
           MaterialPageRoute(
             builder: (_) => NotificationDashboard(
-                notificationData: Map<String, String>.from(data)),
+                notificationData: data), 
           ),
         );
       } else {
         navigatorKey.currentState?.push(MaterialPageRoute(
           builder: (_) => NotificationDashboard(
-              notificationData: Map<String, String>.from(data)),
+              notificationData: data), 
         ));
       }
     } else {
       navigatorKey.currentState?.push(
         MaterialPageRoute(
           builder: (_) => NotificationDashboard(
-              notificationData: Map<String, String>.from(data)),
+              notificationData: data), 
         ),
       );
-    }
-  }
-
-  static Future<void> _firebaseMessagingBackgroundHandler(
-      RemoteMessage message) async {
-    await Firebase.initializeApp();
-    final title = message.notification?.title ?? message.data['title'];
-    final body = message.notification?.body ?? message.data['body'];
-
-    NotificationService.instance
-        ._saveNotificationToProvider(title, body, extraData: message.data);
-  }
-
-  void _handleMessageFromPayload(String payload) {
-    try {
-      final Map<String, dynamic> decoded = jsonDecode(payload);
-      final Map<String, String> data = decoded.map(
-        (key, value) => MapEntry(key.toString(), value?.toString() ?? ''),
-      );
-
-      _saveNotificationToProvider(data['title'], data['body'], extraData: data);
-
-      final action = data['action'];
-      final idStr = data['orderId'] ?? data['requestId'];
-      final id = int.tryParse(idStr ?? '');
-
-      if (id != null) {
-        if (action == 'order') {
-          navigatorKey.currentState?.push(
-            MaterialPageRoute(
-              builder: (_) => OrderDetailsView(
-                orderId: id,
-              ),
-            ),
-          );
-        } else if (action == 'request') {
-          navigatorKey.currentState?.push(
-            MaterialPageRoute(
-              builder: (_) => NotificationDashboard(notificationData: data),
-            ),
-          );
-        } else {
-          navigatorKey.currentState?.push(
-            MaterialPageRoute(
-              builder: (_) => NotificationDashboard(notificationData: data),
-            ),
-          );
-        }
-      } else {
-        navigatorKey.currentState?.push(
-          MaterialPageRoute(
-            builder: (_) => NotificationDashboard(notificationData: data),
-          ),
-        );
-      }
-    } catch (e) {
-      LoggerData.dataLog('Failed to parse payload: $e');
     }
   }
 
@@ -418,7 +508,6 @@ class NotificationService {
           _channel.id,
           _channel.name,
           icon: 'ic_notification',
-          //    color: Colors.white,
           channelDescription: _channel.description,
           importance: Importance.high,
           priority: Priority.high,

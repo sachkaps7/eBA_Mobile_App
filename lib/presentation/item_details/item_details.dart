@@ -105,6 +105,7 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
           ? SharedPrefs().scannedRegionID
           : SharedPrefs().selectedRegionID,
       "uid": SharedPrefs().uID,
+      'apptype': AppConstants.apptype,
     };
 
     final jsonResponse =
@@ -239,7 +240,8 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
       "adjustmentDate": _dateController.text,
       "comments": _commmentsController.text,
       "uid": SharedPrefs().uID,
-      "pageMode": modeType
+      "pageMode": modeType,
+      'apptype': AppConstants.apptype,
     };
     final jsonResponse =
         await apiService.postRequest(context, ApiService.itemsInOut, data);

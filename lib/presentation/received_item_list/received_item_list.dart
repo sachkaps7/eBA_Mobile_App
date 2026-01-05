@@ -101,6 +101,7 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
 
     Map<String, dynamic> data = {
       'orderid': widget.orderId.toString(),
+      'apptype': AppConstants.apptype,
     };
     final jsonResponse = await apiService.postRequest(
         context, ApiService.goodReceiveItemList, data);
@@ -314,6 +315,7 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
             "isupdated": true,
             "Document_FileName": "",
             "Document_FileNameAzure": "",
+            'apptype': AppConstants.apptype,
           };
 
           // Check if this item has reject data
@@ -354,6 +356,7 @@ class _ReceivedItemListViewState extends State<ReceivedItemListView>
       "regionid": SharedPrefs().selectedRegionID,
       "usersession": SharedPrefs().userSession,
       "items": selectedOrderItems,
+      'apptype': AppConstants.apptype,
     };
     final jsonResponse = await apiService.postRequest(
         context, ApiService.goodReceiveUpdate, data);

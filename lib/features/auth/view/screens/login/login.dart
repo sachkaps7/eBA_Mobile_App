@@ -26,12 +26,14 @@ import 'package:eyvo_v3/core/widgets/header_logo.dart';
 import 'package:eyvo_v3/core/widgets/or_divider.dart';
 import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
 import 'package:eyvo_v3/core/widgets/text_error.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/order_details_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/company_code/company_code.dart';
 import 'package:eyvo_v3/features/auth/view/screens/dashboard/dashbord.dart';
 import 'package:eyvo_v3/log_data.dart/logger_data.dart';
 import 'package:eyvo_v3/presentation/forgot_password/forgot_password.dart';
 import 'package:eyvo_v3/presentation/forgot_user_id/forgot_user_id.dart';
 import 'package:eyvo_v3/presentation/home/home.dart';
+import 'package:eyvo_v3/presentation/notification_dashboard.dart';
 import 'package:eyvo_v3/services/azure_auth_service.dart';
 import 'package:eyvo_v3/services/biometric_auth_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -42,7 +44,9 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LoginViewPage extends StatefulWidget {
-  const LoginViewPage({super.key});
+  final Map<String, String>? notificationData;
+
+  const LoginViewPage({Key? key, this.notificationData}) : super(key: key);
 
   @override
   State<LoginViewPage> createState() => _LoginViewPageState();
@@ -347,20 +351,23 @@ class _LoginViewPageState extends State<LoginViewPage> {
         SharedPrefs().jwtToken = response.data.jwttoken;
         SharedPrefs().refreshToken = response.data.jwtrefreshtoken;
         SharedPrefs().userSession = response.data.userSession;
-
+        // Set login status
+        SharedPrefs().isLoggedIn = true;
         // Save credentials for biometric login
         SharedPrefs().username = username;
         SharedPrefs().password = password;
 
-        await BiometricAuth().setBiometricAuthId(response.data.username);
-
-        // Check if biometrics are available but not enabled
-        if (biometricAvailable && !biometricEnabled && !hasSeenPrompt) {
-          SharedPrefs().hasSeenBiometricPrompt = true;
-
-          showBiometricEnableDialog(context);
+        // Check if we have pending notification to handle after login
+        if (widget.notificationData != null) {
+          _handlePendingNotificationAfterLogin();
         } else {
-          navigateToScreen(context, HomeView());
+          // Check if biometrics are available but not enabled
+          if (biometricAvailable && !biometricEnabled && !hasSeenPrompt) {
+            SharedPrefs().hasSeenBiometricPrompt = true;
+            showBiometricEnableDialog(context);
+          } else {
+            navigateToScreen(context, HomeView());
+          }
         }
       } else {
         isPasswordError = true;
@@ -371,6 +378,49 @@ class _LoginViewPageState extends State<LoginViewPage> {
     setState(() {
       isLoading = false;
     });
+  }
+
+  void _handlePendingNotificationAfterLogin() {
+    final data = widget.notificationData!;
+    final action = data['action'];
+    final idStr = data['orderId'] ?? data['requestId'];
+    final id = int.tryParse(idStr ?? '');
+
+    if (id != null) {
+      if (action == 'order') {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (_) => OrderDetailsView(orderId: id),
+          ),
+          (route) => false,
+        );
+      } else if (action == 'request') {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (_) => NotificationDashboard(notificationData: data),
+          ),
+          (route) => false,
+        );
+      } else {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (_) => NotificationDashboard(notificationData: data),
+          ),
+          (route) => false,
+        );
+      }
+    } else {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) => NotificationDashboard(notificationData: data),
+        ),
+        (route) => false,
+      );
+    }
   }
 
   Future attemptBiometricLogin() async {
@@ -436,9 +486,14 @@ class _LoginViewPageState extends State<LoginViewPage> {
         SharedPrefs().jwtToken = response.data.jwttoken;
         SharedPrefs().refreshToken = response.data.jwtrefreshtoken;
         SharedPrefs().userSession = response.data.userSession;
-        navigateToScreen(context, HomeView());
-        // Slight delay to allow loader to show (optional)
-        await Future.delayed(const Duration(milliseconds: 200));
+        SharedPrefs().isLoggedIn = true;
+
+        // Handle pending notification after biometric login
+        if (widget.notificationData != null) {
+          _handlePendingNotificationAfterLogin();
+        } else {
+          navigateToScreen(context, HomeView());
+        }
       } else {
         globalUtils.showNegativeSnackBar(
             context: context, message: response.message.join(', '));

@@ -1,7 +1,23 @@
+import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/cost_center_split_details.dart';
+import 'package:permission_handler/permission_handler.dart' as PH;
+import 'package:eyvo_v3/api/response_models/attachement_list_response_model.dart';
+import 'package:eyvo_v3/api/response_models/cost_center_approval_list_response_model.dart';
+import 'package:eyvo_v3/api/response_models/cost_center_list_response_model.dart';
+import 'package:eyvo_v3/api/response_models/log_list_response_model.dart';
+import 'package:eyvo_v3/api/response_models/term_list_response_model.dart';
+import 'package:eyvo_v3/api/response_models/view_group_approval_response_model.dart';
+import 'package:eyvo_v3/api/response_models/line_item_list_response_model.dart';
+import 'package:eyvo_v3/api/response_models/notes_list_response_model.dart';
 import 'package:eyvo_v3/api/response_models/order_approval_approved_response.dart';
 import 'package:eyvo_v3/api/response_models/order_approval_reject_response.dart';
+import 'package:eyvo_v3/api/response_models/order_header_response.dart';
+import 'package:eyvo_v3/api/response_models/rule_approval_response_model.dart';
+import 'package:eyvo_v3/api/response_models/rule_list_response_model.dart';
 import 'package:eyvo_v3/core/resources/assets_manager.dart';
 import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/resources/routes_manager.dart';
@@ -10,10 +26,12 @@ import 'package:eyvo_v3/core/utils.dart';
 import 'package:eyvo_v3/core/widgets/alert.dart';
 import 'package:eyvo_v3/core/widgets/approval_details_helper.dart';
 import 'package:eyvo_v3/core/widgets/approver_detailed_page.dart';
+import 'package:eyvo_v3/core/widgets/button_helper.dart';
 import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
 import 'package:eyvo_v3/core/widgets/thankYouPage.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/base_header_form_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/base_line_form_view.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/note_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/show_group_approver_list.dart';
 import 'package:eyvo_v3/log_data.dart/logger_data.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +44,9 @@ import 'package:eyvo_v3/core/resources/strings_manager.dart';
 import 'package:eyvo_v3/core/widgets/button.dart';
 import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:permission_handler/permission_handler.dart' as perm_handler;
 
 class OrderDetailsView extends StatefulWidget {
   final int orderId;
@@ -43,9 +64,51 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
   final ApiService apiService = ApiService();
   bool isLoading = false, isError = false;
   String errorText = AppStrings.somethingWentWrong;
-  Data? orderDetails;
+  OrderDetailsResponseData? orderDetails;
+  LineItemListResponseData? lineItemListData;
+  List<GetRuleResponseData> ruleListData = [];
+  List<RuleApprovalResponseData> ruleApprovalListData = [];
+  CostCenterListResponseData? costCenterListData;
+  GroupApprovalListResponseData? groupApproversListData;
+
+  List<LogListResponseData>? logsListData;
+  CostCenterApprovalResponseData? ccApprovalData;
+  NotesData? noteData;
+  TermListResponseData? termListData;
+  AttachmentData? attachmentData;
+
   String? expandedSection;
-  @override
+  bool isLineItemsLoading = false;
+  bool isLineItemsLoaded = false;
+  String? lineItemsError;
+  String? ruleListError;
+  bool isRuleListLoading = false;
+  bool isRuleListLoaded = false;
+  bool isRuleApprovalListLoading = false;
+  bool isRuleApprovalListLoaded = false;
+  String? ruleApprovalListError;
+  bool isCostCenterListLoading = false;
+  bool isCostCenterListLoaded = false;
+  String? costCenterListError;
+  bool isCostCenterApproversListLoading = false;
+  bool isCostCenterApproversListLoaded = false;
+  String? costCenterApproversListError;
+  bool isGroupApproversListLoading = false;
+  bool isGroupApproversListLoaded = false;
+  String? groupApproversListError;
+  bool isAttachmentListLoading = false;
+  bool isAttachmentListLoaded = false;
+  String? attachmentListError;
+  bool isTermsListLoading = false;
+  bool isTermsListLoaded = false;
+  String? termsListError;
+  bool isNotesListLoading = false;
+  bool isNotesListLoaded = false;
+  String? notesListError;
+  bool isLogsListLoading = false;
+  bool isLogsListLoaded = false;
+  String? logsListError;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -58,14 +121,14 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
 
   @override
   void didPopNext() {
-    fetchOrderApprovalDetails();
+    fetchOrderDetails();
   }
 
   @override
   void initState() {
     super.initState();
     expandedSection = "Details"; // Default expanded
-    fetchOrderApprovalDetails();
+    fetchOrderDetails();
   }
 
   @override
@@ -74,7 +137,318 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
     super.dispose();
   }
 
-  Future<void> fetchOrderApprovalDetails() async {
+  Future<void> downloadFile(String fileName, String base64Data) async {
+    try {
+      final bytes = base64Decode(base64Data);
+
+      if (Platform.isAndroid) {
+        bool allowed = await requestStoragePermission();
+        if (!allowed) {
+          debugPrint("Storage permission denied.");
+          return;
+        }
+      }
+
+      String savePath;
+
+      if (Platform.isAndroid) {
+        final directory = Directory('/storage/emulated/0/Download');
+
+        if (!await directory.exists()) {
+          await directory.create(recursive: true);
+        }
+
+        savePath = "${directory.path}/$fileName";
+      } else {
+        final dir = await getApplicationDocumentsDirectory();
+        savePath = "${dir.path}/$fileName";
+      }
+
+      final file = File(savePath);
+      await file.writeAsBytes(bytes);
+
+      debugPrint("File saved at: $savePath");
+
+      showSnackBar(
+        context,
+        "Downloaded to: $savePath",
+      );
+    } catch (e) {
+      debugPrint("Download error: $e");
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<bool> requestStoragePermission() async {
+    if (Platform.isAndroid) {
+      // Android 11+ (API 30+) All-files access
+      if (await PH.Permission.manageExternalStorage.isGranted) {
+        return true;
+      }
+
+      var status = await PH.Permission.manageExternalStorage.request();
+      if (status.isGranted) {
+        return true;
+      }
+
+      // Fallback for Android 10 and below
+      status = await PH.Permission.storage.request();
+      return status.isGranted;
+    }
+
+    return true; // iOS
+  }
+
+  Future<dynamic> fetchCommonData({
+    required String endpoint,
+  }) async {
+    try {
+      final jsonResponse = await apiService.postRequest(
+        context,
+        endpoint,
+        {
+          'uid': SharedPrefs().uID,
+          'apptype': AppConstants.apptype,
+          'ID': orderDetails!.header.orderId,
+          'group': 'Order',
+          "regionid": "",
+          "search": "",
+        },
+      );
+
+      return jsonResponse;
+    } catch (e) {
+      return {"error": e.toString()};
+    }
+  }
+
+  Future<Map<String, dynamic>?> commonWrapper({
+    required void Function(bool) setLoading,
+    required void Function(String?) setError,
+    required void Function(bool) setLoaded,
+    required String endpoint,
+  }) async {
+    setLoading(true);
+    setError(null);
+    setLoaded(false);
+
+    try {
+      final result = await fetchCommonData(endpoint: endpoint);
+
+      if (result is Map && result["error"] != null) {
+        setError(result["error"]);
+        return null;
+      }
+
+      setLoaded(true);
+      return Map<String, dynamic>.from(result);
+    } catch (e) {
+      setError(e.toString());
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  Future<void> fetchRulelistWrapper() async {
+    final json = await commonWrapper(
+      setLoading: (v) => setState(() => isRuleListLoading = v),
+      setError: (msg) => setState(() => ruleListError = msg),
+      setLoaded: (v) => setState(() => isRuleListLoaded = v),
+      endpoint: ApiService.getRuleList,
+    );
+
+    if (json == null) return;
+
+    final resp = GetRuleResponse.fromJson(json);
+
+    if (resp.code == 200) {
+      setState(() => ruleListData = resp.data);
+    } else {
+      setState(() => ruleListError = resp.message.join(", "));
+    }
+  }
+
+  Future<void> fetchLineItemsWrapper() async {
+    final json = await commonWrapper(
+      setLoading: (v) => setState(() => isLineItemsLoading = v),
+      setError: (msg) => setState(() => lineItemsError = msg),
+      setLoaded: (v) => setState(() => isLineItemsLoaded = v),
+      endpoint: ApiService.getLineItems,
+    );
+
+    if (json == null) return;
+
+    final resp = LineItemListResponse.fromJson(json);
+
+    if (resp.code == 200) {
+      setState(() => lineItemListData = resp.data);
+    } else {
+      setState(() => lineItemsError = resp.message.join(", "));
+    }
+  }
+
+  Future<void> fetchRuleApprovalListWrapper() async {
+    final json = await commonWrapper(
+      setLoading: (v) => setState(() => isRuleApprovalListLoading = v),
+      setError: (msg) => setState(() => ruleApprovalListError = msg),
+      setLoaded: (v) => setState(() => isRuleApprovalListLoaded = v),
+      endpoint: ApiService.getRuleApproversList,
+    );
+
+    if (json == null) return;
+
+    final resp = RuleApprovalResponse.fromJson(json);
+
+    if (resp.code == 200) {
+      setState(() => ruleApprovalListData = resp.data);
+    } else {
+      setState(() => ruleApprovalListError = resp.message.join(", "));
+    }
+  }
+
+  Future<void> fetchCostCenterListWrapper() async {
+    final json = await commonWrapper(
+      setLoading: (v) => setState(() => isCostCenterListLoading = v),
+      setError: (msg) => setState(() => costCenterListError = msg ?? ""),
+      setLoaded: (v) => setState(() => isCostCenterListLoaded = v),
+      endpoint: ApiService.getCostCenterList,
+    );
+
+    if (json == null) return;
+
+    final resp = CostCenterListResponse.fromJson(json);
+
+    if (resp.code == 200) {
+      setState(() => costCenterListData = resp.data);
+    } else {
+      setState(() => costCenterListError = resp.message.join(", ") ?? "");
+    }
+  }
+
+  Future<void> fetchCostCenterApproversListWrapper() async {
+    final json = await commonWrapper(
+      setLoading: (v) => setState(() => isCostCenterApproversListLoading = v),
+      setError: (msg) =>
+          setState(() => costCenterApproversListError = msg ?? ""),
+      setLoaded: (v) => setState(() => isCostCenterApproversListLoaded = v),
+      endpoint: ApiService.getCostCenterApproversList,
+    );
+
+    if (json == null) return;
+
+    final resp = CostCenterApprovalResponse.fromJson(json);
+
+    if (resp.code == 200) {
+      setState(() => ccApprovalData = resp.data);
+    } else {
+      setState(
+          () => costCenterApproversListError = resp.message.join(", ") ?? "");
+    }
+  }
+
+  Future<void> fetchGroupApproversListWrapper() async {
+    final json = await commonWrapper(
+      setLoading: (v) => setState(() => isGroupApproversListLoading = v),
+      setError: (msg) => setState(() => groupApproversListError = msg ?? ""),
+      setLoaded: (v) => setState(() => isGroupApproversListLoaded = v),
+      endpoint: ApiService.getGroupApproversList,
+    );
+
+    if (json == null) return;
+
+    final resp = GroupApprovalListResponse.fromJson(json);
+
+    if (resp.code == 200) {
+      setState(() => groupApproversListData = resp.data);
+    } else {
+      setState(() => groupApproversListError = resp.message.join(", ") ?? "");
+    }
+  }
+
+  Future<void> fetchAttachmentListWrapper() async {
+    final json = await commonWrapper(
+      setLoading: (v) => setState(() => isAttachmentListLoading = v),
+      setError: (msg) => setState(() => attachmentListError = msg ?? ""),
+      setLoaded: (v) => setState(() => isAttachmentListLoaded = v),
+      endpoint: ApiService.getAttachmentList,
+    );
+
+    if (json == null) return;
+
+    final resp = AttachmentListResponse.fromJson(json);
+
+    if (resp.code == 200) {
+      setState(() => attachmentData = resp.data);
+    } else {
+      setState(() => attachmentListError = resp.message.join(", "));
+    }
+  }
+
+  Future<void> fetchTermsListWrapper() async {
+    final json = await commonWrapper(
+      setLoading: (v) => setState(() => isTermsListLoading = v),
+      setError: (msg) => setState(() => termsListError = msg ?? ""),
+      setLoaded: (v) => setState(() => isTermsListLoaded = v),
+      endpoint: ApiService.getTermsList,
+    );
+
+    if (json == null) return;
+
+    final resp = TermListResponse.fromJson(json);
+
+    if (resp.code == 200) {
+      setState(() => termListData = resp.data);
+    } else {
+      setState(() => termsListError = resp.message.join(", ") ?? "");
+    }
+  }
+
+  Future<void> fetchNotesListWrapper() async {
+    final json = await commonWrapper(
+      setLoading: (v) => setState(() => isNotesListLoading = v),
+      setError: (msg) => setState(() => notesListError = msg ?? ""),
+      setLoaded: (v) => setState(() => isNotesListLoaded = v),
+      endpoint: ApiService.getNotesList,
+    );
+
+    if (json == null) return;
+
+    final resp = NotesListResponse.fromJson(json);
+
+    if (resp.code == 200) {
+      setState(() => noteData = resp.data);
+    } else {
+      setState(() => notesListError = resp.message.join(", "));
+    }
+  }
+
+  Future<void> fetchLogsListWrapper() async {
+    final json = await commonWrapper(
+      setLoading: (v) => setState(() => isLogsListLoading = v),
+      setError: (msg) => setState(() => logsListError = msg ?? ""),
+      setLoaded: (v) => setState(() => isLogsListLoaded = v),
+      endpoint: ApiService.getLogsList,
+    );
+
+    if (json == null) return;
+
+    final resp = LogListResponse.fromJson(json);
+
+    if (resp.code == 200) {
+      setState(() => logsListData = resp.data);
+    } else {
+      setState(() => logsListError = resp.message.join(", "));
+    }
+  }
+
+  Future<void> fetchOrderDetails() async {
     setState(() {
       isLoading = true;
       isError = false;
@@ -82,7 +456,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
 
     final jsonResponse = await apiService.postRequest(
       context,
-      ApiService.orderApprovalDetails,
+      ApiService.orderDetails,
       {
         'uid': SharedPrefs().uID,
         'apptype': AppConstants.apptype,
@@ -91,7 +465,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
     );
 
     if (jsonResponse != null) {
-      final resp = OrderApprovalDetails.fromJson(jsonResponse);
+      final resp = OrderDetailsResponse.fromJson(jsonResponse);
       if (resp.code == 200) {
         setState(() {
           orderDetails = resp.data;
@@ -211,11 +585,88 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
     });
   }
 
-  bool _shouldShowAddLineItem() {
-    if (orderDetails?.header?.orderStatus == null) return false;
+  Future<void> _submitForApproval() async {
+    setState(() {
+      isLoading = true;
+      isError = false;
+    });
 
-    final status = orderDetails!.header.orderStatus.toUpperCase();
-    return status == 'UNISSUED' || status == 'APPROVED' || status == 'TEMPLATE';
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (!mounted) return;
+
+    Navigator.pushReplacementNamed(
+      context,
+      Routes.thankYouRoute,
+      arguments: {
+        'message': "Order submitted for approval successfully",
+        'approverName': 'orderApproval',
+        'status': 'Submitted',
+        'requestName': 'Order Number',
+        'number': orderDetails!.header.orderNumber,
+      },
+    );
+
+    setState(() {
+      isLoading = false;
+      isError = true;
+    });
+  }
+
+  Future<void> _issueOrder() async {
+    setState(() {
+      isLoading = true;
+      isError = false;
+    });
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (!mounted) return;
+
+    Navigator.pushReplacementNamed(
+      context,
+      Routes.thankYouRoute,
+      arguments: {
+        'message': "Order issued successfully",
+        'approverName': 'orderApproval',
+        'status': 'Order Issued',
+        'requestName': 'Order Number',
+        'number': orderDetails!.header.orderNumber,
+      },
+    );
+
+    setState(() {
+      isLoading = false;
+      isError = true;
+    });
+  }
+
+  Future<void> _reIssueOrder() async {
+    setState(() {
+      isLoading = true;
+      isError = false;
+    });
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (!mounted) return;
+
+    Navigator.pushReplacementNamed(
+      context,
+      Routes.thankYouRoute,
+      arguments: {
+        'message': "Order re-issued successfully",
+        'approverName': 'orderApproval',
+        'status': 'Order Re-Issued',
+        'requestName': 'Order Number',
+        'number': orderDetails!.header.orderNumber,
+      },
+    );
+
+    setState(() {
+      isLoading = false;
+      isError = true;
+    });
   }
 
   void _addNewLineItem() {
@@ -231,9 +682,106 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
         ),
       ),
     ).then((_) {
-      // Refresh after adding
-      fetchOrderApprovalDetails();
+      fetchLineItemsWrapper();
     });
+  }
+
+  void _addNewNotes() {
+    Navigator.pushNamed(
+      context,
+      Routes.notesViewRoute,
+      arguments: {
+        'noteId': 0,
+        'group': 'Order',
+        'ordReqID': orderDetails!.header.orderId,
+      },
+    ).then((result) {
+      if (result == true) {
+        fetchNotesListWrapper();
+      }
+    });
+  }
+
+  void _addNewAttachment() {
+    Navigator.pushNamed(
+      context,
+      Routes.attachmentPageRoute,
+      arguments: {
+        'group': 'Order',
+        'ordReqID': orderDetails!.header.orderId,
+      },
+    ).then((result) {
+      if (result == true) {
+        fetchAttachmentListWrapper();
+      }
+    });
+    LoggerData.dataLog('${orderDetails!.header.orderId}###########');
+  }
+
+  void _addNewCostCenterSplit() {
+    // Navigator.pushNamed(
+    //   context,
+    //   Routes.costCenterSplitRoute,
+    //   arguments: {
+    //     'group': 'Order',
+    //     'ordReqID': orderDetails!.header.orderId,
+    //   },
+    // ).then((result) {
+    //   if (result == true) {
+    //     fetchGroupApproversListWrapper();
+    //   }
+    // });
+    navigateToScreen(context, BudgetGraphPage());
+  }
+
+  void _addNewCCApproval() {
+    Navigator.pushNamed(
+      context,
+      Routes.createCostCenterApproverView,
+      arguments: {
+        'group': 'Order',
+        'ordReqID': orderDetails!.header.orderId,
+      },
+    ).then((result) {
+      if (result == true) {
+        fetchGroupApproversListWrapper();
+      }
+    });
+  }
+
+  void _addNewGroupApproval() {
+    Navigator.pushNamed(
+      context,
+      Routes.groupApprovalRoute,
+      arguments: {
+        'group': 'Order',
+        'ordReqID': orderDetails!.header.orderId,
+      },
+    ).then((result) {
+      if (result == true) {
+        fetchGroupApproversListWrapper();
+      }
+    });
+  }
+
+  void _termsAndCondition() {
+    Navigator.pushNamed(
+      context,
+      Routes.termsAndConditionRoute,
+      arguments: {
+        'group': 'Order',
+        'ordReqID': orderDetails!.header.orderId,
+      },
+    ).then((result) {
+      if (result == true) {
+        fetchTermsListWrapper();
+      }
+    });
+  }
+
+  void _deleteCostCenterSplit() {
+    //   print("Delete pressed");
+    // Add your API or logic here
   }
 
   @override
@@ -246,6 +794,26 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
             : "Order #${orderDetails!.header.orderNumber}",
       ),
       backgroundColor: ColorManager.primary,
+      bottomNavigationBar: orderDetails == null
+          ? null
+          : Container(
+              color: ColorManager.white,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+              child: DynamicOrderButtonBuilder.build(
+                context: context,
+                buttonName: orderDetails!.buttonName,
+                buttonAction: orderDetails!.buttonAction,
+                buttonAlert: orderDetails!.buttonAlert,
+                onApprove: orderApprovalApproved,
+                onReject: (reason) => orderApprovalReject(reason),
+                onSubmitForApproval: _submitForApproval,
+                onIssueOrder: _issueOrder,
+                onReIssueOrder: _reIssueOrder,
+              ),
+            ),
       body: isLoading
           ? const Center(child: CustomProgressIndicator())
           : isError
@@ -255,10 +823,13 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
                     Expanded(
                       child: ScrollbarTheme(
                         data: ScrollbarThemeData(
-                          thumbColor:
-                              MaterialStateProperty.all(ColorManager.blue),
+                          trackColor:
+                              MaterialStateProperty.all(ColorManager.grey),
+                          trackVisibility: const WidgetStatePropertyAll(true),
+                          thumbColor: MaterialStateProperty.all(
+                              ColorManager.lightBlue1),
                           radius: const Radius.circular(8),
-                          thickness: MaterialStateProperty.all(6),
+                          thickness: MaterialStateProperty.all(3),
                         ),
                         child: Scrollbar(
                           thumbVisibility: true,
@@ -281,7 +852,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
                                     'Supplier Name':
                                         orderDetails!.header.supplierName,
                                     'Order ${capitalizeFirstLetter(orderDetails!.header.orderValueLabel)} Total':
-                                        '${getFormattedPriceString(orderDetails!.header.orderValue)} (${orderDetails!.header.currencyCode})',
+                                        '${getFormattedPriceString(orderDetails!.header.orderValue)} (${orderDetails!.header.ccyCode})',
                                     'Rule Approval':
                                         orderDetails!.header.ruleStatus,
                                     'Cost Center Approver':
@@ -290,54 +861,6 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
                                         .header.groupApproverStatus,
                                   },
                                   onTap: () {
-                                    // Navigator.pushNamed(
-                                    //   context,
-                                    //   Routes.genericDetailRoute,
-                                    //   arguments: {
-                                    //     'title': 'Order Header',
-                                    //     'data': {
-                                    //       'Order Number':
-                                    //           orderDetails!.header.orderNumber,
-                                    //       'Order Date':
-                                    //           orderDetails!.header.orderDate,
-                                    //       'Order Status':
-                                    //           orderDetails!.header.orderStatus,
-                                    //       'Order Net Total':
-                                    //           '${getFormattedPriceString(orderDetails!.header.orderValue)} (${orderDetails!.header.currencyCode})',
-                                    //       'Reference No':
-                                    //           orderDetails!.header.referenceNo,
-                                    //       'Supplier Name':
-                                    //           orderDetails!.header.supplierName,
-                                    //       'Delivery To':
-                                    //           orderDetails!.header.fao,
-                                    //       'Delivery Code':
-                                    //           orderDetails!.header.deliveryCode,
-                                    //       'Invoice Code': orderDetails!
-                                    //           .header.invoicePtCode,
-                                    //       'Category Code':
-                                    //           orderDetails!.header.categoryCode,
-                                    //       orderDetails!.header.expName1:
-                                    //           orderDetails!.header.expCode1,
-                                    //       orderDetails!.header.expName2:
-                                    //           orderDetails!.header.expCode2,
-                                    //       orderDetails!.header.expName3:
-                                    //           orderDetails!.header.expCode3,
-                                    //       'Incoterms': orderDetails!.header.fob,
-                                    //       'Budget': orderDetails!
-                                    //           .header.orderBudgetHeader,
-                                    //       // 'Approval Type': orderDetails!
-                                    //       //         .header.approvalType ??
-                                    //       //     '',
-                                    //       'Rule Approver Status':
-                                    //           orderDetails!.header.ruleStatus,
-                                    //       'CC Approver Status': orderDetails!
-                                    //           .header.ccApproverStatus,
-                                    //       'Group Approver Status': orderDetails!
-                                    //           .header.groupApproverStatus,
-                                    //     },
-                                    //   },
-                                    // );
-
                                     navigateToScreen(
                                       context,
                                       BaseHeaderView(
@@ -366,434 +889,1149 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
                                     });
                                   },
                                 ),
-//------------------------------------------ Line Item ----------------------------------
-                                // ApprovalDetailsHelper.buildSection(
-                                //   "Line Items",
-                                //   Icons.list_alt_outlined,
-                                //   orderDetails!.line.isEmpty
-                                //       ? [
-                                //           ApprovalDetailsHelper.buildEmptyView(
-                                //               "No line items found"),
-                                //         ]
-                                //       : [
-                                //           ...orderDetails!.line.map((lineItem) {
-                                //             return ApprovalDetailsHelper
-                                //                 .buildMiniCardWithEditIcon({
-                                //               'Item No': lineItem.itemOrder,
-                                //               'Description': lineItem
-                                //                           .description.length >
-                                //                       50
-                                //                   ? '${lineItem.description.substring(0, 50)}...'
-                                //                   : lineItem.description,
-                                //               'Quantity':
-                                //                   '${getFormattedPriceString(lineItem.quantity)}',
-                                //               'Unit Price':
-                                //                   '${getFormattedPriceString(lineItem.price)} (${lineItem.supplierCcyCode})',
-                                //               'Net Price':
-                                //                   '${getFormattedPriceString(lineItem.netPrice)} (${lineItem.supplierCcyCode})',
-                                //             }, () {
-
-                                // navigateToScreen(
-                                //   context,
-                                //   BaseLineView(
-                                //     id: widget.orderId,
-                                //     lineId: lineItem.orderLineId,
-                                //     lineType: LineType.order,
-                                //     appBarTitle: "Order Line",
-                                //     buttonshow: false,
-                                //   ),
-                                // );
-                                //             });
-                                //           }).toList(),
-
-                                //           // Add the total net price at the bottom
-                                //           ApprovalDetailsHelper
-                                //               .buildNetGrossTotalWidget(
-                                //                   context, orderDetails!.line,
-                                //                   dialogTitle:
-                                //                       'Order Total Summary',
-                                //                   netTotalLabel:
-                                //                       'Order Net Total',
-                                //                   shippingChargesLabel:
-                                //                       'Shipping Charges',
-                                //                   salesTaxLabel: 'Sales Tax',
-                                //                   grossTotalLabel:
-                                //                       'Order Gross Total',
-                                //                   currencyLabel:
-                                //                       'Order Currency'),
-                                //         ],
-                                //   count: orderDetails!.line.length,
-                                //   isExpanded: expandedSection == "Line Items",
-                                //   toggleSection: () {
-                                //     setState(() {
-                                //       expandedSection =
-                                //           expandedSection == "Line Items"
-                                //               ? null
-                                //               : "Line Items";
-                                //     });
-                                //   },
-                                // ),
-//------------------------------------------ Line Item ----------------------------------
+                                //------------------------------------------ Line Item ----------------------------------
                                 ApprovalDetailsHelper.buildSection(
                                   "Line Items",
                                   Icons.list_alt_outlined,
-                                  orderDetails!.line.isEmpty
-                                      ? [
-                                          ApprovalDetailsHelper.buildEmptyView(
-                                              "No line items found"),
-                                        ]
-                                      : [
-                                          ...orderDetails!.line.map((lineItem) {
-                                            return ApprovalDetailsHelper
-                                                .buildMiniCardWithEditIcon({
-                                              'Item No': lineItem.itemOrder,
-                                              'Description': lineItem
-                                                          .description.length >
-                                                      50
-                                                  ? '${lineItem.description.substring(0, 50)}...'
-                                                  : lineItem.description,
-                                              'Quantity':
-                                                  '${getFormattedPriceString(lineItem.quantity)}',
-                                              'Unit Price':
-                                                  '${getFormattedPriceString(lineItem.price)} (${lineItem.supplierCcyCode})',
-                                              'Net Price':
-                                                  '${getFormattedPriceString(lineItem.netPrice)} (${lineItem.supplierCcyCode})',
-                                            }, () {
-                                              navigateToScreen(
-                                                context,
-                                                BaseLineView(
-                                                  id: widget.orderId,
-                                                  lineId: lineItem.orderLineId,
-                                                  lineType: LineType.order,
-                                                  appBarTitle: "Order Line",
-                                                  buttonshow: false,
-                                                ),
-                                              );
-                                            });
-                                          }).toList(),
-                                          ApprovalDetailsHelper
-                                              .buildNetGrossTotalWidget(
-                                                  context, orderDetails!.line,
-                                                  dialogTitle:
-                                                      'Order Total Summary',
-                                                  netTotalLabel:
-                                                      'Order Net Total',
-                                                  shippingChargesLabel:
-                                                      'Shipping Charges',
-                                                  salesTaxLabel: 'Sales Tax',
-                                                  grossTotalLabel:
-                                                      'Order Gross Total',
-                                                  currencyLabel:
-                                                      'Order Currency'),
-                                        ],
-                                  count: orderDetails!.line.length,
+
+                                  // CHILDREN
+                                  expandedSection == "Line Items"
+                                      ? (isLineItemsLoading
+                                          ? [
+                                              const Center(
+                                                  child:
+                                                      CircularProgressIndicator()),
+                                            ]
+                                          : lineItemsError != null
+                                              ? [
+                                                  Center(
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              16),
+                                                      child: Text(
+                                                        lineItemsError!,
+                                                        style: const TextStyle(
+                                                            color: Colors.red),
+                                                      ),
+                                                    ),
+                                                  )
+                                                ]
+                                              : lineItemListData == null ||
+                                                      lineItemListData!
+                                                          .list.isEmpty
+                                                  ? [
+                                                      ApprovalDetailsHelper
+                                                          .buildEmptyView(
+                                                        "No line items Added",
+                                                      ),
+                                                    ]
+                                                  : [
+                                                      ...lineItemListData!.list
+                                                          .map((lineItem) {
+                                                        return ApprovalDetailsHelper
+                                                            .buildMiniCardWithEditIcon({
+                                                          'Item No': lineItem
+                                                              .itemOrder,
+                                                          'Description': lineItem
+                                                                      .description
+                                                                      .length >
+                                                                  50
+                                                              ? '${lineItem.description.substring(0, 50)}...'
+                                                              : lineItem
+                                                                  .description,
+                                                          'Quantity':
+                                                              '${getFormattedPriceString(lineItem.quantity)}',
+                                                          'Unit Price':
+                                                              '${getFormattedPriceString(lineItem.price)} (${lineItem.supplierCcyCode})',
+                                                          'Net Price':
+                                                              '${getFormattedPriceString(lineItem.netPrice)} (${lineItem.supplierCcyCode})',
+                                                        }, () {
+                                                          navigateToScreen(
+                                                            context,
+                                                            BaseLineView(
+                                                              id: widget
+                                                                  .orderId,
+                                                              lineId: lineItem
+                                                                  .orderLineId,
+                                                              lineType: LineType
+                                                                  .order,
+                                                              appBarTitle:
+                                                                  "Order Line",
+                                                              buttonshow: false,
+                                                            ),
+                                                          );
+                                                        });
+                                                      }).toList(),
+
+                                                      // Summary
+                                                      ApprovalDetailsHelper
+                                                          .buildNetGrossTotalWidget(
+                                                        context,
+                                                        lineItemListData!.list,
+                                                        dialogTitle:
+                                                            'Order Total Summary',
+                                                        netTotalLabel:
+                                                            'Order Net Total',
+                                                        shippingChargesLabel:
+                                                            'Shipping Charges',
+                                                        salesTaxLabel:
+                                                            'Sales Tax',
+                                                        grossTotalLabel:
+                                                            'Order Gross Total',
+                                                        currencyLabel:
+                                                            'Order Currency',
+                                                      ),
+                                                    ])
+                                      : [],
+
+                                  //  PASS isExpanded HERE
                                   isExpanded: expandedSection == "Line Items",
-                                  toggleSection: () {
+
+                                  // Count
+                                  count: int.tryParse(
+                                      orderDetails!.lineItemsCount),
+
+                                  // Toggle
+                                  toggleSection: () async {
+                                    final willExpand =
+                                        expandedSection != "Line Items";
+
                                     setState(() {
                                       expandedSection =
-                                          expandedSection == "Line Items"
-                                              ? null
-                                              : "Line Items";
+                                          willExpand ? "Line Items" : null;
                                     });
+
+                                    if (willExpand && !isLineItemsLoaded) {
+                                      await fetchLineItemsWrapper();
+                                    }
                                   },
-                                  // Add these new parameters
-                                  trailing: _shouldShowAddLineItem()
+
+                                  // Add button
+                                  trailing: (lineItemListData != null &&
+                                          lineItemListData!.permission.mode ==
+                                              "RW")
                                       ? Container(
-                                          width: 32,
-                                          height: 32,
+                                          width: 40,
+                                          height: 40,
                                           decoration: BoxDecoration(
-                                            color: ColorManager.blue
-                                                .withOpacity(0.1),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: Icon(
-                                            Icons.add,
                                             color: ColorManager.blue,
-                                            size: 18,
+                                            // borderRadius:
+                                            //     BorderRadius.circular(20),
+                                          ),
+                                          child: Center(
+                                            child: Icon(Icons.add,
+                                                color: ColorManager.white,
+                                                size: 22),
                                           ),
                                         )
                                       : null,
-                                  onTrailingTap: _shouldShowAddLineItem()
+                                  onTrailingTap: (lineItemListData != null &&
+                                          lineItemListData!.permission.mode ==
+                                              "RW")
                                       ? _addNewLineItem
                                       : null,
                                 ),
-//--------------------------- Rule------------------------------------------------
-                                ApprovalDetailsHelper.buildSection(
-                                  "Rules",
-                                  Icons.rule,
-                                  orderDetails!.rule.isEmpty
-                                      ? [
-                                          ApprovalDetailsHelper.buildEmptyView(
-                                              "No Rule found"),
-                                        ]
-                                      : orderDetails!.rule.map((r) {
-                                          return ApprovalDetailsHelper
-                                              .buildMiniCard({
-                                            'Rule Name': r.ruleName,
-                                            'Rule Description':
-                                                r.ruleDescription,
-                                            'Rule Selected': r.ruleSelected
-                                                ? 'true'
-                                                : 'false',
-                                          });
-                                        }).toList(),
-                                  count: orderDetails!.rule.length,
-                                  isExpanded: expandedSection == "Rules",
-                                  toggleSection: () {
-                                    setState(() {
-                                      expandedSection =
-                                          expandedSection == "Rules"
-                                              ? null
-                                              : "Rules";
-                                    });
-                                  },
-                                ),
-//--------------------------------- Rule Approvers---------------------------------------
-                                ApprovalDetailsHelper.buildSection(
-                                  "Rule Approvers",
-                                  FontAwesomeIcons.userCheck,
-                                  orderDetails!.ruleApprovers.isEmpty
-                                      ? [
-                                          ApprovalDetailsHelper.buildEmptyView(
-                                              "No rule approvers found"),
-                                        ]
-                                      : orderDetails!.ruleApprovers.map((ra) {
-                                          return ApprovalDetailsHelper
-                                              .buildMiniCardForApproval(
-                                            {
-                                              'Approval Order':
-                                                  ra.approvalOrder.toString(),
-                                              'Approval Status':
-                                                  ra.approvalStatus,
-                                              'User Name': ra.userName,
-                                              'Group Name': ra.userGroupName,
-                                              'Proxy User': ra.proxyUserName,
-                                              'UID Group':
-                                                  ra.uidGroup.toString(),
-                                              'Email': ra.email,
-                                            },
-                                            () {
-                                              Navigator.pushNamed(
-                                                context,
-                                                Routes
-                                                    .showGroupApprovalListRoute,
-                                                arguments: {
-                                                  'id': ra.uidGroup,
-                                                  'from': 'rulegroup',
-                                                },
-                                              );
-                                            },
-                                            showIconCondition: (data) =>
-                                                data['UID Group']?.toString() !=
-                                                "0",
-                                          );
-                                        }).toList(),
-                                  count: orderDetails!.ruleApprovers.length,
-                                  iconSize: 20,
-                                  isExpanded:
-                                      expandedSection == "Rule Approvers",
-                                  toggleSection: () {
-                                    setState(() {
-                                      expandedSection =
-                                          expandedSection == "Rule Approvers"
-                                              ? null
-                                              : "Rule Approvers";
-                                    });
-                                  },
-                                ),
-//------------------------ Cost Center Split -----------------------------------------
+                                //------------------------------------ RULES -----------------------------------------
+                                if (SharedPrefs().sysRuleFunction == true &&
+                                    SharedPrefs().sysRuleApproval == true)
+                                  ApprovalDetailsHelper.buildSection(
+                                    "Rules",
+                                    Icons.rule,
+
+                                    // CHILDREN
+                                    expandedSection == "Rules"
+                                        ? (isRuleListLoading
+                                            ? [
+                                                const Center(
+                                                    child:
+                                                        CircularProgressIndicator()),
+                                              ]
+                                            : ruleListError != null
+                                                ? [
+                                                    Center(
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(16),
+                                                        child: Text(
+                                                          ruleListError!,
+                                                          style:
+                                                              const TextStyle(
+                                                                  color: Colors
+                                                                      .red),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  ]
+                                                : ruleListData == null ||
+                                                        ruleListData!.isEmpty
+                                                    ? [
+                                                        ApprovalDetailsHelper
+                                                            .buildEmptyView(
+                                                          "No rules Added",
+                                                        ),
+                                                      ]
+                                                    : [
+                                                        ...ruleListData!
+                                                            .map((r) {
+                                                          return ApprovalDetailsHelper
+                                                              .buildMiniCard({
+                                                            'Rule Name':
+                                                                r.ruleName,
+                                                            'Rule Description':
+                                                                r.ruleDescription,
+                                                            'Rule Selected':
+                                                                r.ruleSelected
+                                                                    ? 'true'
+                                                                    : 'false',
+                                                          });
+                                                        }).toList(),
+                                                      ])
+                                        : [],
+
+                                    // Expanded
+                                    isExpanded: expandedSection == "Rules",
+
+                                    // Count (safe)
+                                    count:
+                                        int.tryParse(orderDetails!.ruleCount),
+
+                                    // Toggle Section
+                                    toggleSection: () async {
+                                      final willExpand =
+                                          expandedSection != "Rules";
+
+                                      setState(() {
+                                        expandedSection =
+                                            willExpand ? "Rules" : null;
+                                      });
+
+                                      if (willExpand && !isRuleListLoaded) {
+                                        await fetchRulelistWrapper();
+                                      }
+                                    },
+                                  ),
+                                //--------------------------------- Rule Approvers---------------------------------------
+                                if (SharedPrefs().sysRuleFunction == true &&
+                                    SharedPrefs().sysRuleApproval == true)
+                                  ApprovalDetailsHelper.buildSection(
+                                    "Rule Approvers",
+                                    FontAwesomeIcons.userCheck,
+
+                                    // CHILDREN
+                                    expandedSection == "Rule Approvers"
+                                        ? (isRuleApprovalListLoading
+                                            ? [
+                                                const Center(
+                                                    child:
+                                                        CircularProgressIndicator()),
+                                              ]
+                                            : ruleApprovalListError != null
+                                                ? [
+                                                    Center(
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(16),
+                                                        child: Text(
+                                                          ruleApprovalListError!,
+                                                          style:
+                                                              const TextStyle(
+                                                                  color: Colors
+                                                                      .red),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  ]
+                                                : ruleApprovalListData ==
+                                                            null ||
+                                                        ruleApprovalListData!
+                                                            .isEmpty
+                                                    ? [
+                                                        ApprovalDetailsHelper
+                                                            .buildEmptyView(
+                                                          "No rule approvers Added",
+                                                        ),
+                                                      ]
+                                                    : [
+                                                        ...ruleApprovalListData!
+                                                            .map((ra) {
+                                                          return ApprovalDetailsHelper
+                                                              .buildMiniCardForApproval(
+                                                            {
+                                                              'Approval Order': ra
+                                                                  .approvalOrder
+                                                                  .toString(),
+                                                              'Approval Status':
+                                                                  ra.approvalStatus,
+                                                              'User Name':
+                                                                  ra.userName,
+                                                              'Group Name': ra
+                                                                  .userGroupName,
+                                                              'Proxy User': ra
+                                                                  .proxyUserName,
+                                                              'UID Group': ra
+                                                                  .uidGroup
+                                                                  .toString(),
+                                                              'Email': ra.email,
+                                                            },
+                                                            () {
+                                                              Navigator
+                                                                  .pushNamed(
+                                                                context,
+                                                                Routes
+                                                                    .showGroupApprovalListRoute,
+                                                                arguments: {
+                                                                  'id': ra
+                                                                      .uidGroup,
+                                                                  'from':
+                                                                      'rulegroup',
+                                                                },
+                                                              );
+                                                            },
+                                                            showIconCondition: (data) =>
+                                                                data['UID Group']
+                                                                    ?.toString() !=
+                                                                "0",
+                                                          );
+                                                        }).toList(),
+                                                      ])
+                                        : [],
+
+                                    // PASS isExpanded HERE
+                                    isExpanded:
+                                        expandedSection == "Rule Approvers",
+
+                                    // Count
+                                    count: int.tryParse(
+                                        orderDetails!.ruleApproversCount),
+
+                                    // Toggle
+                                    toggleSection: () async {
+                                      final willExpand =
+                                          expandedSection != "Rule Approvers";
+
+                                      setState(() {
+                                        expandedSection = willExpand
+                                            ? "Rule Approvers"
+                                            : null;
+                                      });
+
+                                      if (willExpand &&
+                                          !isRuleApprovalListLoaded) {
+                                        await fetchRuleApprovalListWrapper();
+                                      }
+                                    },
+                                  ),
+
+                                //------------------------ Cost Center Split -----------------------------------------
                                 ApprovalDetailsHelper.buildSection(
                                   "Cost Center Split",
                                   Icons.share,
-                                  orderDetails!.costcenter.isEmpty
-                                      ? [
-                                          ApprovalDetailsHelper.buildEmptyView(
-                                              "No cost center data"),
-                                        ]
-                                      : orderDetails!.costcenter.map((c) {
-                                          return ApprovalDetailsHelper
-                                              .buildMiniCard({
-                                            'Code': c.costCode,
-                                            'Description': c.costDescription,
-                                            'Split Percent':
-                                                "${getFormattedString(c.splitPercentage)}%",
-                                            'Split Value':
-                                                '${getFormattedPriceString(c.splitValue)}',
-                                          });
-                                        }).toList(),
-                                  count: orderDetails!.costcenter.length,
-                                  isExpanded: expandedSection == "Cost Center",
-                                  toggleSection: () {
-                                    setState(() {
-                                      expandedSection =
-                                          expandedSection == "Cost Center"
-                                              ? null
-                                              : "Cost Center";
-                                    });
-                                  },
-                                ),
-                                //-----------------------------------------------------Cost Center Approvers----------------------------------------------------------------
-                                ApprovalDetailsHelper.buildSection(
-                                  "Cost Center Approvers",
-                                  FontAwesomeIcons.userCheck,
-                                  orderDetails!.approver.isEmpty
-                                      ? [
-                                          ApprovalDetailsHelper.buildEmptyView(
-                                              "No approvers found"),
-                                        ]
-                                      : orderDetails!.approver.map((a) {
-                                          return ApprovalDetailsHelper
-                                              .buildMiniCard(
-                                            {
-                                              'Rank': a.rank,
-                                              'Approval': a.approval,
-                                              'Name': a.userName,
-                                              'Telephone': a.telephone,
-                                              'Extensions': a.extension,
-                                              'Email': a.email,
-                                              'Proxy For': a.uidProxy,
-                                            },
-                                            // onTap: () {
-                                            //   Navigator.push(
-                                            //     context,
-                                            //     MaterialPageRoute(
-                                            //       builder: (_) =>
-                                            //           GenericDetailPage(
-                                            //         title: a.userName,
-                                            //         data: {
-                                            //           'Rec Num':
-                                            //               a.recNum.toString(),
-                                            //           'Rank': a.rank.toString(),
-                                            //           'Approval': a.approval,
-                                            //           'User Name': a.userName,
-                                            //           'Telephone': a.telephone,
-                                            //           'Extension': a.extension,
-                                            //           'Email': a.email,
-                                            //           'Approval Date':
-                                            //               a.approvalDate,
-                                            //           'UID Proxy': a.uidProxy,
-                                            //         },
-                                            //       ),
-                                            //     ),
-                                            //   );
-                                            // },
-                                          );
-                                        }).toList(),
-                                  count: orderDetails!.approver.length,
-                                  iconSize: 20,
-                                  isExpanded: expandedSection ==
-                                      "Cost center Approvers",
-                                  toggleSection: () {
-                                    setState(() {
-                                      expandedSection = expandedSection ==
-                                              "Cost center Approvers"
-                                          ? null
-                                          : "Cost center Approvers";
-                                    });
-                                  },
-                                ),
-//-----------------------------------------------Group Approvers----------------------------------------------
-                                ApprovalDetailsHelper.buildSection(
-                                  "Group Approvers",
-                                  Icons.groups,
-                                  orderDetails!.grpapprover.isEmpty
-                                      ? [
-                                          ApprovalDetailsHelper.buildEmptyView(
-                                              "No Group Approvers found"),
-                                        ]
-                                      : orderDetails!.grpapprover.map((g) {
-                                          return ApprovalDetailsHelper
-                                              .buildMiniCardForApproval(
-                                            {
-                                              'UserGroup': g.groupCode,
-                                              'Approval': g.approval,
-                                              'Mandatory': g.mandatory,
-                                            },
-                                            () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (_) =>
-                                                      ShowGroupApprovalList(
-                                                    id: g.userGroupId,
-                                                    from: 'group',
+
+                                  // CHILDREN
+                                  expandedSection == "Cost Center Split"
+                                      ? (isCostCenterListLoading
+                                          ? [
+                                              const Center(
+                                                  child:
+                                                      CircularProgressIndicator()),
+                                            ]
+                                          : costCenterListError != null &&
+                                                  costCenterListError!
+                                                      .isNotEmpty
+                                              ? [
+                                                  Center(
+                                                    child: Padding(
+                                                      padding:
+                                                          EdgeInsets.all(16),
+                                                      child: Text(
+                                                        costCenterListError!,
+                                                        style: TextStyle(
+                                                            color: Colors.red),
+                                                      ),
+                                                    ),
                                                   ),
-                                                ),
-                                              );
-                                            },
-                                          );
-                                        }).toList(),
-                                  count: orderDetails!.grpapprover.length,
+                                                ]
+                                              : costCenterListData == null ||
+                                                      costCenterListData!
+                                                          .list.isEmpty
+                                                  ? [
+                                                      ApprovalDetailsHelper
+                                                          .buildEmptyView(
+                                                        "No cost center Added",
+                                                      ),
+                                                    ]
+                                                  : costCenterListData!.list
+                                                      .map((c) {
+                                                      return ApprovalDetailsHelper
+                                                          .buildMiniCard1(
+                                                        {
+                                                          'Code': c.costCode,
+                                                          'Description':
+                                                              c.costDescription,
+                                                          'Split Percent':
+                                                              "${getFormattedString(c.splitPercentage)}%",
+                                                          'Split Value':
+                                                              "${getFormattedPriceString(c.splitValue)}",
+                                                        },
+                                                        showDelete:
+                                                            (costCenterListData!
+                                                                    .permission
+                                                                    .mode ==
+                                                                "RW"),
+                                                        onDelete: () =>
+                                                            _deleteCostCenterSplit(),
+                                                      );
+                                                    }).toList())
+                                      : [],
+
+                                  // COUNT
+                                  count: int.tryParse(
+                                      orderDetails!.costcenterCount),
+
+                                  // EXPANDED STATE
                                   isExpanded:
-                                      expandedSection == "Group Approvers",
-                                  toggleSection: () {
+                                      expandedSection == "Cost Center Split",
+
+                                  // TOGGLE
+                                  toggleSection: () async {
+                                    final willExpand =
+                                        expandedSection != "Cost Center Split";
+
                                     setState(() {
-                                      expandedSection =
-                                          expandedSection == "Group Approvers"
-                                              ? null
-                                              : "Group Approvers";
+                                      expandedSection = willExpand
+                                          ? "Cost Center Split"
+                                          : null;
                                     });
+
+                                    if (willExpand && !isCostCenterListLoaded) {
+                                      await fetchCostCenterListWrapper();
+                                    }
                                   },
+
+                                  // ADD BUTTON
+                                  trailing: (costCenterListData != null &&
+                                          costCenterListData!.permission.mode ==
+                                              "RW")
+                                      ? Container(
+                                          width: 40,
+                                          height: 40,
+                                          decoration: BoxDecoration(
+                                            color: ColorManager.blue,
+                                            // borderRadius:
+                                            //     BorderRadius.circular(20),
+                                          ),
+                                          child: const Center(
+                                            child: Icon(Icons.add,
+                                                color: Colors.white, size: 22),
+                                          ),
+                                        )
+                                      : null,
+
+                                  onTrailingTap: (costCenterListData != null &&
+                                          costCenterListData!.permission.mode ==
+                                              "RW")
+                                      ? _addNewCostCenterSplit
+                                      : null,
                                 ),
-//----------------------------------Attachments------------------------------------------------------
+                                //----------------------------------------------------- Cost Center Approvers --------------------------------------------------------------
+
+                                if (SharedPrefs().sysCostCentreApproval == true)
+                                  ApprovalDetailsHelper.buildSection(
+                                    "Cost Center Approvers",
+                                    FontAwesomeIcons.userCheck,
+
+                                    // CHILDREN
+                                    expandedSection == "Cost Center Approvers"
+                                        ? (isCostCenterApproversListLoading
+                                            ? [
+                                                const Center(
+                                                    child:
+                                                        CircularProgressIndicator()),
+                                              ]
+                                            : (costCenterApproversListError !=
+                                                        null &&
+                                                    costCenterApproversListError!
+                                                        .isNotEmpty)
+                                                ? [
+                                                    Center(
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(16),
+                                                        child: Text(
+                                                          costCenterApproversListError!,
+                                                          style:
+                                                              const TextStyle(
+                                                                  color: Colors
+                                                                      .red),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  ]
+                                                : (ccApprovalData == null ||
+                                                        ccApprovalData!
+                                                            .list.isEmpty)
+                                                    ? [
+                                                        ApprovalDetailsHelper
+                                                            .buildEmptyView(
+                                                          "No cost center Added",
+                                                        ),
+                                                      ]
+                                                    : ccApprovalData!.list
+                                                        .map((cc) {
+                                                        return ApprovalDetailsHelper
+                                                            .buildMiniCard1(
+                                                          {
+                                                            'Rank': cc.rank,
+                                                            'Approval':
+                                                                cc.approval,
+                                                            'Name': cc.userName,
+                                                            'Telephone':
+                                                                cc.telephone,
+                                                            'Extensions':
+                                                                cc.extension,
+                                                            'Email': cc.email,
+                                                            'Proxy For':
+                                                                cc.uidProxy,
+                                                          },
+                                                          // DELETE SHOW ONLY WHEN permission.mode = RW
+                                                          showDelete:
+                                                              (ccApprovalData !=
+                                                                      null &&
+                                                                  ccApprovalData!
+                                                                          .permission
+                                                                          .mode ==
+                                                                      "RW"),
+                                                          onDelete: () =>
+                                                              _deleteCostCenterSplit(),
+                                                        );
+                                                      }).toList())
+                                        : [],
+
+                                    // COUNT
+                                    count: int.tryParse(
+                                        orderDetails!.approverCount),
+
+                                    // EXPANDED STATE
+                                    isExpanded: expandedSection ==
+                                        "Cost Center Approvers",
+
+                                    // TOGGLE
+                                    toggleSection: () async {
+                                      final willExpand = expandedSection !=
+                                          "Cost Center Approvers";
+
+                                      setState(() {
+                                        expandedSection = willExpand
+                                            ? "Cost Center Approvers"
+                                            : null;
+                                      });
+
+                                      if (willExpand &&
+                                          !isCostCenterApproversListLoaded) {
+                                        await fetchCostCenterApproversListWrapper();
+                                      }
+                                    },
+
+                                    // TRAILING (+ BUTTON) — SAFE CHECK
+                                    trailing: (ccApprovalData != null &&
+                                            ccApprovalData!.permission.mode ==
+                                                "RW")
+                                        ? Container(
+                                            width: 40,
+                                            height: 40,
+                                            decoration: BoxDecoration(
+                                              color: ColorManager.blue,
+                                              // borderRadius:
+                                              //     BorderRadius.circular(20),
+                                            ),
+                                            child: const Center(
+                                              child: Icon(Icons.add,
+                                                  color: Colors.white,
+                                                  size: 22),
+                                            ),
+                                          )
+                                        : null,
+
+                                    // TAP HANDLER WHEN BUTTON VISIBLE
+                                    onTrailingTap: (ccApprovalData != null &&
+                                            ccApprovalData!.permission.mode ==
+                                                "RW")
+                                        ? _addNewCCApproval
+                                        : null,
+                                  ),
+
+                                //----------------------------------------------- Group Approvers ----------------------------------------------
+                                if (SharedPrefs().sysGroupApproval == true)
+                                  ApprovalDetailsHelper.buildSection(
+                                    "Group Approvers",
+                                    Icons.groups,
+
+                                    // CHILDREN (show only when expanded)
+                                    expandedSection == "Group Approvers"
+                                        ? (isGroupApproversListLoading
+                                            ? [
+                                                const Center(
+                                                    child:
+                                                        CircularProgressIndicator()),
+                                              ]
+                                            : groupApproversListError != null &&
+                                                    groupApproversListError!
+                                                        .isNotEmpty
+                                                ? [
+                                                    Center(
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(16),
+                                                        child: Text(
+                                                          groupApproversListError!,
+                                                          style:
+                                                              const TextStyle(
+                                                                  color: Colors
+                                                                      .red),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  ]
+                                                : groupApproversListData ==
+                                                            null ||
+                                                        groupApproversListData!
+                                                            .list.isEmpty
+                                                    ? [
+                                                        ApprovalDetailsHelper
+                                                            .buildEmptyView(
+                                                                "No Group Approvers Added"),
+                                                      ]
+                                                    : groupApproversListData!
+                                                        .list
+                                                        .map((g) {
+                                                        return ApprovalDetailsHelper
+                                                            .buildMiniCardForApproval1(
+                                                          {
+                                                            'UserGroup':
+                                                                g.groupCode,
+                                                            'Approval':
+                                                                g.approval,
+                                                            'Mandatory':
+                                                                g.mandatory,
+                                                          },
+                                                          () {
+                                                            Navigator.push(
+                                                              context,
+                                                              MaterialPageRoute(
+                                                                builder: (_) =>
+                                                                    ShowGroupApprovalList(
+                                                                  id: g
+                                                                      .userGroupId,
+                                                                  from: 'group',
+                                                                ),
+                                                              ),
+                                                            );
+                                                          },
+                                                          showDelete:
+                                                              (groupApproversListData!
+                                                                      .permission
+                                                                      .mode ==
+                                                                  "RW"),
+                                                          onDelete: () =>
+                                                              _deleteCostCenterSplit(),
+                                                        );
+                                                      }).toList())
+                                        : [],
+
+                                    // COUNT
+                                    count: int.tryParse(
+                                        orderDetails!.grpapproverCount),
+
+                                    // CURRENT EXPANDED STATUS
+                                    isExpanded:
+                                        expandedSection == "Group Approvers",
+
+                                    // TOGGLE + API CALL
+                                    toggleSection: () async {
+                                      final willExpand =
+                                          expandedSection != "Group Approvers";
+
+                                      setState(() {
+                                        expandedSection = willExpand
+                                            ? "Group Approvers"
+                                            : null;
+                                      });
+
+                                      // Call API only once
+                                      if (willExpand &&
+                                          !isGroupApproversListLoaded) {
+                                        await fetchGroupApproversListWrapper();
+                                      }
+                                    },
+
+                                    // TRAILING (+ BUTTON)
+                                    trailing: (groupApproversListData != null &&
+                                            groupApproversListData!
+                                                    .permission.mode ==
+                                                "RW")
+                                        ? Container(
+                                            width: 40,
+                                            height: 40,
+                                            decoration: BoxDecoration(
+                                              color: ColorManager.blue,
+                                              // borderRadius:
+                                              //     BorderRadius.circular(20),
+                                            ),
+                                            child: const Center(
+                                              child: Icon(Icons.add,
+                                                  color: Colors.white,
+                                                  size: 22),
+                                            ),
+                                          )
+                                        : null,
+
+                                    onTrailingTap:
+                                        (groupApproversListData != null &&
+                                                groupApproversListData!
+                                                        .permission.mode ==
+                                                    "RW")
+                                            ? _addNewGroupApproval
+                                            : null,
+                                  ),
+                                //----------------------------------------------------------------------------------Attachment------------------------------------------------------------------------------------
                                 ApprovalDetailsHelper.buildSection(
                                   "Attachments",
-                                  Icons.attach_file,
-                                  orderDetails!.attachdoc.isEmpty
-                                      ? [
-                                          ApprovalDetailsHelper.buildEmptyView(
-                                              "No attachments found"),
-                                        ]
-                                      : orderDetails!.attachdoc.map((d) {
-                                          return ApprovalDetailsHelper
-                                              .buildMiniCard({
-                                            'File Name': d.documentFileName,
-                                            'File Privacy': d.docPrivacyText,
-                                            'Deascription':
-                                                d.documentDescription,
-                                            'Entry Date': d.docStamp,
-                                            'Entered By': d.enteredBy,
-                                          }, onTap: () {
-                                            //   print("Tapped File: ${d.fileName}");
-                                          });
-                                        }).toList(),
-                                  count: orderDetails!.attachdoc.length,
+                                  FontAwesomeIcons.link,
+
+                                  // CHILDREN (show only when expanded)
+                                  expandedSection == "Attachments"
+                                      ? (isAttachmentListLoading
+                                          ? [
+                                              const Center(
+                                                  child:
+                                                      CircularProgressIndicator()),
+                                            ]
+                                          : attachmentListError != null &&
+                                                  attachmentListError!
+                                                      .isNotEmpty
+                                              ? [
+                                                  Center(
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              16),
+                                                      child: Text(
+                                                        attachmentListError!,
+                                                        style: const TextStyle(
+                                                            color: Colors.red),
+                                                      ),
+                                                    ),
+                                                  )
+                                                ]
+                                              : attachmentData == null ||
+                                                      attachmentData!
+                                                          .list.isEmpty
+                                                  ? [
+                                                      ApprovalDetailsHelper
+                                                          .buildEmptyView(
+                                                              "No Attachments Added"),
+                                                    ]
+                                                  : attachmentData!.list
+                                                      .map((attach) {
+                                                      return ApprovalDetailsHelper
+                                                          .buildMiniCardForAttachment(
+                                                        {
+                                                          'File Name': attach
+                                                              .documentFileName,
+                                                          'File privacy': attach
+                                                              .docPrivacyText,
+                                                          'Discription': attach
+                                                                      .documentDescription
+                                                                      .length >
+                                                                  50
+                                                              ? '${attach.documentDescription.substring(0, 50)}...'
+                                                              : attach
+                                                                  .documentDescription,
+                                                          'Entry Date':
+                                                              attach.docStamp,
+                                                          'Entered By':
+                                                              attach.enteredBy,
+                                                        },
+                                                        onFileTap: () => downloadFile(
+                                                            attach
+                                                                .documentFileName,
+                                                            attach.documentImg),
+                                                        showDelete:
+                                                            (attachmentData!
+                                                                    .permission
+                                                                    .mode ==
+                                                                "RW"),
+                                                        onDelete: () =>
+                                                            _deleteCostCenterSplit(),
+                                                      );
+                                                    }).toList())
+                                      : [],
+
+                                  // COUNT
+                                  count: int.tryParse(
+                                      orderDetails!.attachdocCount),
+
+                                  // CURRENT EXPANDED STATUS
                                   isExpanded: expandedSection == "Attachments",
-                                  toggleSection: () {
+
+                                  // TOGGLE + API CALL
+                                  toggleSection: () async {
+                                    final willExpand =
+                                        expandedSection != "Attachments";
+
                                     setState(() {
                                       expandedSection =
-                                          expandedSection == "Attachments"
-                                              ? null
-                                              : "Attachments";
+                                          willExpand ? "Attachments" : null;
                                     });
+
+                                    // Call API only once
+                                    if (willExpand && !isAttachmentListLoaded) {
+                                      await fetchAttachmentListWrapper();
+                                    }
                                   },
+
+                                  // TRAILING (+ BUTTON)
+                                  trailing: (attachmentData != null &&
+                                          attachmentData!.permission.mode ==
+                                              "RW")
+                                      ? Container(
+                                          width: 40,
+                                          height: 40,
+                                          decoration: BoxDecoration(
+                                            color: ColorManager.blue,
+                                            // borderRadius:
+                                            //     BorderRadius.circular(20),
+                                          ),
+                                          child: const Center(
+                                            child: Icon(Icons.add,
+                                                color: Colors.white, size: 22),
+                                          ),
+                                        )
+                                      : null,
+
+                                  onTrailingTap: (attachmentData != null &&
+                                          attachmentData!.permission.mode ==
+                                              "RW")
+                                      ? _addNewAttachment
+                                      : null,
                                 ),
-//---------------------------------------------Event Log-------------------------------------------------------------------------------
+
+                                //---------------------------------------------------------------------------Terms and conditions--------------------------------------------------------
+                                ApprovalDetailsHelper.buildSection(
+                                  "Terms & Condition",
+                                  FontAwesomeIcons.file,
+
+                                  // CHILDREN (show only when expanded)
+                                  expandedSection == "Terms & Condition"
+                                      ? (isTermsListLoading
+                                          ? [
+                                              const Center(
+                                                  child:
+                                                      CircularProgressIndicator()),
+                                            ]
+                                          : termsListError != null &&
+                                                  termsListError!.isNotEmpty
+                                              ? [
+                                                  Center(
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              16),
+                                                      child: Text(
+                                                        termsListError!,
+                                                        style: const TextStyle(
+                                                            color: Colors.red),
+                                                      ),
+                                                    ),
+                                                  )
+                                                ]
+                                              : termListData == null ||
+                                                      termListData!.list.isEmpty
+                                                  ? [
+                                                      ApprovalDetailsHelper
+                                                          .buildEmptyView(
+                                                              "No Terms & Condition Added"),
+                                                    ]
+                                                  : termListData!.list.map((t) {
+                                                      return ApprovalDetailsHelper
+                                                          .buildMiniCard1(
+                                                        {
+                                                          'Item': t.itemIndex,
+                                                          'Code': t.textCode,
+                                                          'Outline': t.textOutline
+                                                                      .length >
+                                                                  50
+                                                              ? '${t.textOutline.substring(0, 50)}...'
+                                                              : t.textOutline,
+                                                          'Entry Date':
+                                                              t.orderStamp,
+                                                        },
+                                                        showDelete:
+                                                            (termListData!
+                                                                    .permission
+                                                                    .mode ==
+                                                                "RW"),
+                                                        onDelete: () =>
+                                                            _deleteCostCenterSplit(),
+                                                      );
+                                                    }).toList())
+                                      : [],
+
+                                  // COUNT
+                                  count: int.tryParse(orderDetails!.termsCount),
+
+                                  // CURRENT EXPANDED STATUS
+                                  isExpanded:
+                                      expandedSection == "Terms & Condition",
+
+                                  // TOGGLE + API CALL
+                                  toggleSection: () async {
+                                    final willExpand =
+                                        expandedSection != "Terms & Condition";
+
+                                    setState(() {
+                                      expandedSection = willExpand
+                                          ? "Terms & Condition"
+                                          : null;
+                                    });
+
+                                    // Call API only once
+                                    if (willExpand && !isTermsListLoaded) {
+                                      await fetchTermsListWrapper();
+                                    }
+                                  },
+
+                                  // TRAILING (+ BUTTON)
+                                  trailing: (termListData != null &&
+                                          termListData!.permission.mode == "RW")
+                                      ? Container(
+                                          width: 40,
+                                          height: 40,
+                                          decoration: BoxDecoration(
+                                            color: ColorManager.blue,
+                                            // borderRadius:
+                                            //     BorderRadius.circular(20),
+                                          ),
+                                          child: const Center(
+                                            child: Icon(Icons.add,
+                                                color: Colors.white, size: 22),
+                                          ),
+                                        )
+                                      : null,
+
+                                  onTrailingTap: (termListData != null &&
+                                          termListData!.permission.mode == "RW")
+                                      ? _termsAndCondition
+                                      : null,
+                                ),
+                                //---------------------------------------------------------------------------Notes--------------------------------------------------------
+                                ApprovalDetailsHelper.buildSection(
+                                  "Notes",
+                                  Icons.attach_file,
+
+                                  // CHILDREN (show only when expanded)
+                                  expandedSection == "Notes"
+                                      ? (isNotesListLoading
+                                          ? [
+                                              const Center(
+                                                  child:
+                                                      CircularProgressIndicator()),
+                                            ]
+                                          : notesListError != null &&
+                                                  notesListError!.isNotEmpty
+                                              ? [
+                                                  Center(
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              16),
+                                                      child: Text(
+                                                        notesListError!,
+                                                        style: const TextStyle(
+                                                            color: Colors.red),
+                                                      ),
+                                                    ),
+                                                  )
+                                                ]
+                                              : noteData == null ||
+                                                      noteData!.list.isEmpty
+                                                  ? [
+                                                      ApprovalDetailsHelper
+                                                          .buildEmptyView(
+                                                              "No Notes Added"),
+                                                    ]
+                                                  : noteData!.list.map((n) {
+                                                      return ApprovalDetailsHelper
+                                                          .buildMiniCard1(
+                                                        {
+                                                          'Notes': n.notes
+                                                                      .length >
+                                                                  50
+                                                              ? '${n.notes.substring(0, 50)}...'
+                                                              : n.notes,
+                                                          'Entry Date':
+                                                              n.entryDate,
+                                                          'Entered By':
+                                                              n.enteredBy,
+                                                          'Note Privacy':
+                                                              n.notePrivacyText,
+                                                        },
+                                                        showDelete: (noteData!
+                                                                .permission
+                                                                .mode ==
+                                                            "RW"),
+                                                        onTap: () async {
+                                                          final result =
+                                                              await Navigator
+                                                                  .pushNamed(
+                                                            context,
+                                                            Routes
+                                                                .notesViewRoute,
+                                                            arguments: {
+                                                              'noteId':
+                                                                  n.notesId,
+                                                              'group': 'Order',
+                                                              'ordReqID':
+                                                                  orderDetails!
+                                                                      .header
+                                                                      .orderId,
+                                                            },
+                                                          );
+
+                                                          // Refresh notes list ONLY if note was saved
+                                                          if (result == true) {
+                                                            fetchNotesListWrapper();
+                                                          }
+                                                        },
+                                                        onDelete: () =>
+                                                            _deleteCostCenterSplit(),
+                                                      );
+                                                    }).toList())
+                                      : [],
+
+                                  // COUNT
+                                  count: int.tryParse(orderDetails!.notesCount),
+
+                                  // CURRENT EXPANDED STATUS
+                                  isExpanded: expandedSection == "Notes",
+
+                                  // TOGGLE + API CALL
+                                  toggleSection: () async {
+                                    final willExpand =
+                                        expandedSection != "Notes";
+
+                                    setState(() {
+                                      expandedSection =
+                                          willExpand ? "Notes" : null;
+                                    });
+
+                                    // Call API only once
+                                    if (willExpand && !isNotesListLoaded) {
+                                      await fetchNotesListWrapper();
+                                    }
+                                  },
+
+                                  // TRAILING (+ BUTTON)
+                                  trailing: (noteData != null &&
+                                          noteData!.permission.mode == "RW")
+                                      ? Container(
+                                          width: 40,
+                                          height: 40,
+                                          decoration: BoxDecoration(
+                                            color: ColorManager.blue,
+                                            // borderRadius:
+                                            //     BorderRadius.circular(20),
+                                          ),
+                                          child: const Center(
+                                            child: Icon(Icons.add,
+                                                color: Colors.white, size: 22),
+                                          ),
+                                        )
+                                      : null,
+
+                                  onTrailingTap: (noteData != null &&
+                                          noteData!.permission.mode == "RW")
+                                      ? _addNewNotes
+                                      : null,
+                                ),
+                                //---------------------------------------------Event Log-------------------------------------------------------------------------------
                                 ApprovalDetailsHelper.buildSection(
                                   "Event Log",
                                   Icons.history,
-                                  orderDetails!.log.isEmpty
-                                      ? [
-                                          ApprovalDetailsHelper.buildEmptyView(
-                                              "No events found"),
-                                        ]
-                                      : orderDetails!.log.map((e) {
-                                          return ApprovalDetailsHelper
-                                              .buildMiniCard({
-                                            'Event Date': e.eventDate,
-                                            'User': e.eventUser,
-                                            'Event': e.event,
-                                          });
-                                        }).toList(),
-                                  count: orderDetails!.log.length,
+
+                                  // CHILDREN
+                                  expandedSection == "Event Log"
+                                      ? (isLogsListLoading
+                                          ? [
+                                              const Center(
+                                                  child:
+                                                      CircularProgressIndicator()),
+                                            ]
+                                          : (logsListError != null &&
+                                                  logsListError!.isNotEmpty)
+                                              ? [
+                                                  Center(
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              16),
+                                                      child: Text(
+                                                        logsListError!,
+                                                        style: const TextStyle(
+                                                            color: Colors.red),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ]
+                                              : logsListData == null ||
+                                                      logsListData!.isEmpty
+                                                  ? [
+                                                      ApprovalDetailsHelper
+                                                          .buildEmptyView(
+                                                        "No events Added",
+                                                      ),
+                                                    ]
+                                                  : logsListData!
+                                                      .asMap()
+                                                      .entries
+                                                      .map((entry) {
+                                                      final index = entry.key;
+                                                      final e = entry.value;
+
+                                                      return ApprovalDetailsHelper
+                                                          .buildMiniCard({
+                                                        'Event Date':
+                                                            e.eventDate,
+                                                        'User': e.eventUser,
+                                                        'Event': e.event,
+                                                      });
+                                                    }).toList())
+                                      : [],
+
+                                  // Expanded
                                   isExpanded: expandedSection == "Event Log",
-                                  toggleSection: () {
+
+                                  // Count
+                                  count: int.tryParse(orderDetails!.logCount),
+
+                                  // Toggle
+                                  toggleSection: () async {
+                                    final willExpand =
+                                        expandedSection != "Event Log";
+
                                     setState(() {
                                       expandedSection =
-                                          expandedSection == "Event Log"
-                                              ? null
-                                              : "Event Log";
+                                          willExpand ? "Event Log" : null;
                                     });
+
+                                    if (willExpand && !isLogsListLoaded) {
+                                      await fetchLogsListWrapper();
+                                    }
                                   },
                                 ),
                               ],
@@ -802,85 +2040,35 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
                         ),
                       ),
                     ),
-//---------------------------------Approve/Reject-----------------------------------------------------
-                    Container(
-                      color: ColorManager.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: CustomTextActionButton(
-                              buttonText: "Approve",
-                              icon: Icons.thumb_up_outlined,
-                              backgroundColor: ColorManager.green,
-                              borderColor: ColorManager.white,
-                              fontColor: ColorManager.white,
-                              fontSize: FontSize.s18,
-                              isBoldFont: true,
-                              onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return CustomImageActionAlert(
-                                      iconString: '',
-                                      imageString: ImageAssets.common,
-                                      titleString: "Confirm Approval",
-                                      subTitleString:
-                                          "Are you sure you want to approve this order?",
-                                      destructiveActionString: "Yes",
-                                      normalActionString: "No",
-                                      onDestructiveActionTap: () {
-                                        Navigator.of(context).pop();
-                                        orderApprovalApproved();
-                                      },
-                                      onNormalActionTap: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      isConfirmationAlert: true,
-                                      isNormalAlert: true,
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: CustomTextActionButton(
-                              buttonText: "Reject",
-                              icon: Icons.thumb_down_outlined,
-                              backgroundColor: ColorManager.red,
-                              borderColor: ColorManager.white,
-                              fontColor: ColorManager.white,
-                              fontSize: FontSize.s18,
-                              isBoldFont: true,
-                              onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return CustomRejectReasonAlert(
-                                      iconString: '',
-                                      imageString: ImageAssets.rejection,
-                                      titleString: "Please Add Reject Reason",
-                                      rejectActionString: "Reject",
-                                      cancelActionString: "Cancel",
-                                      onCancelTap: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      onRejectTap: (reason) {
-                                        Navigator.of(context).pop();
-                                        orderApprovalReject(reason);
-                                      },
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+
+//---------------------------------Buttons----------------------------------------------------
+                    // Container(
+                    //   color: ColorManager.white,
+                    //   padding: const EdgeInsets.symmetric(
+                    //       horizontal: 16, vertical: 12),
+                    //   child:
+                    //       // OrderActionButtonsHelper.buildButtons(
+                    //       //   context: context,
+                    //       //   status: orderDetails!.header.orderStatus,
+                    //       //   orderNumber: orderDetails!.header.orderNumber,
+                    //       //   onApprove: orderApprovalApproved,
+                    //       //   onReject: (reason) => orderApprovalReject(reason),
+                    //       //   onSubmitForApproval: _submitForApproval,
+                    //       //   onIssueOrder: _issueOrder,
+                    //       //   onReIssueOrder: _reIssueOrder,
+                    //       // ),
+                    //       DynamicOrderButtonBuilder.build(
+                    //     context: context,
+                    //     buttonName: orderDetails!.buttonName,
+                    //     buttonAction: orderDetails!.buttonAction,
+                    //     buttonAlert: orderDetails!.buttonAlert,
+                    //     onApprove: orderApprovalApproved,
+                    //     onReject: (reason) => orderApprovalReject(reason),
+                    //     onSubmitForApproval: _submitForApproval,
+                    //     onIssueOrder: _issueOrder,
+                    //     onReIssueOrder: _reIssueOrder,
+                    //   ),
+                    // ),
                   ],
                 ),
     );

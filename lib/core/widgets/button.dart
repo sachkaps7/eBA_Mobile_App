@@ -154,7 +154,7 @@ class CustomTextActionButton extends StatelessWidget {
   final bool isBoldFont;
   final double fontSize;
   final VoidCallback onTap;
-  final IconData? icon; // <-- Optional icon
+  final IconData? icon; 
 
   const CustomTextActionButton({
     super.key,
@@ -166,7 +166,7 @@ class CustomTextActionButton extends StatelessWidget {
     this.buttonHeight = 50,
     this.isBoldFont = false,
     this.fontSize = FontSize.s16,
-    this.icon, // <-- Added
+    this.icon,
     required this.onTap,
   });
 

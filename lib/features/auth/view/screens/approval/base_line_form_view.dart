@@ -651,10 +651,13 @@ import 'package:eyvo_v3/api/api_service/api_service.dart';
 import 'package:eyvo_v3/api/response_models/dropdown_response_model.dart';
 import 'package:eyvo_v3/api/response_models/order_header_response.dart';
 import 'package:eyvo_v3/app/app_prefs.dart';
+import 'package:eyvo_v3/app/sizes_helper.dart';
+import 'package:eyvo_v3/core/resources/assets_manager.dart';
 import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/resources/strings_manager.dart';
 import 'package:eyvo_v3/core/widgets/button.dart';
 import 'package:eyvo_v3/core/widgets/form_field_helper.dart';
+import 'package:eyvo_v3/core/widgets/progress_indicator.dart';
 import 'package:eyvo_v3/core/widgets/searchable_dropdown_modal.dart';
 import 'package:eyvo_v3/log_data.dart/logger_data.dart';
 import 'package:flutter/material.dart';
@@ -775,7 +778,7 @@ class _BaseLineViewState extends State<BaseLineView> {
     try {
       final jsonResponse = await apiService.postRequest(
         context,
-        ApiService.createOrderHeader,
+        ApiService.createHeader,
         {
           'uid': SharedPrefs().uID,
           'apptype': AppConstants.apptype,
@@ -1080,77 +1083,97 @@ class _BaseLineViewState extends State<BaseLineView> {
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return Scaffold(
-        backgroundColor: ColorManager.primary,
-        appBar: buildCommonAppBar(
-          context: context,
-          title: widget.appBarTitle,
-        ),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
     return Scaffold(
       backgroundColor: ColorManager.primary,
       appBar: buildCommonAppBar(
         context: context,
         title: widget.appBarTitle,
       ),
-      body: ScrollbarTheme(
-        data: ScrollbarThemeData(
-          thumbColor: WidgetStateProperty.all(ColorManager.blue),
-          radius: const Radius.circular(8),
-          thickness: WidgetStateProperty.all(6),
-          trackColor:
-              WidgetStateProperty.all(ColorManager.lightGrey.withOpacity(0.3)),
-          trackBorderColor: WidgetStateProperty.all(ColorManager.grey),
-          minThumbLength: 30,
-          crossAxisMargin: 2,
-          mainAxisMargin: 10,
-        ),
-        child: Scrollbar(
-          thumbVisibility: true,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(8),
-            child: Card(
-              color: ColorManager.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 4,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Dynamic Fields
-                    ..._buildDynamicFields(),
-
-                    const SizedBox(height: 30),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-      bottomNavigationBar:
-          (SharedPrefs().userOrder == "RW" || SharedPrefs().userRequest == "RW")
-              ?     CustomTextActionButton(
-                  buttonText: 'Save',
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  backgroundColor: ColorManager.green,
-                  borderColor: ColorManager.green,
-                  fontColor: ColorManager.white,
-                  isBoldFont: true,
-                  fontSize: FontSize.s18,
-                  buttonWidth: 150,
-                  buttonHeight: 50,
+      body: isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : isError
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          ImageAssets.errorMessageIcon,
+                          width: displayWidth(context) * 0.5,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          errorText,
+                          textAlign: TextAlign.center,
+                          style: getSemiBoldStyle(
+                            fontSize: FontSize.s16,
+                            color: ColorManager.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 )
-              : null,
+              : ScrollbarTheme(
+                  data: ScrollbarThemeData(
+                    thumbColor: WidgetStateProperty.all(ColorManager.blue),
+                    radius: const Radius.circular(8),
+                    thickness: WidgetStateProperty.all(6),
+                    trackColor: WidgetStateProperty.all(
+                      ColorManager.lightGrey.withOpacity(0.3),
+                    ),
+                    trackBorderColor:
+                        WidgetStateProperty.all(ColorManager.grey),
+                    minThumbLength: 30,
+                    crossAxisMargin: 2,
+                    mainAxisMargin: 10,
+                  ),
+                  child: Scrollbar(
+                    thumbVisibility: true,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(8),
+                      child: Card(
+                        color: ColorManager.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 4,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+// Dynamic Fields
+                              ..._buildDynamicFields(),
+                              const SizedBox(height: 30),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+      bottomNavigationBar: (SharedPrefs().userOrder == "RW" ||
+                  SharedPrefs().userRequest == "RW") &&
+              !isLoading &&
+              !isError
+          ? CustomTextActionButton(
+              buttonText: 'Save',
+              onTap: () {
+                Navigator.pop(context);
+              },
+              backgroundColor: ColorManager.green,
+              borderColor: ColorManager.green,
+              fontColor: ColorManager.white,
+              isBoldFont: true,
+              fontSize: FontSize.s18,
+              buttonWidth: 150,
+              buttonHeight: 50,
+            )
+          : null,
     );
   }
 

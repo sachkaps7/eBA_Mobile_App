@@ -55,7 +55,7 @@ class ApiService {
   static const String updateBlindStock = 'Items/updateblindstock';
   static const String inventoryManagerLocationCheck = 'location/imloctioncheck';
   static const String imageUpload = 'attachdocument/attachdocument';
-  static const String createOrderHeader = 'common/getgroupdata';
+  static const String createHeader = 'common/getgroupdata';
   static const String orderList = "Order/listing";
   static const String requestList = "request/listing";
   static const String createrequest = "request/create";
@@ -78,6 +78,10 @@ class ApiService {
   static const String getAllTerms = 'common/getallterms';
   static const String saveAllTerms = 'common/saveterms';
   static const String getAllCC = 'common/getallcostcenters';
+  static const String saveAllCC = 'common/savecostcenters';
+  static const String expenditureChart = 'common/expenditurechart';
+  static const String RunRateChart = 'common/costcodebudgetchart';
+  static const String saveOrderHeader = 'order/updateheader';
 
   Future<bool> updateToken(BuildContext context) async {
     Map<String, dynamic> data = {

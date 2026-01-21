@@ -102,6 +102,59 @@ class ApprovalDetailsHelper {
     }).toList();
   }
 
+  static List<Widget> buildKeyValueSectionForCC(
+    Map<dynamic, dynamic> map, {
+    Map<String, VoidCallback>? onTapMap,
+  }) {
+    double maxKeyLength = map.keys
+        .map((k) => k.toString().length)
+        .reduce((a, b) => a > b ? a : b)
+        .toDouble();
+
+    return map.entries.map((e) {
+      final callback = onTapMap?[e.key.toString()];
+
+      final row = Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: maxKeyLength * 9,
+              child: Text(
+                e.key.toString(),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: FontSize.s16,
+                ),
+              ),
+            ),
+            const Text(
+              ' : ',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: FontSize.s16,
+              ),
+            ),
+            Expanded(
+              child: Text(
+                e.value?.toString() ?? "",
+                style: TextStyle(
+                  fontSize: FontSize.s16,
+                  color: callback != null
+                      ? ColorManager.blue
+                      : ColorManager.darkGrey,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      return callback != null ? InkWell(onTap: callback, child: row) : row;
+    }).toList();
+  }
+
 //-----------------------------------buildMiniCard----------------------------------------------------------
   static Widget buildMiniCard(Map<dynamic, dynamic> data,
       {VoidCallback? onTap}) {
@@ -152,6 +205,46 @@ class ApprovalDetailsHelper {
                 ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  static Widget buildMiniCardForCC(
+    Map<dynamic, dynamic> data, {
+    Map<String, VoidCallback>? onTapMap,
+    bool showDelete = false,
+    VoidCallback? onDelete,
+  }) {
+    return Card(
+      color: ColorManager.white,
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                children: buildKeyValueSectionForCC(
+                  data,
+                  onTapMap: onTapMap,
+                ),
+              ),
+            ),
+            if (showDelete)
+              InkWell(
+                onTap: onDelete,
+                child: Icon(
+                  Icons.delete,
+                  color: ColorManager.red,
+                  size: 26,
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -361,7 +454,8 @@ class ApprovalDetailsHelper {
 
 //-----------------------------------buildMiniCardWithEditIcon----------------------------------------------------------
   static Widget buildMiniCardWithEditIcon(
-      Map<String, dynamic> data, VoidCallback onTap) {
+      Map<String, dynamic> data, VoidCallback onTap,
+      {bool showDelete = false, VoidCallback? onDelete}) {
     final entries = data.entries.toList();
     return GestureDetector(
       onTap: onTap,
@@ -406,7 +500,17 @@ class ApprovalDetailsHelper {
                         ),
                       ),
                     ),
-                    Icon(Icons.edit, size: 18, color: ColorManager.blue),
+                    Icon(Icons.edit, size: 24, color: ColorManager.blue),
+                    // ---------- DELETE ICON ----------
+                    if (showDelete)
+                      InkWell(
+                        onTap: onDelete,
+                        child: Icon(
+                          Icons.delete,
+                          color: ColorManager.red,
+                          size: 26,
+                        ),
+                      ),
                   ],
                 ),
               ...entries.skip(1).map((e) => Padding(

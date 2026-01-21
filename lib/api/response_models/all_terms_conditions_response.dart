@@ -4,10 +4,12 @@
 
 import 'dart:convert';
 
-AllTermsListDetailResponseModel AllTermsListDetailResponseModelFromJson(String str) =>
+AllTermsListDetailResponseModel AllTermsListDetailResponseModelFromJson(
+        String str) =>
     AllTermsListDetailResponseModel.fromJson(json.decode(str));
 
-String AllTermsListDetailResponseModelToJson(AllTermsListDetailResponseModel data) =>
+String AllTermsListDetailResponseModelToJson(
+        AllTermsListDetailResponseModel data) =>
     json.encode(data.toJson());
 
 class AllTermsListDetailResponseModel {
@@ -61,42 +63,30 @@ class TermsListData {
 }
 
 class ListElement {
-  int recNum;
+  int id;
   int itemIndex;
-  String textCode;
-  int textCodeId;
-  String textOutline;
-  dynamic requestStamp;
-  dynamic orderStamp;
+  String code;
+  String description;
 
   ListElement({
-    required this.recNum,
+    required this.id,
     required this.itemIndex,
-    required this.textCode,
-    required this.textCodeId,
-    required this.textOutline,
-    required this.requestStamp,
-    required this.orderStamp,
+    required this.code,
+    required this.description,
   });
 
   factory ListElement.fromJson(Map<String, dynamic> json) => ListElement(
-        recNum: json["RecNum"],
-        itemIndex: json["ItemIndex"],
-        textCode: json["TextCode"],
-        textCodeId: json["TextCodeID"],
-        textOutline: json["TextOutline"],
-        requestStamp: json["Request_Stamp"],
-        orderStamp: json["Order_Stamp"],
+        id: json["id"] ?? 0,
+        itemIndex: json["ItemIndex"] ?? 0,
+        code: json["code"] ?? "",
+        description: json["description"] ?? "",
       );
 
   Map<String, dynamic> toJson() => {
-        "RecNum": recNum,
+        "id": id,
         "ItemIndex": itemIndex,
-        "TextCode": textCode,
-        "TextCodeID": textCodeId,
-        "TextOutline": textOutline,
-        "Request_Stamp": requestStamp,
-        "Order_Stamp": orderStamp,
+        "code": code,
+        "description": description,
       };
 }
 

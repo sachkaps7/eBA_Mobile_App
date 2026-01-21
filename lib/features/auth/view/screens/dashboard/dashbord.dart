@@ -492,9 +492,8 @@ class _HomeViewState extends State<HomeView> {
                       );
                     }
 
-                
                     //  MORE THAN 2 → Wrap 2 per row
-                
+
                     return Wrap(
                       spacing: 10,
                       runSpacing: 10,

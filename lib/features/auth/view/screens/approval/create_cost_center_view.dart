@@ -108,8 +108,8 @@ class _CreateCostCenterView extends State<CreateCostCenterView> {
           _isCardSelected = allCC.map((CC) => CC.recNum != 0).toList();
 
           costCentreId = allCC
-              .where((CC) => CC.costCentreId != 0)
-              .map((CC) => CC.costCentreId)
+              .where((cc) => cc.recNum != 0) 
+              .map((cc) => cc.costCentreId)
               .toList();
 
           isLoading = false;
@@ -134,14 +134,14 @@ class _CreateCostCenterView extends State<CreateCostCenterView> {
 
     final jsonResponse = await apiService.postRequest(
       context,
-      ApiService.saveAllTerms,
+      ApiService.saveAllCC,
       {
         'uid': SharedPrefs().uID,
         'apptype': AppConstants.apptype,
         'OrdReqID': widget.ordReqID,
         "search": _searchController.text.trim(),
         'group': widget.group,
-        'TextCodeIDs': costCentreId.join(','),
+        'CostCentreIDs': costCentreId.join(','),
         'id': '0',
       },
     );
@@ -153,7 +153,7 @@ class _CreateCostCenterView extends State<CreateCostCenterView> {
         if (resp.code == 200) {
           final successMessage = resp.message.isNotEmpty
               ? resp.message.first
-              : 'Terms saved successfully';
+              : 'cost center saved successfully';
 
           showSnackBar(context, successMessage);
 
@@ -236,16 +236,17 @@ class _CreateCostCenterView extends State<CreateCostCenterView> {
                                       final ccId = allCC[index].costCentreId;
 
                                       if (_isCardSelected[index]) {
-                                        //  Selected  add
+                                        // Selected  add costCentreId
                                         if (!costCentreId.contains(ccId)) {
                                           costCentreId.add(ccId);
                                         }
                                       } else {
-                                        // Unselected  remove
+                                        // Unselected  remove costCentreId
                                         costCentreId.remove(ccId);
                                       }
+
                                       LoggerData.dataLog(
-                                          "##############${costCentreId}");
+                                          "Selected CostCentreIDs => $costCentreId");
                                     });
                                   },
                                 ),
@@ -263,14 +264,13 @@ class _CreateCostCenterView extends State<CreateCostCenterView> {
                         buttonText: 'Save',
                         onTap: () {
                           if (costCentreId.isEmpty) {
-                            showSnackBar(
-                                context, "No Terms & Condition selected!");
+                            showSnackBar(context, "No Cost Center selected!");
                           } else {
                             saveCCDetails();
-                            showSnackBar(
-                              context,
-                              "Saved Successfully!\nRecNums: ${costCentreId.join(', ')}",
-                            );
+                            // showSnackBar(
+                            //   context,
+                            //   "Saved Successfully!\nRecNums: ${costCentreId.join(', ')}",
+                            // );
                           }
                         },
                       ),

@@ -109,7 +109,7 @@ class _CreateGroupApproverView extends State<CreateGroupApproverView> {
 
           selectedRecNums = allTerms
               .where((term) => term.itemIndex != 0)
-              .map((term) => term.recNum)
+              .map((term) => term.id)
               .toList();
 
           isLoading = false;
@@ -224,8 +224,8 @@ class _CreateGroupApproverView extends State<CreateGroupApproverView> {
                                 child: FormFieldHelper.buildCardWidget(
                                   index: index,
                                   subtitles: [
-                                    {'Code    ': item.textCode},
-                                    {'Outline': item.textOutline},
+                                    {'Code    ': item.code},
+                                    {'Outline': item.code},
                                   ],
                                   isCardSelected: _isCardSelected,
                                   onTap: () {
@@ -233,7 +233,7 @@ class _CreateGroupApproverView extends State<CreateGroupApproverView> {
                                       _isCardSelected[index] =
                                           !_isCardSelected[index];
 
-                                      final recNum = allTerms[index].recNum;
+                                      final recNum = allTerms[index].id;
 
                                       if (_isCardSelected[index]) {
                                         //  Selected  add

@@ -1,3 +1,4 @@
+
 import 'dart:async';
 
 import 'package:eyvo_v3/api/api_service/api_service.dart';
@@ -5,9 +6,13 @@ import 'package:eyvo_v3/api/response_models/all_terms_conditions_response.dart';
 import 'package:eyvo_v3/api/response_models/note_details_response_model.dart';
 import 'package:eyvo_v3/api/response_models/terms_save_response.dart';
 import 'package:eyvo_v3/app/app_prefs.dart';
+import 'package:eyvo_v3/app/sizes_helper.dart';
+import 'package:eyvo_v3/core/resources/assets_manager.dart';
 import 'package:eyvo_v3/core/resources/color_manager.dart';
 import 'package:eyvo_v3/core/resources/constants.dart';
+import 'package:eyvo_v3/core/resources/font_manager.dart';
 import 'package:eyvo_v3/core/resources/strings_manager.dart';
+import 'package:eyvo_v3/core/resources/styles_manager.dart';
 import 'package:eyvo_v3/core/utils.dart';
 import 'package:eyvo_v3/core/widgets/button.dart';
 import 'package:eyvo_v3/core/widgets/common_app_bar.dart';
@@ -19,11 +24,11 @@ import 'package:flutter/material.dart';
 
 class CreateTermsAndConditionView extends StatefulWidget {
   final String group;
-  final int ordReqID;
+  final int entityID;
   const CreateTermsAndConditionView({
     super.key,
     required this.group,
-    required this.ordReqID,
+    required this.entityID,
   });
 
   @override
@@ -44,7 +49,7 @@ class _CreateTermsAndConditionView extends State<CreateTermsAndConditionView> {
   List<bool> _isCardSelected = [];
   TermsListData? termsListDetail;
   List<ListElement> allTerms = [];
-  List<int> selectedRecNums = [];
+  List<int> selectedids = [];
 
   @override
   void initState() {
@@ -90,7 +95,7 @@ class _CreateTermsAndConditionView extends State<CreateTermsAndConditionView> {
       {
         'uid': SharedPrefs().uID,
         'apptype': AppConstants.apptype,
-        'ID': widget.ordReqID,
+        'ID': widget.entityID,
         "regionid": '1',
         "search": _searchController.text.trim(),
         'group': widget.group,
@@ -108,9 +113,9 @@ class _CreateTermsAndConditionView extends State<CreateTermsAndConditionView> {
           _isCardSelected =
               allTerms.map((term) => term.itemIndex != 0).toList();
 
-          selectedRecNums = allTerms
+          selectedids = allTerms
               .where((term) => term.itemIndex != 0)
-              .map((term) => term.recNum)
+              .map((term) => term.id)
               .toList();
 
           isLoading = false;
@@ -139,11 +144,12 @@ class _CreateTermsAndConditionView extends State<CreateTermsAndConditionView> {
       {
         'uid': SharedPrefs().uID,
         'apptype': AppConstants.apptype,
-        'OrdReqID': widget.ordReqID,
+        'entityID': widget.entityID,
         "search": _searchController.text.trim(),
         'group': widget.group,
-        'TextCodeIDs': selectedRecNums.join(','),
+        'selectedids': selectedids.join(','),
         'id': '0',
+        'userSession': SharedPrefs().userSession,
       },
     );
 
@@ -189,7 +195,38 @@ class _CreateTermsAndConditionView extends State<CreateTermsAndConditionView> {
       body: isLoading
           ? const Center(child: CustomProgressIndicator())
           : isError
-              ? Center(child: Text(errorText))
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(18.0),
+                    child: Container(
+                      width: displayWidth(context),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: ColorManager.white,
+                      ),
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            height: displayHeight(context) * 0.25,
+                          ),
+                          Image.asset(
+                            width: displayWidth(context) * 0.5,
+                            ImageAssets.errorMessageIcon,
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            errorText,
+                            textAlign: TextAlign.center,
+                            style: getSemiBoldStyle(
+                              color: ColorManager.darkBlue,
+                              fontSize: FontSize.s17,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
               : Column(
                   children: [
                     Padding(
@@ -225,8 +262,8 @@ class _CreateTermsAndConditionView extends State<CreateTermsAndConditionView> {
                                 child: FormFieldHelper.buildCardWidget(
                                   index: index,
                                   subtitles: [
-                                    {'Code    ': item.textCode},
-                                    {'Outline': item.textOutline},
+                                    {'Code    ': item.code},
+                                    {'Outline': item.description},
                                   ],
                                   isCardSelected: _isCardSelected,
                                   onTap: () {
@@ -234,19 +271,19 @@ class _CreateTermsAndConditionView extends State<CreateTermsAndConditionView> {
                                       _isCardSelected[index] =
                                           !_isCardSelected[index];
 
-                                      final recNum = allTerms[index].recNum;
+                                      final id = allTerms[index].id;
 
                                       if (_isCardSelected[index]) {
                                         //  Selected  add
-                                        if (!selectedRecNums.contains(recNum)) {
-                                          selectedRecNums.add(recNum);
+                                        if (!selectedids.contains(id)) {
+                                          selectedids.add(id);
                                         }
                                       } else {
                                         // Unselected  remove
-                                        selectedRecNums.remove(recNum);
+                                        selectedids.remove(id);
                                       }
                                       LoggerData.dataLog(
-                                          "##############${selectedRecNums}");
+                                          "##############${selectedids}");
                                     });
                                   },
                                 ),
@@ -263,14 +300,14 @@ class _CreateTermsAndConditionView extends State<CreateTermsAndConditionView> {
                       child: CustomButton(
                         buttonText: 'Save',
                         onTap: () {
-                          if (selectedRecNums.isEmpty) {
+                          if (selectedids.isEmpty) {
                             showSnackBar(
                                 context, "No Terms & Condition selected!");
                           } else {
                             saveTermsDetails();
                             showSnackBar(
                               context,
-                              "Saved Successfully!\nRecNums: ${selectedRecNums.join(', ')}",
+                              "Saved Successfully!\nids: ${selectedids.join(', ')}",
                             );
                           }
                         },
@@ -281,3 +318,4 @@ class _CreateTermsAndConditionView extends State<CreateTermsAndConditionView> {
     );
   }
 }
+ 

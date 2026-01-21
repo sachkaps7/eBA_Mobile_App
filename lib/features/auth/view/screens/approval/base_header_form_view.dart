@@ -1,9 +1,11 @@
 import 'package:eyvo_v3/api/api_service/api_service.dart';
 import 'package:eyvo_v3/api/response_models/dropdown_response_model.dart';
+import 'package:eyvo_v3/api/response_models/note_details_response_model.dart';
 import 'package:eyvo_v3/api/response_models/order_header_response.dart';
 import 'package:eyvo_v3/app/app_prefs.dart';
 import 'package:eyvo_v3/core/resources/constants.dart';
 import 'package:eyvo_v3/core/resources/strings_manager.dart';
+import 'package:eyvo_v3/core/utils.dart';
 import 'package:eyvo_v3/core/widgets/button.dart';
 import 'package:eyvo_v3/core/widgets/form_field_helper.dart';
 import 'package:eyvo_v3/core/widgets/searchable_dropdown_modal.dart';
@@ -100,7 +102,7 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
   String? _selectedSupplierContactValue;
   String? _selectedContractNumberValue;
   String? _selectDepartmentCodeValue;
-
+  Map<String, bool> fieldErrors = {};
   @override
   void initState() {
     super.initState();
@@ -126,7 +128,7 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
     try {
       final jsonResponse = await apiService.postRequest(
         context,
-        ApiService.createOrderHeader,
+        ApiService.createHeader,
         {
           'uid': SharedPrefs().uID,
           'apptype': AppConstants.apptype,
@@ -296,7 +298,7 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
   }
 
   Future<List<DropdownItem>> getContractCodes({String search = ""}) async {
-       final id =
+    final id =
         _selectedSupplierCodeId == null || _selectedSupplierCodeId!.isEmpty
             ? 0
             : int.tryParse(_selectedSupplierCodeId!) ?? 0;
@@ -430,42 +432,199 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
     super.dispose();
   }
 
-  void _saveForm() {
-    // Prepare data for API
-    Map<String, dynamic> formData = {
-      'ReferenceNo': _refNoController.text,
-      'SupplierCode': _selectedSupplierCodeId,
-      'FAO': _deliverToController.text,
-      'DeliveryID': _selectedDeliveryCodeId,
-      'CategoryID': _selectedCategoryCodeId,
-      'OrderTypeID': _selectedDocumentTypeId,
-      'InvoicePtID': _selectedInvoiceCodeId,
-      'ExpCode1_ID': _selectedAccountId,
-      'ExpCode2_ID': _selectedRestaurentId,
-      'Supp_Cont_ID': _selectedContactNumberId,
-      'FOB': _deliverIncoterms.text,
-      'Order_Budget_Header': _selectedBudgetId,
-      'Instructions': _instructionsController.text,
-      'Ship_Via': _shipViaController.text,
-      'Justification': _justificationController.text,
-      'Payment_Terms': _paymentTermsController.text,
-      'Cust_ID': _selectedCustomerId,
-      'ContractID': _selectedContractNumberId,
+  Map<String, dynamic> fieldValueMap() {
+    return {
+      // -------- TEXT FIELDS --------
+      "ReferenceNo": _refNoController.text.trim(),
+      "FAO": _deliverToController.text.trim(),
+      "FOB": _deliverIncoterms.text.trim(),
+      "Instructions": _instructionsController.text.trim(),
+      "Ship_Via": _shipViaController.text.trim(),
+      "Justification": _justificationController.text.trim(),
+      "Payment_Terms": _paymentTermsController.text.trim(),
+
+      // -------- DROPDOWNS --------
+      "SupplierID": _selectedSupplierCodeId,
+      "DeliveryID": _selectedDeliveryCodeId,
+      "CategoryID": _selectedCategoryCodeId,
+      "OrderTypeID": _selectedDocumentTypeId,
+      "InvoicePtID": _selectedInvoiceCodeId,
+      "ExpCode1_ID": _selectedAccountId,
+      "ExpCode2_ID": _selectedRestaurentId,
+      "ExpCode3_ID": _selectDepartmentCodeId,
+      "Cust_ID": _selectedCustomerId,
+      "ContractID": _selectedContractNumberId,
+      "Order_Budget_Header": _selectedBudgetId,
+      "Supp_Cont_ID": _selectedSupplierContactId,
+    };
+  }
+
+  bool isEmptyValue(dynamic value) {
+    if (value == null) return true;
+    if (value is String) return value.trim().isEmpty;
+    return false;
+  }
+
+  bool validateRequiredFields() {
+    bool hasError = false;
+    final values = fieldValueMap();
+
+    setState(() {
+      fieldErrors.clear();
+
+      fieldRequired.forEach((fieldId, isRequired) {
+        if (isRequired == true &&
+            fieldVisible[fieldId] == true &&
+            isEmptyValue(values[fieldId])) {
+          fieldErrors[fieldId] = true;
+          hasError = true;
+
+          LoggerData.dataLog("Required field missing => $fieldId");
+        }
+      });
+    });
+
+    return !hasError;
+  }
+
+  Future<void> saveHeader() async {
+    if (!validateRequiredFields()) {
+      LoggerData.dataLog("API stopped due to validation error");
+      return;
+    }
+
+    // ---------- API BODY ----------
+    final Map<String, dynamic> body = {
+      "Order_ID": widget.id,
+      "ReferenceNo": _refNoController.text.trim(),
+      "SupplierID": int.tryParse(_selectedSupplierCodeId ?? "0"),
+      "DeliveryID": int.tryParse(_selectedDeliveryCodeId ?? "0"),
+      "CategoryID": int.tryParse(_selectedCategoryCodeId ?? "0"),
+      "OrderTypeID": int.tryParse(_selectedDocumentTypeId ?? "0"),
+      "InvoicePtID": int.tryParse(_selectedInvoiceCodeId ?? "0"),
+      "ExpCode1_ID": int.tryParse(_selectedAccountId ?? "0"),
+      "ExpCode2_ID": int.tryParse(_selectedRestaurentId ?? "0"),
+      "ExpCode3_ID": int.tryParse(_selectDepartmentCodeId ?? "0"),
+      "Instructions": _instructionsController.text.trim(),
+      "Justification": _justificationController.text.trim(),
+      "FOB": _deliverIncoterms.text.trim(),
+      "Ship_Via": _shipViaController.text.trim(),
+      "Payment_Terms": _paymentTermsController.text.trim(),
+      "Order_Budget_Header": _selectedBudgetValue,
+      "Supp_Cont_ID": int.tryParse(_selectedSupplierContactId ?? "0"),
+      "ContractID": int.tryParse(_selectedContractNumberId ?? "0"),
+      "IsSupplierTaxChanged": false,
+      "OrderTotalTax": 0,
+      "IsSupplierCurrencyChanged": false,
+      "CcyID": 0,
+      "Sup_CcyID": 0,
+      "apptype": AppConstants.apptype,
+      "userSession": DateTime.now().toIso8601String(),
+      "uid": SharedPrefs().uID,
     };
 
-    print("Saving ${_getHeaderPrefix()} Header...");
-    LoggerData.dataLog("Form Data: $formData");
+    LoggerData.dataLog("Save Header Body => $body");
 
-    // Here you would call your actual API
-    // await HeaderService.saveHeader(formData, _getGroupName());
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("${_getHeaderPrefix()} Header Saved Successfully!"),
-        backgroundColor: Colors.green,
-      ),
+    final jsonResponse = await apiService.postRequest(
+      context,
+      ApiService.saveOrderHeader,
+      body,
     );
+
+    if (jsonResponse != null) {
+      final resp = NotesResponse.fromJson(jsonResponse);
+
+      if (resp.code == 200) {
+        showSnackBar(
+          context,
+          resp.message.isNotEmpty
+              ? resp.message.first
+              : "Header saved successfully",
+        );
+        Navigator.pop(context, true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(resp.message.isNotEmpty
+                ? resp.message.join(', ')
+                : AppStrings.somethingWentWrong),
+            backgroundColor: ColorManager.red,
+          ),
+        );
+      }
+    }
   }
+
+  // Future<void> saveHeader() async {
+  //   setState(() {
+  //     if (fieldRequired["Ship_Via"] == true &&
+  //         _shipViaController.text.trim().isEmpty) {
+  //       fieldErrors["Ship_Via"] = true;
+  //     }
+  //   });
+
+  //   final Map<String, dynamic> body = {
+  //     "Order_ID": widget.id,
+  //     "ReferenceNo": _refNoController.text.trim(),
+  //     "SupplierID": int.tryParse(_selectedSupplierCodeId ?? "0"),
+  //     "DeliveryID": int.tryParse(_selectedDeliveryCodeId ?? "0"),
+  //     "CategoryID": int.tryParse(_selectedCategoryCodeId ?? "0"),
+  //     "OrderTypeID": int.tryParse(_selectedDocumentTypeId ?? "0"),
+  //     "InvoicePtID": int.tryParse(_selectedInvoiceCodeId ?? "0"),
+  //     "ExpCode1_ID": int.tryParse(_selectedAccountId ?? "0"),
+  //     "ExpCode2_ID": int.tryParse(_selectedRestaurentId ?? "0"),
+  //     "ExpCode3_ID": int.tryParse(_selectDepartmentCodeId ?? "0"),
+  //     "Instructions": _instructionsController.text.trim(),
+  //     "Justification": _justificationController.text.trim(),
+  //     "FOB": _deliverIncoterms.text.trim(),
+  //     "Ship_Via": _shipViaController.text.trim(),
+  //     "Payment_Terms": _paymentTermsController.text.trim(),
+  //     "Order_Budget_Header": _selectedBudgetValue,
+  //     "Supp_Cont_ID": int.tryParse(_selectedSupplierContactId ?? "0"),
+  //     "ContractID": int.tryParse(_selectedContractNumberId ?? "0"),
+  //     "IsSupplierTaxChanged": false,
+  //     "OrderTotalTax": 0,
+  //     "IsSupplierCurrencyChanged": false,
+  //     "CcyID": 0,
+  //     "Sup_CcyID": 0,
+  //     "apptype": AppConstants.apptype,
+  //     "userSession": DateTime.now().toIso8601String(),
+  //     "uid": SharedPrefs().uID,
+  //   };
+
+  //   LoggerData.dataLog("Save Header Body => $body");
+
+  //   final jsonResponse = await apiService.postRequest(
+  //     context,
+  //     ApiService.saveOrderHeader,
+  //     body,
+  //   );
+
+  //   setState(() {});
+
+  //   if (jsonResponse != null) {
+  //     final resp = NotesResponse.fromJson(jsonResponse);
+
+  //     if (resp.code == 200) {
+  //       showSnackBar(
+  //         context,
+  //         resp.message.isNotEmpty
+  //             ? resp.message.first
+  //             : "Header saved successfully",
+  //       );
+  //       Navigator.pop(context, true);
+  //     } else {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: Text(resp.message.isNotEmpty
+  //               ? resp.message.join(', ')
+  //               : AppStrings.somethingWentWrong),
+  //           backgroundColor: ColorManager.red,
+  //         ),
+  //       );
+  //     }
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -486,6 +645,24 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
         context: context,
         title: widget.appBarTitle,
       ),
+
+      // BOTTOM SAVE BUTTON
+      bottomNavigationBar:
+          (SharedPrefs().userOrder == "RW" || SharedPrefs().userRequest == "RW")
+              ? SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: SizedBox(
+                      height: 50,
+                      child: CustomButton(
+                        buttonText: 'Save',
+                        onTap: saveHeader,
+                      ),
+                    ),
+                  ),
+                )
+              : null,
+
       body: ScrollbarTheme(
         data: ScrollbarThemeData(
           thumbColor: WidgetStateProperty.all(ColorManager.blue),
@@ -502,38 +679,27 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
           thumbVisibility: true,
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(8),
-            child: Card(
-              color: ColorManager.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 4,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (widget.constantFieldshow ?? false)
-                      // Constant Fields
-                      _buildConstantFieldsSection(),
-                    const SizedBox(height: 16),
 
-                    // Dynamic Fields
-                    ..._buildDynamicFields(),
-
-                    const SizedBox(height: 30),
-
-                    if (SharedPrefs().userOrder == "RW" ||
-                        SharedPrefs().userRequest == "RW")
-                      //  if (widget.buttonshow ?? true)
-                      SizedBox(
-                        height: 50,
-                        child: CustomButton(
-                          buttonText: 'Save',
-                          onTap: _saveForm,
-                        ),
-                      )
-                  ],
+            // add bottom padding so content not hidden by button
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 80),
+              child: Card(
+                color: ColorManager.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (widget.constantFieldshow ?? false)
+                        _buildConstantFieldsSection(),
+                      const SizedBox(height: 16),
+                      ..._buildDynamicFields(),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -543,6 +709,80 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
     );
   }
 
+//  Widget build(BuildContext context) {
+//     if (isLoading) {
+//       return Scaffold(
+//         backgroundColor: ColorManager.primary,
+//         appBar: buildCommonAppBar(
+//           context: context,
+//           title: widget.appBarTitle,
+//         ),
+//         body: const Center(child: CircularProgressIndicator()),
+//       );
+//     }
+
+//     return Scaffold(
+//       backgroundColor: ColorManager.primary,
+//       appBar: buildCommonAppBar(
+//         context: context,
+//         title: widget.appBarTitle,
+//       ),
+//       body: ScrollbarTheme(
+//         data: ScrollbarThemeData(
+//           thumbColor: WidgetStateProperty.all(ColorManager.blue),
+//           radius: const Radius.circular(8),
+//           thickness: WidgetStateProperty.all(6),
+//           trackColor:
+//               WidgetStateProperty.all(ColorManager.lightGrey.withOpacity(0.3)),
+//           trackBorderColor: WidgetStateProperty.all(ColorManager.grey),
+//           minThumbLength: 50,
+//           crossAxisMargin: 2,
+//           mainAxisMargin: 20,
+//         ),
+//         child: Scrollbar(
+//           thumbVisibility: true,
+//           child: SingleChildScrollView(
+//             padding: const EdgeInsets.all(8),
+//             child: Card(
+//               color: ColorManager.white,
+//               shape: RoundedRectangleBorder(
+//                 borderRadius: BorderRadius.circular(12),
+//               ),
+//               elevation: 4,
+//               child: Padding(
+//                 padding: const EdgeInsets.all(16),
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     if (widget.constantFieldshow ?? false)
+//                       // Constant Fields
+//                       _buildConstantFieldsSection(),
+//                     const SizedBox(height: 16),
+
+//                     // Dynamic Fields
+//                     ..._buildDynamicFields(),
+
+//                     const SizedBox(height: 30),
+
+//                     if (SharedPrefs().userOrder == "RW" ||
+//                         SharedPrefs().userRequest == "RW")
+//                       //  if (widget.buttonshow ?? true)
+//                       SizedBox(
+//                         height: 50,
+//                         child: CustomButton(
+//                           buttonText: 'Save',
+//                           onTap: () => saveHeader(),
+//                         ),
+//                       )
+//                   ],
+//                 ),
+//               ),
+//             ),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
   Widget _buildConstantFieldsSection() {
     final prefix = _getHeaderPrefix();
     return Container(
@@ -588,12 +828,15 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
       addFieldIfVisible(
         "ReferenceNo",
         FormFieldHelper.buildTextField(
-          label: fieldLabels["ReferenceNo"] ?? "",
-          controller: _refNoController,
-          hintText: 'Enter ${fieldLabels["ReferenceNo"] ?? ""}',
-          isRequired: fieldRequired["ReferenceNo"] ?? false,
-          readOnly: fieldReadOnly["ReferenceNo"] ?? false,
-        ),
+            label: fieldLabels["ReferenceNo"] ?? "",
+            controller: _refNoController,
+            hintText: 'Enter ${fieldLabels["ReferenceNo"] ?? ""}',
+            isRequired: fieldRequired["ReferenceNo"] ?? false,
+            readOnly: fieldReadOnly["ReferenceNo"] ?? false,
+            showError: fieldErrors["ReferenceNo"] == true,
+            onChanged: () {
+              setState(() => fieldErrors["ReferenceNo"] = false);
+            }),
       );
     }
 
@@ -606,6 +849,10 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
           hintText: 'Enter ${fieldLabels["FAO"] ?? ""}',
           isRequired: fieldRequired["FAO"] ?? false,
           readOnly: fieldReadOnly["FAO"] ?? false,
+          showError: fieldErrors["FAO"] == true,
+          onChanged: () {
+            setState(() => fieldErrors["FAO"] = false);
+          },
         ),
       );
     }
@@ -619,6 +866,10 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
           hintText: 'Enter ${fieldLabels["FOB"] ?? ""}',
           isRequired: fieldRequired["FOB"] ?? false,
           readOnly: fieldReadOnly["FOB"] ?? false,
+          showError: fieldErrors["FOB"] == true,
+          onChanged: () {
+            setState(() => fieldErrors["FOB"] = false);
+          },
         ),
       );
     }
@@ -632,6 +883,10 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
           hintText: 'Enter ${fieldLabels["Instructions"] ?? ""}',
           isRequired: fieldRequired["Instructions"] ?? false,
           readOnly: fieldReadOnly["Instructions"] ?? false,
+          showError: fieldErrors["Instructions"] == true,
+          onChanged: () {
+            setState(() => fieldErrors["Instructions"] = false);
+          },
         ),
       );
     }
@@ -645,6 +900,10 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
           hintText: 'Enter ${fieldLabels["Ship_Via"] ?? "Ship Via"}',
           isRequired: fieldRequired["Ship_Via"] ?? false,
           readOnly: fieldReadOnly["Ship_Via"] ?? false,
+          showError: fieldErrors["Ship_Via"] == true,
+          onChanged: () {
+            setState(() => fieldErrors["Ship_Via"] = false);
+          },
         ),
       );
     }
@@ -658,6 +917,10 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
           hintText: 'Enter ${fieldLabels["Justification"] ?? ""}',
           isRequired: fieldRequired["Justification"] ?? false,
           readOnly: fieldReadOnly["Justification"] ?? false,
+          showError: fieldErrors["Justification"] == true,
+          onChanged: () {
+            setState(() => fieldErrors["Justification"] = false);
+          },
         ),
       );
     }
@@ -671,6 +934,10 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
           hintText: 'Enter ${fieldLabels["Payment_Terms"] ?? ""}',
           isRequired: fieldRequired["Payment_Terms"] ?? false,
           readOnly: fieldReadOnly["Payment_Terms"] ?? false,
+          showError: fieldErrors["Payment_Terms"] == true,
+          onChanged: () {
+            setState(() => fieldErrors["Payment_Terms"] = false);
+          },
         ),
       );
     }
@@ -686,10 +953,13 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
           value: _selectedSupplierCodeId,
           apiDisplayValue: _selectedSupplierCodeValue,
           fetchItems: getSupplierCodes,
+          showError: fieldErrors["SupplierID"] ?? false,
+          onChangedClearError: () {
+            setState(() => fieldErrors["SupplierID"] = false);
+          },
           onChanged: (value) {
             setState(() {
               _selectedSupplierCodeId = value;
-              // Clear display value when null
               if (value == null) {
                 _selectedSupplierCodeValue = null;
               }
@@ -710,10 +980,13 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
           value: _selectedDeliveryCodeId,
           apiDisplayValue: _selectedDeliveryCodeValue,
           fetchItems: getDeliveryCodes,
+          showError: fieldErrors["DeliveryID"] ?? false,
+          onChangedClearError: () {
+            setState(() => fieldErrors["DeliveryID"] = false);
+          },
           onChanged: (value) {
             setState(() {
               _selectedDeliveryCodeId = value;
-              // Clear display value when null
               if (value == null) {
                 _selectedDeliveryCodeValue = null;
               }
@@ -734,10 +1007,13 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
           value: _selectedCategoryCodeId,
           apiDisplayValue: _selectedCategoryCodeValue,
           fetchItems: getCategoryCodes,
+          showError: fieldErrors["CategoryID"] ?? false,
+          onChangedClearError: () {
+            setState(() => fieldErrors["CategoryID"] = false);
+          },
           onChanged: (value) {
             setState(() {
               _selectedCategoryCodeId = value;
-              // Clear display value when null
               if (value == null) {
                 _selectedCategoryCodeValue = null;
               }
@@ -758,10 +1034,13 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
           value: _selectedDocumentTypeId,
           apiDisplayValue: _selectedDocumentTypeValue,
           fetchItems: getOrderTypeCodes,
+          showError: fieldErrors["OrderTypeID"] ?? false,
+          onChangedClearError: () {
+            setState(() => fieldErrors["OrderTypeID"] = false);
+          },
           onChanged: (value) {
             setState(() {
               _selectedDocumentTypeId = value;
-              // Clear display value when null
               if (value == null) {
                 _selectedDocumentTypeValue = null;
               }
@@ -782,10 +1061,13 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
           value: _selectedInvoiceCodeId,
           apiDisplayValue: _selectedInvoiceCodeValue,
           fetchItems: getInvoiceCodes,
+          showError: fieldErrors["InvoicePtID"] ?? false,
+          onChangedClearError: () {
+            setState(() => fieldErrors["InvoicePtID"] = false);
+          },
           onChanged: (value) {
             setState(() {
               _selectedInvoiceCodeId = value;
-              // Clear display value when null
               if (value == null) {
                 _selectedInvoiceCodeValue = null;
               }
@@ -806,10 +1088,13 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
           value: _selectedAccountId,
           apiDisplayValue: _selectedAccountValue,
           fetchItems: getExpenseCode1,
+          showError: fieldErrors["ExpCode1_ID"] ?? false,
+          onChangedClearError: () {
+            setState(() => fieldErrors["ExpCode1_ID"] = false);
+          },
           onChanged: (value) {
             setState(() {
               _selectedAccountId = value;
-              // Clear display value when null
               if (value == null) {
                 _selectedAccountValue = null;
               }
@@ -830,10 +1115,13 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
           value: _selectedRestaurentId,
           apiDisplayValue: _selectedRestaurentValue,
           fetchItems: getExpenseCode2,
+          showError: fieldErrors["ExpCode2_ID"] ?? false,
+          onChangedClearError: () {
+            setState(() => fieldErrors["ExpCode2_ID"] = false);
+          },
           onChanged: (value) {
             setState(() {
               _selectedRestaurentId = value;
-              // Clear display value when null
               if (value == null) {
                 _selectedRestaurentValue = null;
               }
@@ -854,10 +1142,13 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
           value: _selectedSupplierContactId,
           apiDisplayValue: _selectedSupplierContactValue,
           fetchItems: getSupplierContacts,
+          showError: fieldErrors["Supp_Cont_ID"] ?? false,
+          onChangedClearError: () {
+            setState(() => fieldErrors["Supp_Cont_ID"] = false);
+          },
           onChanged: (value) {
             setState(() {
               _selectedSupplierContactId = value;
-              // Clear display value when null
               if (value == null) {
                 _selectedSupplierContactValue = null;
               }
@@ -878,10 +1169,13 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
           value: _selectedBudgetId,
           apiDisplayValue: _selectedBudgetValue,
           fetchItems: getBudget,
+          showError: fieldErrors["Order_Budget_Header"] ?? false,
+          onChangedClearError: () {
+            setState(() => fieldErrors["Order_Budget_Header"] = false);
+          },
           onChanged: (value) {
             setState(() {
               _selectedBudgetId = value;
-              // Clear display value when null
               if (value == null) {
                 _selectedBudgetValue = null;
               }
@@ -902,10 +1196,13 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
           value: _selectedCustomerId,
           apiDisplayValue: _selectedCustomerValue,
           fetchItems: getCustomerCodes,
+          showError: fieldErrors["Cust_ID"] ?? false,
+          onChangedClearError: () {
+            setState(() => fieldErrors["Cust_ID"] = false);
+          },
           onChanged: (value) {
             setState(() {
               _selectedCustomerId = value;
-              // Clear display value when null
               if (value == null) {
                 _selectedCustomerValue = null;
               }
@@ -926,10 +1223,13 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
           value: _selectedContractNumberId,
           apiDisplayValue: _selectedContractNumberValue,
           fetchItems: getContractCodes,
+          showError: fieldErrors["ContractID"] ?? false,
+          onChangedClearError: () {
+            setState(() => fieldErrors["ContractID"] = false);
+          },
           onChanged: (value) {
             setState(() {
               _selectedContractNumberId = value;
-              // Clear display value when null
               if (value == null) {
                 _selectedContractNumberValue = null;
               }
@@ -950,10 +1250,13 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
           value: _selectDepartmentCodeId,
           apiDisplayValue: _selectDepartmentCodeValue,
           fetchItems: getDepartmentCodes,
+          showError: fieldErrors["ExpCode3_ID"] ?? false,
+          onChangedClearError: () {
+            setState(() => fieldErrors["ExpCode3_ID"] = false);
+          },
           onChanged: (value) {
             setState(() {
               _selectDepartmentCodeId = value;
-              // Clear display value when null
               if (value == null) {
                 _selectDepartmentCodeValue = null;
               }
@@ -964,6 +1267,7 @@ class _BaseHeaderViewState extends State<BaseHeaderView> {
         ),
       );
     }
+
     return fields;
   }
 

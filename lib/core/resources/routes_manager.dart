@@ -3,6 +3,7 @@ import 'package:eyvo_v3/core/widgets/generic_detail_api_page.dart';
 import 'package:eyvo_v3/core/widgets/thankYouPage.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/approval_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/cost_center_approvers.dart';
+import 'package:eyvo_v3/features/auth/view/screens/approval/cost_center_split_details.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/create_cost_center_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/create_group_approvers_view.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/create_terms_and_condition_view.dart';
@@ -88,6 +89,7 @@ class Routes {
   static const String termsAndConditionRoute = "/termsAndConditionRoute";
   static const String createCostCenterApproverView =
       "/createCostCenterApproverView";
+  static const String ccSplitGrapghViewRoute = "/ccSplitGrapghViewRoute";
 }
 
 class RouteGenerator {
@@ -159,7 +161,7 @@ class RouteGenerator {
         return MaterialPageRoute(
             builder: (_) => CreateTermsAndConditionView(
                   group: args['group'],
-                  ordReqID: args['ordReqID'],
+                  entityID: args['entityID'],
                 ));
       case Routes.createCostCenterApproverView:
         final args = routeSettings.arguments as Map<String, dynamic>;
@@ -277,6 +279,14 @@ class RouteGenerator {
             ordReqID: args['ordReqID'] as int,
           ),
         );
+      case Routes.ccSplitGrapghViewRoute:
+        final args = routeSettings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+            builder: (_) => BudgetGraphPage(
+                  group: args['group'] as String,
+                  ordReqID: args['ordReqID'] as int,
+                  cCId: args['cCId'] as int,
+                ));
 
       default:
         return unDefinedRoute();

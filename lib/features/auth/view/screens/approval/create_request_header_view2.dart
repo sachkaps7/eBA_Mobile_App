@@ -121,7 +121,7 @@ class _CreateRequestHeaderViewState extends State<CreateRequestHeaderView> {
     try {
       final jsonResponse = await apiService.postRequest(
         context,
-        ApiService.createOrderHeader,
+        ApiService.createHeader,
         {
           'uid': SharedPrefs().uID,
           'apptype': AppConstants.apptype,

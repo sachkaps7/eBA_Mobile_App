@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:eyvo_v3/app/sizes_helper.dart';
 import 'package:eyvo_v3/features/auth/view/screens/approval/cost_center_split_details.dart';
 import 'package:permission_handler/permission_handler.dart' as PH;
 import 'package:eyvo_v3/api/response_models/attachement_list_response_model.dart';
@@ -719,19 +720,19 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
   }
 
   void _addNewCostCenterSplit() {
-    // Navigator.pushNamed(
-    //   context,
-    //   Routes.costCenterSplitRoute,
-    //   arguments: {
-    //     'group': 'Order',
-    //     'ordReqID': orderDetails!.header.orderId,
-    //   },
-    // ).then((result) {
-    //   if (result == true) {
-    //     fetchGroupApproversListWrapper();
-    //   }
-    // });
-    navigateToScreen(context, BudgetGraphPage());
+    Navigator.pushNamed(
+      context,
+      Routes.costCenterSplitRoute,
+      arguments: {
+        'group': 'Order',
+        'ordReqID': orderDetails!.header.orderId,
+      },
+    ).then((result) {
+      if (result == true) {
+        fetchCostCenterListWrapper();
+      }
+    });
+    // navigateToScreen(context, BudgetGraphPage());
   }
 
   void _addNewCCApproval() {
@@ -782,6 +783,437 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
   void _deleteCostCenterSplit() {
     //   print("Delete pressed");
     // Add your API or logic here
+  }
+  Widget _roundButton({
+    required IconData icon,
+    VoidCallback? onTap,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(30),
+      onTap: onTap,
+      child: Container(
+        height: 40,
+        width: 40,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: ColorManager.cCSplitBG,
+          border: Border.all(
+            color: onTap != null ? ColorManager.white : ColorManager.white,
+            width: 1.5,
+          ),
+        ),
+        child: Icon(
+          icon,
+          size: 30,
+          color: onTap != null ? ColorManager.darkBlue2 : ColorManager.grey,
+        ),
+      ),
+    );
+  }
+
+  void _showSplitPercentDialog(BuildContext context, dynamic c) {
+    final TextEditingController splitController =
+        TextEditingController(text: "100");
+
+    bool resetOtherValue = false;
+    bool resetApproval = false;
+    int splitValue = 100;
+
+    String allocationType = "Percentage";
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(20),
+        ),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final height = MediaQuery.of(context).size.height;
+            return SizedBox(
+              height: height * 0.7,
+              child: Container(
+                padding: EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  top: 16,
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+                ),
+                decoration: BoxDecoration(
+                  color: ColorManager.white,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Drag Handle
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: ColorManager.grey,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Title
+                      Center(
+                        child: Text(
+                          "Split Percentage",
+                          style: getBoldStyle(
+                            fontSize: FontSize.s21,
+                            color: ColorManager.black,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      // Cost Center
+                      Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: ColorManager.cCSplitBG,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            "Cost Center Code: ${c.costCode}",
+                            style: getSemiBoldStyle(
+                              color: ColorManager.darkBlue2,
+                              fontSize: FontSize.s14,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          //PLUS BUTTON (LEFT)
+                          _roundButton(
+                            icon: Icons.add,
+                            onTap: splitValue < 100
+                                ? () {
+                                    setState(() {
+                                      splitValue++;
+                                      splitController.text =
+                                          splitValue.toString();
+                                    });
+                                  }
+                                : null,
+                          ),
+
+                          const SizedBox(width: 12),
+
+                          //NUMBER + %
+                          Container(
+                            height: 65,
+                            width: 180,
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            decoration: BoxDecoration(
+                              color: ColorManager.white,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                //NUMBER + %
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: 110,
+                                      child: TextField(
+                                        controller: splitController,
+                                        keyboardType: TextInputType.number,
+                                        textAlign: TextAlign.center,
+                                        style: getBoldStyle(
+                                          fontSize: FontSize.s40,
+                                          color: ColorManager.darkBlue,
+                                        ),
+                                        decoration: const InputDecoration(
+                                          border: InputBorder.none,
+                                          focusedBorder: InputBorder.none,
+                                          enabledBorder: InputBorder.none,
+                                          isDense: true,
+                                          contentPadding: EdgeInsets.zero,
+                                        ),
+                                        onChanged: (value) {
+                                          final v = int.tryParse(value);
+                                          if (v != null && v >= 0 && v <= 100) {
+                                            setState(() => splitValue = v);
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 2),
+                                    Text(
+                                      '%',
+                                      style: getBoldStyle(
+                                        fontSize: FontSize.s20,
+                                        color: ColorManager.darkBlue2,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 2),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(width: 12),
+
+                          // MINUS BUTTON (RIGHT)
+                          _roundButton(
+                            icon: Icons.remove,
+                            onTap: splitValue > 0
+                                ? () {
+                                    setState(() {
+                                      splitValue--;
+                                      splitController.text =
+                                          splitValue.toString();
+                                    });
+                                  }
+                                : null,
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Checkboxes
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(15, 20, 15, 15),
+                        decoration: BoxDecoration(
+                          color: ColorManager.boxBG,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Column(
+                          children: [
+                            // Allocation Type
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Allocation Type",
+                                      style: getBoldStyle(
+                                        color: ColorManager.darkBlue2,
+                                        fontSize: FontSize.s18,
+                                      ),
+                                    ),
+                                    Text(
+                                      "basis of split",
+                                      style: getSemiBoldStyle(
+                                        color: ColorManager.grey,
+                                        fontSize: FontSize.s14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                  width: 100,
+                                  height: 50,
+                                  child: DropdownButtonFormField<String>(
+                                    value: allocationType,
+                                    dropdownColor: ColorManager.white,
+                                    style: getSemiBoldStyle(
+                                      color: ColorManager.darkBlue2,
+                                      fontSize: FontSize.s18,
+                                    ),
+                                    decoration: InputDecoration(
+                                      filled: true,
+                                      fillColor: ColorManager.white,
+                                      iconColor: ColorManager.darkBlue2,
+                                      isDense: true,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 10,
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: BorderSide(
+                                          color: ColorManager.boxBG,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: BorderSide(
+                                          color: ColorManager.boxBG,
+                                          // width: 1.5,
+                                        ),
+                                      ),
+                                    ),
+                                    items: const [
+                                      DropdownMenuItem(
+                                        value: "Percentage",
+                                        child: Text("%"),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: "Value",
+                                        child: Text("Value"),
+                                      ),
+                                    ],
+                                    onChanged: (value) {
+                                      setState(() {
+                                        allocationType = value!;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            Divider(
+                              color: ColorManager.lightGrey.withOpacity(0.3),
+                              thickness: 1,
+                              height: 16,
+                            ),
+
+                            // Re-set other value
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Reset others",
+                                  style: getBoldStyle(
+                                    color: ColorManager.darkBlue2,
+                                    fontSize: FontSize.s18,
+                                  ),
+                                ),
+                                Transform.scale(
+                                  scale: 1.25,
+                                  child: Switch(
+                                    value: resetOtherValue,
+                                    onChanged: (value) {
+                                      setState(() => resetOtherValue = value);
+                                    },
+                                    activeTrackColor: ColorManager.darkBlue2,
+                                    inactiveTrackColor: ColorManager.lightGrey4,
+                                    activeColor: ColorManager.white,
+                                    inactiveThumbColor: ColorManager.white,
+                                    trackOutlineColor:
+                                        MaterialStateProperty.all(
+                                            ColorManager.boxBG),
+                                  ),
+                                )
+                              ],
+                            ),
+
+                            // Divider
+                            Divider(
+                              color: ColorManager.lightGrey.withOpacity(0.3),
+                              thickness: 1,
+                              height: 8,
+                            ),
+
+                            // Reset approval
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Reset approval",
+                                      style: getBoldStyle(
+                                        color: ColorManager.darkBlue2,
+                                        fontSize: FontSize.s18,
+                                      ),
+                                    ),
+                                    Text(
+                                      "Restart workflow",
+                                      style: getSemiBoldStyle(
+                                        color: ColorManager.grey,
+                                        fontSize: FontSize.s14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Transform.scale(
+                                  scale: 1.25,
+                                  child: Switch(
+                                    value: resetApproval,
+                                    onChanged: (value) {
+                                      setState(() => resetApproval = value);
+                                    },
+                                    activeTrackColor: ColorManager.darkBlue,
+                                    inactiveTrackColor: ColorManager.lightGrey4,
+                                    activeColor: ColorManager.white,
+                                    inactiveThumbColor: ColorManager.white,
+                                    trackOutlineColor:
+                                        MaterialStateProperty.all(
+                                            ColorManager.boxBG),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 30),
+
+                      /// BUTTONS (SAFE)
+                      Column(
+                        children: [
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: CustomTextActionButton(
+                              buttonText: "Update Changes",
+                              backgroundColor: ColorManager.darkBlue,
+                              fontColor: ColorManager.white,
+                              onTap: () {},
+                              borderColor: ColorManager.darkBlue,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: CustomTextActionButton(
+                              buttonText: "Cancel",
+                              backgroundColor: ColorManager.white,
+                              fontColor: ColorManager.darkBlue,
+                              onTap: () {
+                                Navigator.pop(context);
+                              },
+                              borderColor: ColorManager.darkBlue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -1245,11 +1677,13 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
                                                   Center(
                                                     child: Padding(
                                                       padding:
-                                                          EdgeInsets.all(16),
+                                                          const EdgeInsets.all(
+                                                              16),
                                                       child: Text(
                                                         costCenterListError!,
                                                         style: TextStyle(
-                                                            color: Colors.red),
+                                                            color: ColorManager
+                                                                .red),
                                                       ),
                                                     ),
                                                   ),
@@ -1266,7 +1700,7 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
                                                   : costCenterListData!.list
                                                       .map((c) {
                                                       return ApprovalDetailsHelper
-                                                          .buildMiniCard1(
+                                                          .buildMiniCardForCC(
                                                         {
                                                           'Code': c.costCode,
                                                           'Description':
@@ -1275,6 +1709,30 @@ class _OrderDetailsViewState extends State<OrderDetailsView> with RouteAware {
                                                               "${getFormattedString(c.splitPercentage)}%",
                                                           'Split Value':
                                                               "${getFormattedPriceString(c.splitValue)}",
+                                                        },
+                                                        onTapMap: {
+                                                          'Code': () async {
+                                                            await Navigator
+                                                                .pushNamed(
+                                                              context,
+                                                              Routes
+                                                                  .ccSplitGrapghViewRoute,
+                                                              arguments: {
+                                                                'group':
+                                                                    'Order',
+                                                                'ordReqID':
+                                                                    orderDetails!
+                                                                        .header
+                                                                        .orderNumber,
+                                                                'cCId':
+                                                                    c.costCode
+                                                              },
+                                                            );
+                                                          },
+                                                          'Split Percent': () {
+                                                            _showSplitPercentDialog(
+                                                                context, c);
+                                                          },
                                                         },
                                                         showDelete:
                                                             (costCenterListData!

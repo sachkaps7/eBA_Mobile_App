@@ -13,6 +13,7 @@ class ColorManager {
   static Color lightBlue2 = HexColor.fromHex("#c7d2f9");
   static Color lightBlue3 = HexColor.fromHex("#f8f8f8");
   static Color darkBlue = HexColor.fromHex("#23367c");
+  static Color darkBlue2 = HexColor.fromHex("#1e293b");
   static Color orange = HexColor.fromHex("#ff5c12");
   static Color orange2 = HexColor.fromHex("#ee6002");
   static Color orange3 = HexColor.fromHex("#db921d");
@@ -46,13 +47,15 @@ class ColorManager {
   static Color yellow = HexColor.fromHex('#ffa500');
   static Color highlightColor = HexColor.fromHex('#f0f6ff');
   static Color checkBackground = HexColor.fromHex('#e9eaff');
+  static Color cCSplitBG = HexColor.fromHex('#eef6fd');
+  static Color boxBG = HexColor.fromHex('#f1f5f9');
 }
 
 extension HexColor on Color {
   static Color fromHex(String hexColorString) {
     hexColorString = hexColorString.replaceAll('#', '');
     if (hexColorString.length == 6) {
-      hexColorString = "FF$hexColorString"; 
+      hexColorString = "FF$hexColorString";
     }
     return Color(int.parse(hexColorString, radix: 16));
   }

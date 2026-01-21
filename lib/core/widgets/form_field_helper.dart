@@ -15,6 +15,103 @@ import 'package:eyvo_v3/core/widgets/searchable_dropdown_modal.dart';
 class FormFieldHelper {
   //-------------------- TEXT FIELD --------------------
 
+  // static Widget buildTextField({
+  //   required String label,
+  //   required TextEditingController controller,
+  //   required String hintText,
+  //   TextInputType keyboardType = TextInputType.text,
+  //   bool isRequired = false,
+  //   bool readOnly = false,
+  // }) {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       Text(
+  //         label,
+  //         style: getSemiBoldStyle(
+  //           color: ColorManager.black,
+  //           fontSize: FontSize.s14,
+  //         ),
+  //       ),
+  //       const SizedBox(height: 8),
+  //       Stack(
+  //         children: [
+  //           FocusScope(
+  //             canRequestFocus: !readOnly,
+  //             child: TextField(
+  //               controller: controller,
+  //               keyboardType: keyboardType,
+  //               readOnly: readOnly,
+  //               style: TextStyle(
+  //                 color: ColorManager.black,
+  //                 fontSize: FontSize.s14,
+  //               ),
+  //               decoration: InputDecoration(
+  //                 hintText: hintText,
+  //                 filled: true,
+  //                 fillColor: readOnly
+  //                     ? ColorManager.readOnlyColor
+  //                     : ColorManager.white,
+  //                 hintStyle: getMediumStyle(
+  //                   color: ColorManager.lightGrey,
+  //                   fontSize: FontSize.s14,
+  //                 ),
+  //                 contentPadding:
+  //                     const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+
+  //                 //Show icon only in read-only mode
+  //                 suffixIcon: readOnly
+  //                     ? Icon(
+  //                         Icons.lock_outline,
+  //                         color: ColorManager.lightGrey3,
+  //                         size: 20,
+  //                       )
+  //                     : null,
+
+  //                 enabledBorder: OutlineInputBorder(
+  //                   borderRadius: BorderRadius.circular(8),
+  //                   borderSide: BorderSide(
+  //                     color: readOnly
+  //                         ? ColorManager.lightGrey
+  //                         : ColorManager.darkGrey,
+  //                     width: 1.0,
+  //                   ),
+  //                 ),
+  //                 focusedBorder: OutlineInputBorder(
+  //                   borderRadius: BorderRadius.circular(8),
+  //                   borderSide: BorderSide(
+  //                     color:
+  //                         readOnly ? ColorManager.lightGrey : ColorManager.blue,
+  //                     width: readOnly ? 1.0 : 2.0,
+  //                   ),
+  //                 ),
+  //                 disabledBorder: OutlineInputBorder(
+  //                   borderRadius: BorderRadius.circular(8),
+  //                   borderSide: BorderSide(
+  //                     color: ColorManager.lightGrey,
+  //                     width: 1.0,
+  //                   ),
+  //                 ),
+  //               ),
+  //             ),
+  //           ),
+
+  //           // Red triangle indicator (if required)
+  //           if (isRequired)
+  //             Positioned(
+  //               right: 0,
+  //               top: 0,
+  //               child: CustomPaint(
+  //                 size: const Size(12, 12),
+  //                 painter: _RedTrianglePainter(),
+  //               ),
+  //             ),
+  //         ],
+  //       ),
+  //     ],
+  //   );
+  // }
+
   static Widget buildTextField({
     required String label,
     required TextEditingController controller,
@@ -22,6 +119,9 @@ class FormFieldHelper {
     TextInputType keyboardType = TextInputType.text,
     bool isRequired = false,
     bool readOnly = false,
+    bool showError = false,
+    String? errorText,
+    VoidCallback? onChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,39 +142,32 @@ class FormFieldHelper {
                 controller: controller,
                 keyboardType: keyboardType,
                 readOnly: readOnly,
-                style: TextStyle(
-                  color: ColorManager.black,
-                  fontSize: FontSize.s14,
-                ),
+                onChanged: (_) => onChanged?.call(),
                 decoration: InputDecoration(
                   hintText: hintText,
-                  filled: true,
-                  fillColor: readOnly
-                      ? ColorManager.readOnlyColor
-                      : ColorManager.white,
                   hintStyle: getMediumStyle(
                     color: ColorManager.lightGrey,
                     fontSize: FontSize.s14,
                   ),
+                  errorText: showError
+                      ? (errorText ?? "This field is required")
+                      : null,
+                  filled: true,
+                  fillColor: readOnly
+                      ? ColorManager.readOnlyColor
+                      : ColorManager.white,
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-
-                  //Show icon only in read-only mode
                   suffixIcon: readOnly
-                      ? Icon(
-                          Icons.lock_outline,
-                          color: ColorManager.lightGrey3,
-                          size: 20,
-                        )
+                      ? Icon(Icons.lock_outline,
+                          color: ColorManager.lightGrey3, size: 20)
                       : null,
-
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(
                       color: readOnly
                           ? ColorManager.lightGrey
                           : ColorManager.darkGrey,
-                      width: 1.0,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
@@ -82,21 +175,20 @@ class FormFieldHelper {
                     borderSide: BorderSide(
                       color:
                           readOnly ? ColorManager.lightGrey : ColorManager.blue,
-                      width: readOnly ? 1.0 : 2.0,
+                      width: 2,
                     ),
                   ),
-                  disabledBorder: OutlineInputBorder(
+                  errorBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(
-                      color: ColorManager.lightGrey,
-                      width: 1.0,
-                    ),
+                    borderSide: const BorderSide(color: Colors.red, width: 1.5),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.red, width: 2),
                   ),
                 ),
               ),
             ),
-
-            // Red triangle indicator (if required)
             if (isRequired)
               Positioned(
                 right: 0,
@@ -818,6 +910,152 @@ class FormFieldHelper {
     );
   }
 
+  // static Widget buildDropdownFieldWithIds1({
+  //   required BuildContext context,
+  //   required String label,
+  //   required String? value,
+  //   required Future<List<DropdownItem>> Function() fetchItems,
+  //   required ValueChanged<String?> onChanged,
+  //   bool isRequired = false,
+  //   String? apiDisplayValue,
+  //   bool readOnly = false,
+  //   Function(String?)? onDisplayValueUpdate, // Changed to String?
+  //   required TextEditingController searchController,
+  // }) {
+  //   String? displayValue = apiDisplayValue;
+
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       Text(
+  //         label,
+  //         style: getSemiBoldStyle(
+  //           color: ColorManager.black,
+  //           fontSize: FontSize.s14,
+  //         ),
+  //       ),
+  //       const SizedBox(height: 8),
+  //       Stack(
+  //         children: [
+  //           GestureDetector(
+  //             onTap: readOnly
+  //                 ? null
+  //                 : () async {
+  //                     searchController.clear();
+  //                     final items = await fetchItems();
+
+  //                     final selectedDisplayValue =
+  //                         await showModalBottomSheet<String?>(
+  //                       context: context,
+  //                       isScrollControlled: true,
+  //                       builder: (_) => CustomDropdownModal(
+  //                         items: items,
+  //                         selectedValue: displayValue,
+  //                         label: label,
+  //                         searchController: searchController,
+  //                         allowDeselection: !isRequired, // Added this parameter
+  //                         onSearchChanged: () async {
+  //                           return await fetchItems();
+  //                         },
+  //                       ),
+  //                     );
+
+  //                     if (selectedDisplayValue != null) {
+  //                       String selectedId;
+  //                       String selectedDisplayText;
+
+  //                       if (selectedDisplayValue == apiDisplayValue) {
+  //                         selectedId = value ?? '';
+  //                         selectedDisplayText = selectedDisplayValue;
+  //                       } else {
+  //                         // Extract the code from the selected display value (part before " - ")
+  //                         final selectedCode =
+  //                             selectedDisplayValue.split(' - ').first;
+
+  //                         // Find the actual item to get the proper ID
+  //                         final selectedItem = items.firstWhere(
+  //                           (item) => item.code == selectedCode,
+  //                           orElse: () =>
+  //                               DropdownItem(id: '', description: '', code: ''),
+  //                         );
+
+  //                         selectedId = selectedItem.id;
+  //                         // Show both code and description as display value
+  //                         selectedDisplayText =
+  //                             "${selectedItem.code} - ${selectedItem.description}";
+  //                       }
+
+  //                       // Update display value to show both code and description
+  //                       displayValue = selectedDisplayText;
+
+  //                       // Notify parent if callback provided
+  //                       onDisplayValueUpdate?.call(selectedDisplayText);
+
+  //                       onChanged(selectedId);
+  //                     } else {
+  //                       // Handle null case (deselection)
+  //                       displayValue = null;
+  //                       onDisplayValueUpdate?.call(null);
+  //                       onChanged(null);
+  //                     }
+  //                   },
+  //             child: Container(
+  //               padding:
+  //                   const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+  //               decoration: BoxDecoration(
+  //                 color: readOnly
+  //                     ? ColorManager.readOnlyColor
+  //                     : ColorManager.white,
+  //                 borderRadius: BorderRadius.circular(8),
+  //                 border: Border.all(
+  //                   color: ColorManager.darkGrey,
+  //                   width: 1.0,
+  //                 ),
+  //               ),
+  //               child: Row(
+  //                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                 children: [
+  //                   Expanded(
+  //                     child: Text(
+  //                       displayValue ?? "Select $label",
+  //                       style: TextStyle(
+  //                         fontSize: FontSize.s14,
+  //                         color: displayValue == null
+  //                             ? ColorManager.grey
+  //                             : ColorManager.black,
+  //                       ),
+  //                       overflow: TextOverflow.ellipsis,
+  //                     ),
+  //                   ),
+  //                   Row(
+  //                     mainAxisSize: MainAxisSize.min,
+  //                     children: [
+  //                       if (readOnly)
+  //                         Icon(Icons.lock_outline,
+  //                             size: 20, color: ColorManager.lightGrey3)
+  //                       else
+  //                         Icon(Icons.arrow_drop_down,
+  //                             color: ColorManager.darkGrey),
+  //                     ],
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           ),
+  //           if (isRequired)
+  //             Positioned(
+  //               right: 0,
+  //               top: 0,
+  //               child: CustomPaint(
+  //                 size: const Size(12, 12),
+  //                 painter: _RedTrianglePainter(),
+  //               ),
+  //             ),
+  //         ],
+  //       ),
+  //     ],
+  //   );
+  // }
   static Widget buildDropdownFieldWithIds1({
     required BuildContext context,
     required String label,
@@ -827,7 +1065,8 @@ class FormFieldHelper {
     bool isRequired = false,
     String? apiDisplayValue,
     bool readOnly = false,
-    Function(String?)? onDisplayValueUpdate, // Changed to String?
+    bool showError = false,
+    Function(String?)? onDisplayValueUpdate,
     required TextEditingController searchController,
   }) {
     String? displayValue = apiDisplayValue;
@@ -861,7 +1100,7 @@ class FormFieldHelper {
                           selectedValue: displayValue,
                           label: label,
                           searchController: searchController,
-                          allowDeselection: !isRequired, // Added this parameter
+                          allowDeselection: !isRequired,
                           onSearchChanged: () async {
                             return await fetchItems();
                           },
@@ -876,32 +1115,27 @@ class FormFieldHelper {
                           selectedId = value ?? '';
                           selectedDisplayText = selectedDisplayValue;
                         } else {
-                          // Extract the code from the selected display value (part before " - ")
                           final selectedCode =
                               selectedDisplayValue.split(' - ').first;
 
-                          // Find the actual item to get the proper ID
                           final selectedItem = items.firstWhere(
                             (item) => item.code == selectedCode,
-                            orElse: () =>
-                                DropdownItem(id: '', description: '', code: ''),
+                            orElse: () => DropdownItem(
+                              id: '',
+                              description: '',
+                              code: '',
+                            ),
                           );
 
                           selectedId = selectedItem.id;
-                          // Show both code and description as display value
                           selectedDisplayText =
                               "${selectedItem.code} - ${selectedItem.description}";
                         }
 
-                        // Update display value to show both code and description
                         displayValue = selectedDisplayText;
-
-                        // Notify parent if callback provided
                         onDisplayValueUpdate?.call(selectedDisplayText);
-
                         onChanged(selectedId);
                       } else {
-                        // Handle null case (deselection)
                         displayValue = null;
                         onDisplayValueUpdate?.call(null);
                         onChanged(null);
@@ -916,8 +1150,8 @@ class FormFieldHelper {
                       : ColorManager.white,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: ColorManager.darkGrey,
-                    width: 1.0,
+                    color: showError ? ColorManager.red : ColorManager.darkGrey,
+                    width: showError ? 2 : 1,
                   ),
                 ),
                 child: Row(
@@ -935,17 +1169,11 @@ class FormFieldHelper {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (readOnly)
-                          Icon(Icons.lock_outline,
-                              size: 20, color: ColorManager.lightGrey3)
-                        else
-                          Icon(Icons.arrow_drop_down,
-                              color: ColorManager.darkGrey),
-                      ],
-                    ),
+                    if (readOnly)
+                      Icon(Icons.lock_outline,
+                          size: 20, color: ColorManager.lightGrey3)
+                    else
+                      Icon(Icons.arrow_drop_down, color: ColorManager.darkGrey),
                   ],
                 ),
               ),
@@ -961,6 +1189,17 @@ class FormFieldHelper {
               ),
           ],
         ),
+        if (showError)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              "This field is required",
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 12,
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -1710,6 +1949,84 @@ class _RedTrianglePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
+// class AsyncDropdownField extends StatefulWidget {
+//   final BuildContext context;
+//   final String label;
+//   final String? value;
+//   final Future<List<DropdownItem>> Function({String search}) fetchItems;
+//   final ValueChanged<String?> onChanged;
+//   final bool isRequired;
+//   final String? apiDisplayValue;
+//   final bool readOnly;
+
+//   const AsyncDropdownField({
+//     Key? key,
+//     required this.context,
+//     required this.label,
+//     required this.value,
+//     required this.fetchItems,
+//     required this.onChanged,
+//     this.isRequired = false,
+//     this.apiDisplayValue,
+//     this.readOnly = false,
+//   }) : super(key: key);
+
+//   @override
+//   _AsyncDropdownFieldState createState() => _AsyncDropdownFieldState();
+// }
+
+// class _AsyncDropdownFieldState extends State<AsyncDropdownField> {
+//   String? _displayValue;
+//   late TextEditingController _searchController;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _displayValue = widget.apiDisplayValue;
+//     _searchController = TextEditingController();
+//   }
+
+//   Future<List<DropdownItem>> _fetchItemsWithSearch() async {
+//     final searchText = _searchController.text;
+//     return await widget.fetchItems(search: searchText);
+//   }
+
+//   @override
+//   void didUpdateWidget(AsyncDropdownField oldWidget) {
+//     super.didUpdateWidget(oldWidget);
+//     if (widget.apiDisplayValue != oldWidget.apiDisplayValue) {
+//       _displayValue = widget.apiDisplayValue;
+//     }
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return FormFieldHelper.buildDropdownFieldWithIds1(
+//       context: widget.context,
+//       label: widget.label,
+//       value: widget.value,
+//       fetchItems: () => _fetchItemsWithSearch(),
+//       onChanged: (value) {
+//         widget.onChanged(value);
+//       },
+//       isRequired: widget.isRequired,
+//       apiDisplayValue: _displayValue,
+//       readOnly: widget.readOnly,
+//       onDisplayValueUpdate: (newDisplayValue) {
+//         setState(() {
+//           _displayValue = newDisplayValue;
+//         });
+//       },
+//       searchController: _searchController,
+//     );
+//   }
+
+//   @override
+//   void dispose() {
+//     _searchController.dispose();
+//     super.dispose();
+//   }
+// }
 class AsyncDropdownField extends StatefulWidget {
   final BuildContext context;
   final String label;
@@ -1719,6 +2036,9 @@ class AsyncDropdownField extends StatefulWidget {
   final bool isRequired;
   final String? apiDisplayValue;
   final bool readOnly;
+
+  final bool showError;
+  final VoidCallback? onChangedClearError;
 
   const AsyncDropdownField({
     Key? key,
@@ -1730,6 +2050,8 @@ class AsyncDropdownField extends StatefulWidget {
     this.isRequired = false,
     this.apiDisplayValue,
     this.readOnly = false,
+    this.showError = false,
+    this.onChangedClearError,
   }) : super(key: key);
 
   @override
@@ -1769,10 +2091,13 @@ class _AsyncDropdownFieldState extends State<AsyncDropdownField> {
       fetchItems: () => _fetchItemsWithSearch(),
       onChanged: (value) {
         widget.onChanged(value);
+
+        widget.onChangedClearError?.call();
       },
       isRequired: widget.isRequired,
       apiDisplayValue: _displayValue,
       readOnly: widget.readOnly,
+      showError: widget.showError,
       onDisplayValueUpdate: (newDisplayValue) {
         setState(() {
           _displayValue = newDisplayValue;
